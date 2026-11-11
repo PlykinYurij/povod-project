@@ -1,10 +1,10 @@
 # Состояние подготовки «Повода»
 
-## E1-07 · Комплект сборки по SHA, в работе
+## E1-07 · Комплект сборки по SHA, Review
 
 Все предыдущие ветки приняты владельцем, main обновлён до `e30750c`. Проверен E1-05: Docker и native PostgreSQL не найдены, WSL2 доступен вне песочницы, установленных дистрибутивов нет. Системные компоненты не устанавливались. E1-05 оставлен Blocked до подготовки local-окружения Q-07; вместо него взят независимый готовый E1-07 с выполненной зависимостью E1-02.
 
-Ветка `feat/sha-build-artifact`, [карточка](product/e1-07.md), [инструкция](operations/artifacts.md), [проверки](qa/e1-07-report.md). Добавляются чистая сборка committed snapshot, runtime-архивы Next standalone/Nest, manifest/digests, независимый HTTP/static smoke и immutable Actions upload. Для проверки целостности подключён Vitest; 8 тестов, типы и обе сборки локально прошли. Полная сборка комплекта и hosted-загрузка ещё проверяются, до результата не считаются успешными. Серверов/БД/деплоя и новых продуктовых правил нет.
+Ветка `feat/sha-build-artifact`, [карточка](product/e1-07.md), [инструкция](operations/artifacts.md), [проверки](qa/e1-07-report.md). Реализованы чистая сборка committed snapshot, runtime-архивы Next standalone/Nest, manifest/digests, изолированный HTTP/static smoke и immutable Actions upload. Vitest: 8 тестов целостности, явный include исключает копии suite внутри build snapshots. Типы/обе сборки и полный Windows preview прошли; hosted run 43041933802 собрал и проверил Linux preview, artifact 13866320790 скачан, внешний digest и manifest/components проверены. Повреждённая копия и попытка продвинуть preview отклонены. Серверов/БД/деплоя и новых продуктовых правил нет. Main-candidate станет доступен только после приёмки/merge и успешного main push; не заявлен уже проверенным.
 
 ## Ролевые планы синхронизированы с принятым каркасом и CI
 

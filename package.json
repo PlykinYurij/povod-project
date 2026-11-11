@@ -2,7 +2,10 @@
   "name": "povod",
   "version": "0.0.0",
   "private": true,
-  "workspaces": ["apps/web", "apps/api"],
+  "workspaces": [
+    "apps/web",
+    "apps/api"
+  ],
   "packageManager": "npm@11.20.0",
   "engines": {
     "node": "26.13.0",

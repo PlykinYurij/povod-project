@@ -2,13 +2,13 @@
 
 [Workflow](../../.github/workflows/ci.yml) запускается на push, pull_request и вручную (после появления workflow в основной ветке). Ветка задачи основана на принятом каркасе main `aac3aca`. Требование — NFR-14, зависимость — E1-01.
 
-На `ubuntu-24.04` и `windows-2025` выполняются одинаковые шаги: checkout → Node из .node-version → npm 11.20.0 → npm ci → npm run typecheck → npm run build → проверка отсутствия изменений tracked-файлов. Используется один корневой lockfile. На одноразовом CI runner npm устанавливается явно; на компьютере разработчика инструменты не переустанавливаются.
+На `ubuntu-24.04` и `windows-2025` выполняются одинаковые шаги: checkout → Node из .node-version → npm 11.20.0 → npm ci → npm run typecheck → npm test → npm run build → проверка отсутствия изменений tracked-файлов. Vitest-проверки появились в E1-07. Используется один корневой lockfile. На одноразовом CI runner npm устанавливается явно; на компьютере разработчика инструменты не переустанавливаются.
 
 Два стабильных имени проверок: `Verify (ubuntu-24.04)` и `Verify (windows-2025)`. Ошибка команды завершает job с failure, последующие шаги не скрывают её. Результаты двух ОС независимы (`fail-fast: false`), лимит каждого job — 15 минут. Новое событие той же ветки/типа отменяет устаревший run. Push и PR проверяются отдельно: PR проверяет merge-кандидат, push — commit ветки; результат push не подменяет PR-проверку.
 
-Нет path-фильтров, continue-on-error, pull_request_target, production secrets, deploy/БД/медиа/services. GITHUB_TOKEN имеет только contents:read, checkout не сохраняет credentials. Кешируется npm download cache, не node_modules/.next/dist. Сборки этого workflow — проверочные, не неизменяемый комплект выпуска E1-07.
+Нет path-фильтров, continue-on-error, pull_request_target, production secrets, deploy/БД/медиа/services. GITHUB_TOKEN имеет только contents:read, checkout не сохраняет credentials. Кешируется npm download cache, не node_modules/.next/dist. Verify-builds — проверочные; [E1-07](artifacts.md) добавляет после них отдельный `Build kit (linux-x64)` с изолированным runtime smoke. На push он публикует preview/candidate по ref, PR только проверяет сборку.
 
-Lint/unit/E2E не выдумываются: этих scripts пока нет. Их добавление в CI следует за появлением реального инструментария. Аудит безопасности не заменяет сборку; отдельная политика регулярного аудита будет согласована позднее.
+Корневой npm test реально проверяет целостность build-комплекта; это не тесты ещё не созданных бизнес-функций. Lint/E2E scripts пока нет, они добавляются по реальному инструментарию. Аудит безопасности не заменяет сборку; отдельная политика регулярного аудита будет согласована позднее.
 
 ## Приёмка
 
