@@ -14,10 +14,14 @@
     "start:web": "npm run start --workspace=@povod/web",
     "start:api": "npm run start --workspace=@povod/api",
     "typecheck": "npm run typecheck --workspaces",
-    "build": "npm run build --workspaces"
+    "build": "npm run build --workspaces",
+    "test": "vitest run scripts/artifact",
+    "artifact:create": "node scripts/artifact/create.mjs",
+    "artifact:verify": "node scripts/artifact/verify.mjs"
   },
   "devDependencies": {
     "@types/node": "26.6.6",
-    "typescript": "5.9.3"
+    "typescript": "5.9.3",
+    "vitest": "4.1.12"
   }
 }

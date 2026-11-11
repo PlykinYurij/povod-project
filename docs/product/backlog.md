@@ -22,9 +22,9 @@ ID исходного §13 сохранены. Ранее широкие пун�
 | E1-00 Проверка точных tool pins на Node 26.13.0/npm 11.20.0 (Done) | Ведущий/DevOps | Нет | NFR-14; новое поручение | [Проверенные pins](../operations/toolchain.md), B-02 снят; принят вместе с каркасом |
 | E1-01 Каркас web/API (Done) | Ведущий | E1-00 | NFR-13/14, §12 | [Полная карточка](first-task.md), [отчёт T-01–06](../qa/e1-01-report.md); принят в main aac3aca |
 | E1-02 PR CI существующих проверок (Done) | DevOps | E1-01 | NFR-14 | [Порядок](../operations/ci.md), [hosted-прогоны и обязательность checks](../qa/e1-02-report.md); принят в main 361abc9 |
-| E1-05 Локальный PostgreSQL dev/test | DevOps | E1-01; выбран Docker/WSL или альтернатива | §10, NFR-15 | Две роли/БД, безопасный env.example, тестовая очистка не читает dev/prod; smoke/negative access |
+| E1-05 Локальный PostgreSQL dev/test (Blocked) | DevOps | E1-01; Q-07 | §10, NFR-15 | Docker/PostgreSQL отсутствуют, WSL2 без дистрибутивов; сначала подготовить выбранное локальное окружение. Затем две роли/БД, безопасный env.example и negative access |
 | E1-06 Миграционный слой и изолированная test-БД в CI | Backend/DevOps | E1-02/05; согласован ORM | NFR-14/15 | Первая техническая миграция/синтетический seed воспроизводимы, CI изолирован; И |
-| E1-07 Неизменяемый комплект сборки SHA/digests | DevOps | E1-02 | NFR-16 | Manifest и артефакты точного SHA, повторный prod-build не нужен; проверка комплекта |
+| E1-07 Неизменяемый комплект сборки SHA/digests (In progress) | DevOps | E1-02 | NFR-16 | [Карточка](e1-07.md), [инструкция](../operations/artifacts.md), [отчёт](../qa/e1-07-report.md): manifest/runtime/digests, изолированный smoke, без prod-build |
 | E1-03 Закрытый dev-стенд демосервиса | DevOps | E1-07; Q-13/доступы | NFR-13/15/16, §11 | Закрытый вход/раздельные env, тот же digest, smoke и пробный возврат версии; демонстрационный отчёт |
 | E1-03b Ручной prod release на демосервисе | DevOps/владелец | E1-03; Q-13 | NFR-16, §11 | Только принятый SHA, сериализация, readiness/smoke/rollback; запуск только владельцем, демонстрация отказа чужому SHA |
 

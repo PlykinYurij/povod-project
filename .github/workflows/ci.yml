@@ -54,8 +54,55 @@ jobs:
       - name: Typecheck web and API
         run: npm run typecheck
 
+      - name: Test artifact integrity rules
+        run: npm test
+
       - name: Build web and API
         run: npm run build
 
       - name: Ensure tracked inputs are unchanged
         run: git diff --exit-code
+
+  artifact:
+    name: Build kit (linux-x64)
+    needs: verify
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version-file: .node-version
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Pin npm on the disposable runner
+        run: npm install --global npm@11.20.0
+
+      - name: Build once from committed source and smoke isolated runtimes
+        id: kit
+        run: npm run artifact:create
+
+      - name: Upload immutable kit
+        if: github.event_name == 'push'
+        id: upload
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: ${{ steps.kit.outputs.name }}
+          path: ${{ steps.kit.outputs.path }}
+          if-no-files-found: error
+          overwrite: false
+
+      - name: Record trusted download identity
+        if: github.event_name == 'push'
+        env:
+          ARTIFACT_ID: ${{ steps.upload.outputs.artifact-id }}
+          ARTIFACT_DIGEST: ${{ steps.upload.outputs.artifact-digest }}
+          ARTIFACT_URL: ${{ steps.upload.outputs.artifact-url }}
+        run: |
+          printf '\nArtifact ID: %s\n\nArtifact digest: `%s`\n\nDownload: %s\n' "$ARTIFACT_ID" "$ARTIFACT_DIGEST" "$ARTIFACT_URL" >> "$GITHUB_STEP_SUMMARY"
