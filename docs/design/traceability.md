@@ -16,6 +16,7 @@
 | Статус сохранения | expectedRevision/revision → ProjectDraft.revision | FR-08: старая ревизия не затирает новую, ошибка видима |
 | Приватный preview | revision + DTO → общий рендерер | FR-09: only owner, no-store, неполные поля с ошибками готовности |
 | Тариф/подтверждение | offer.id/version/durationSeconds → Grant | FR-11, D-19: 90 дней расхода с commit; дата события не участвует |
+| Адрес до публикации | slug → availability.normalizedSlug/available/reason → publish.slug → PublicationAddress | D-26, FR-11/13: предварительная проверка не резервирует имя; окончательный 409 SLUG_TAKEN с path slug сохраняет черновик без расхода места/срока. При unknown тело/ключ прежние; после подтверждённого отказа новое имя — новый ключ |
 | Успех/общая ссылка | receipt.publicUrl/publicationId + currentState → Project.publicId, Snapshot, Grant | FR-11/13/14: повтор даёт тот же результат, не новый период; clipboard-ошибка не успех |
 | Ограничения после выпуска | canEditDraft=false, canCorrectTexts=true | D-17: только отдельная текстовая коррекция, остальные прямые правки запрещены |
 | Гостевая | publicId → безопасный DTO, content и media, rsvp:{formVersionId,fields} | FR-13: нет ownerId/title/email/приватных ключей; неактивная выдача не раскрывает контент |
