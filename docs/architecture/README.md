@@ -10,3 +10,6 @@
 - [Сверка экранов / API / данных / FR](../design/traceability.md).
 
 - [Регистрация, вход, сессии, восстановление и права](authentication.md) — отдельное проектное уточнение identity.
+
+- [Правила web / FSD / API codegen / темы](web-conventions.md).
+- [Публикация, единый web и пользовательские поддомены](publication-addresses.md).
