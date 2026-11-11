@@ -42,7 +42,7 @@
 | POST `/projects/{id}/media` | Idempotency-Key; multipart `file` → 202 `{mediaId,state:"processing"}` после устойчивого приёма/постановки job | 413 FILE_TOO_LARGE, 415 UNSUPPORTED_IMAGE, 422 IMAGE_LIMIT, 409 CONTENT_LOCKED |
 | GET `/projects/{id}/media/{mediaId}` | 200 `{mediaId,state,privatePreviewUrl?,failureCode?}` | 404 при несовпадении владельца/проекта |
 | DELETE `/projects/{id}/media/{mediaId}` | Только до первой публикации; отсоединить и запланировать безопасную очистку → 204, повтор 204 | 409 CONTENT_LOCKED/MEDIA_IN_USE; не удалять asset, пока он выбран в черновике: сначала сохранить null |
-| POST `/projects/{id}/publish` | Idempotency-Key; `{expectedRevision,tariffId,tariffVersion}` → 201 receipt + currentState | 409/422, см. ниже |
+| POST `/projects/{id}/publish` | Idempotency-Key; `{expectedRevision,tariffId,tariffVersion,slug}` → 201 receipt + currentState | 409/422, см. ниже |
 | GET `/public/invitations/{publicId}` | 200 `{templateVersionId,content,media,metadata,rsvp:{formVersionId,fields}}` без ownerId/title/email/черновика | 404 INVITATION_UNAVAILABLE для всех причин недоступности; 503 при сбое |
 
 PATCH сохраняет currentRevision+1 только при совпадении expectedRevision. При потере ответа клиент читает GET: если payload уже сохранён, не посылает слепое перезаписывание; иначе предлагает сверку. Replay-гарантия публикации ниже сильнее, чем семантика PATCH.
@@ -61,7 +61,7 @@ PATCH сохраняет currentRevision+1 только при совпаден�
 
 ```json
 {
-  "receipt":{"publicationId":"pub-example","grantId":"grant-example","sourceRevision":7,"publicUrl":"https://invite.example/i/random-public-id","firstPublishedAt":"2026-11-10T09:00:00Z","initialExpiresAt":"2027-02-08T09:00:00Z"},
+  "receipt":{"publicationId":"pub-example","grantId":"grant-example","sourceRevision":7,"publicUrl":"https://andrey-happy-birthday.example.com","firstPublishedAt":"2026-11-10T09:00:00Z","initialExpiresAt":"2027-02-08T09:00:00Z"},
   "currentState":{"visibility":"public","periodState":"running","remainingSeconds":7776000,"expiresAt":"2027-02-08T09:00:00Z","slotOccupied":true,"canEdit":false}
 }
 ```
@@ -100,3 +100,7 @@ RSVP v1 (D-16): `POST /public/invitations/{publicId}/responses`, ключ и `{f
 Offers v1 выдаёт бесплатный период durationSeconds=7776000; каждая первая публикация фиксирует 90 дней. remainingSeconds расходуется отдельно от даты события. При полном истечении обычные project/preview/media/response/export и text-correction операции возвращают 404 PROJECT_NOT_FOUND, публичная выдача — нейтральную INVITATION_UNAVAILABLE; UI может показывать отдельную минимальную карточку «Срок истёк, данные удалены» без контента. Экспорт/восстановление soft-deleted данных требуют Q-19 и отдельного контракта, endpoint восстановления пока не вводится. Удаление физически выполняется позднее; на доступность и квоту задержка worker не влияет. Ранее выданные фото-URL отзываются в рамках TTL Q-09.
 
 Identity FR-02–04 детализирован отдельно: [методы регистрации и входа](authentication.md). В минимальный каркас эти endpoints не входят.
+
+## Дополнение D-25: адрес публикации
+
+К publish body добавляется slug; 409 SLUG_TAKEN с fields.path=slug не расходует слот/период и не создаёт снимок. Ошибка формата — 422, системное имя запрещено. Предварительный GET /publication-addresses/availability?slug=... только подсказывает доступность; уникальный normalizedSlug резервируется в транзакции publish. Повтор key/body возвращает прежний URL; slug входит в requestHash. GET /public/invitations/by-address/{slug} — безопасный DTO для Next host-routing, publicId остаётся внутренним стабильным id. Канонический публичный URL теперь поддомен, прежние /i/{publicId} в документах — ранний пример, поддержку alias не считать обещанной. Детали: [публикация и адреса](publication-addresses.md).

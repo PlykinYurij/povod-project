@@ -1,0 +1,6 @@
+interface:
+  display_name: "Повод · Web task"
+  short_description: "Задачи web: FSD, API, интерфейс и проверки"
+  default_prompt: "Используй $povod-web-task для выполнения назначенной frontend-задачи «Повода» с проверкой результата по карточке."
+policy:
+  allow_implicit_invocation: true
