@@ -69,6 +69,8 @@ npm run start:api
 
 ## Документы и приёмка
 
+[CI](.github/workflows/ci.yml) проверяет установку, типы и сборки на Windows/Linux для push и PR. [Описание и обязательность проверок main](docs/operations/ci.md), [отчёт E1-02](docs/qa/e1-02-report.md). Деплой этим workflow не выполняется.
+
 - [Отчёт проверок E1-01](docs/qa/e1-01-report.md), [карточка](docs/product/first-task.md), [версии E1-00](docs/operations/toolchain.md).
 - [Контракт технического этапа](docs/architecture/skeleton-contract.md), [backlog](docs/product/backlog.md), [статус](docs/preparation-status.md).
 - [Макет первого продуктового сценария](docs/design/first-flow.html): открыть локальный файл в браузере. Это автономная демонстрация без настоящего API и сохранения.
