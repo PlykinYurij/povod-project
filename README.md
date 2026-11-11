@@ -65,7 +65,9 @@ npm run start:api
 
 Используются те же порты; сначала остановить dev. В production-командах нет watch. API build — TypeScript, dev — встроенный Node watch + ts-node, сохраняющий decorators metadata; отдельный Nest CLI не требуется. Это локальная проверка сборки, не настроенный production-деплой. Сборка API пока не очищает старые dist-файлы: для воспроизводимой приёмки использована чистая копия; выпуск неизменяемого артефакта отдельно E1-07.
 
-Отдельные команды из `apps/web` или `apps/api`: `npm run dev`, `npm run typecheck`, `npm run build`, `npm run start`. Устанавливать зависимости всё равно из корня. Unit/E2E/lint/format scripts пока нет; Vitest, ESLint/Prettier вводятся отдельными задачами по мере появления соответствующего объёма, проверки за них не выдаются.
+Отдельные команды из `apps/web` или `apps/api`: `npm run dev`, `npm run typecheck`, `npm run build`, `npm run start`. Устанавливать зависимости всё равно из корня. Корневой `npm test` запускает Vitest-тесты целостности build-комплекта; тестов бизнес-функций/E2E/lint/format scripts пока нет, они вводятся по реальному объёму.
+
+Для чистой зафиксированной ветки добавлен `npm run artifact:create`: собирает отдельный runtime-комплект по SHA и проверяет его вне исходного checkout. Проверка скачанного комплекта: `npm run artifact:verify -- <каталог> <SHA> <доверенный-manifest-SHA256>`; preview требует `--allow-preview`. [Инструкция и ограничения платформы](docs/operations/artifacts.md), [фактические результаты](docs/qa/e1-07-report.md). Это не деплой и не сборка каждого приглашения.
 
 ## Документы и приёмка
 
