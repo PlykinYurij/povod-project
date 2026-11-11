@@ -22,6 +22,17 @@ Artifact скачан через API существующим GitHub-досту�
 
 Перед итоговой проверкой standalone ограничен флагом builder POVOD_BUILD_KIT=1: исходный Next сообщает, что обычный next start не предназначен для output:standalone. Флаг сохраняет существующие локальные build/start-команды и отдельно проверяется новой сборкой комплекта в CI.
 
+## Проверка итогового кода 21e2986
+
+Локальные typecheck, Vitest (8/1) и обычный build — exit 0. Локальный production Next на отдельном порте отдал страницу и CSS 200, предупреждения о standalone/next start нет; процесс остановлен. Повторный полный Windows artifact:create для `21e2986ed21e68db88f5a842eb1638a837eb711e` с флагом builder также завершился 0, web/health/CSS 200; manifest hash `6dd1462ba95a56c66e099b2d99720b6090a89f2774772402678a6069e9710768`.
+
+- [Push 43043930050](https://github.com/PlykinYurij/povod-project/actions/runs/43043930050): Windows/Linux Verify и Build kit success.
+- [PR 43044041904](https://github.com/PlykinYurij/povod-project/actions/runs/43044041904): все три jobs success; [draft PR #9](https://github.com/PlykinYurij/povod-project/pull/9), без merge/деплоя.
+- В main к прежним двум Verify добавлен required check `Build kit (linux-x64)`, привязанный к GitHub Actions app 15368. Readback подтверждён; strict=true, остальные настройки защиты/review/admin bypass не менялись.
+- Проверены пути ссылок в 50 Markdown-файлах, синтаксис scripts и workflow, diff --check. Исходное ТЗ сохранило SHA-256 `276fbfd4fc094f8b1a4f8d77351370efb24b634568409d54f47f25dff1c578ac`.
+
+Последний документальный коммит повторно запускает CI и создаёт комплект для своего SHA; актуальные checks/артефакт доступны в PR. Предыдущие digests относятся к указанным SHA/run и не подменяются новым именем.
+
 ## Границы проверки
 
 Этап Review, не принят владельцем и не слит в main. Проверено preview-пакетирование: ветка main-candidate будет выполняться при принятом push main, её ещё не выдаём за выполненную. Подпись/attestation, постоянное хранилище релизов, реальный dev/prod, rollback на сервере, БД и миграции не проверялись/не создавались. Срок хранения GitHub artifacts не связан с 90 днями приглашения. Тесты целостности — самопроверка исполнителя, не независимое QA-ревью.
