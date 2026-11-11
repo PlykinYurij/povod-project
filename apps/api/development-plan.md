@@ -1,6 +1,6 @@
 # План backend
 
-Читать [корневой AGENTS](../../AGENTS.md), [общий порядок](../../docs/agent-workflow.md), [backlog](../../docs/product/backlog.md), [API](../../docs/architecture/api-contract.md), [identity](../../docs/architecture/authentication.md), [адреса](../../docs/architecture/publication-addresses.md), [QA](../../docs/qa/test-plan.md). После интеграции backend-ветки также обязательны локальный AGENTS и backend-conventions. Их отсутствие сейчас — условие входа, не разрешение переопределить согласованный стек.
+Читать [корневой AGENTS](../../AGENTS.md), [локальный AGENTS](AGENTS.md), [backend-conventions](../../docs/architecture/backend-conventions.md), [общий порядок](../../docs/agent-workflow.md), [backlog](../../docs/product/backlog.md), [API](../../docs/architecture/api-contract.md), [identity](../../docs/architecture/authentication.md), [адреса](../../docs/architecture/publication-addresses.md), [QA](../../docs/qa/test-plan.md). Backend-правила D-27 уже интегрированы в main; план их не заменяет и не переопределяет.
 
 Каждый раздел — API-часть существующего ID, одно поручение и остановка на ревью. Все зависимости backlog сохраняются. Три галочки означают: собственный результат с проверками → явное принятие владельцем → проверенный main с SHA. Для каждого раздела записать доказательства по общему порядку. Общие frontend/API-карточки целиком закрывает ведущий после интеграции.
 
