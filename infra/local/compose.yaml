@@ -1,0 +1,23 @@
+name: povod-local
+services:
+  postgres:
+    image: postgres:17.12-bookworm@sha256:40865bc877a289da75963d97d72b59633f639fc5af7a4e856bfa3714cae5b536
+    environment:
+      POSTGRES_USER: povod_local_admin
+      POSTGRES_PASSWORD: ${LOCAL_ADMIN_PASSWORD:?Run db init first}
+      POSTGRES_INITDB_ARGS: --auth-host=scram-sha-256
+      DEV_PASSWORD: ${LOCAL_DEV_PASSWORD:?Run db init first}
+      TEST_PASSWORD: ${LOCAL_TEST_PASSWORD:?Run db init first}
+    ports:
+      - "127.0.0.1:${LOCAL_PG_PORT:-15432}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/01-local.sql:ro
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -U povod_local_admin -d postgres"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+    stop_grace_period: 30s
+volumes:
+  postgres-data:
