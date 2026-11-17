@@ -36,7 +36,7 @@ let app: INestApplication;
 let url: string;
 let database: ReturnType<typeof createDatabaseClient>;
 const emails: string[] = [];
-const password = "Тестовый1!пароль";
+const password = "Synthetic1!password";
 const email = () => {
   const value = `e104-${randomUUID()}+tag@example.test`;
   emails.push(value);
@@ -125,6 +125,13 @@ test("rejects unknown server fields and invalid email/password without reflectin
     "UPPERCASE!",
     "Uppercase1",
     "Aa1!".repeat(33),
+    "Пароль1!Aa",
+    "Aa1!café",
+    "Aa1!abcd😀",
+    "Аa1!abcd",
+    "Aa١!abcd",
+    "Aa1!abcd\n",
+    "Aa1!abcd\t",
   ]) {
     const response = await request({ email: address, password: invalid });
     expect(response.status).toBe(422);

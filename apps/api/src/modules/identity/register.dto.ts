@@ -2,6 +2,10 @@ import { Transform } from "class-transformer";
 import { IsEmail, IsString, Length, Matches, MaxLength } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
 
+// Absolute end check also rejects a final newline, which JavaScript's $ can allow.
+const PASSWORD_PATTERN =
+  /^(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9 ])[\x20-\x7E]{8,128}(?![\s\S])/;
+
 export class RegisterDto {
   @ApiProperty({
     format: "email",
@@ -22,14 +26,13 @@ export class RegisterDto {
     maxLength: 128,
     writeOnly: true,
     format: "password",
+    pattern: PASSWORD_PATTERN.source,
     description:
-      "At least one Unicode uppercase letter, decimal digit and punctuation/symbol. Whitespace is allowed but is not a special character.",
+      "Printable ASCII only: A-Z/a-z, 0-9, punctuation and space. Requires an uppercase letter, digit and special character; space is not a special character. No trimming.",
   })
   @IsString()
   @Length(8, 128)
-  @Matches(/\p{Lu}/u)
-  @Matches(/\p{Nd}/u)
-  @Matches(/[\p{P}\p{S}]/u)
+  @Matches(PASSWORD_PATTERN)
   password!: string;
 }
 

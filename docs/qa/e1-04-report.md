@@ -1,5 +1,7 @@
 # E1-04 · Проверки backend регистрации
 
+Последнее уточнение владельца — пароль только с буквами A–Z/a–z. Сервер и OpenAPI теперь требуют печатный ASCII (U+0020–U+007E), uppercase A–Z, цифру 0–9 и спецсимвол. Добавлены отрицательные HTTP-cases: кириллица/похожая А, café, emoji, арабская цифра, tab и final newline. После изменения успешны strict typecheck API/тестов, build API, OpenAPI export и все 13 DB/HTTP tests. Старые CI/kit SHA ниже относятся к предыдущему варианту; свежий коммит проверяется отдельно. Полный локальный kit для изменения одного DTO не повторялся: зависимости/native runtime не менялись.
+
 17.11.2026, база main 311f808, ветка feat/registration. Самопроверка ведущего; независимое QA не выполнялось. Node 26.13.0/npm 11.20.0, Windows/PowerShell, PostgreSQL 17.12 в Docker. Backend-часть Review, frontend/session/публичный выпуск не готовы.
 
 Фактически выполнено:
