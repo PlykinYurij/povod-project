@@ -2,6 +2,7 @@ generator client {
   provider = "prisma-client"
   output = "../src/database/generated"
   moduleFormat = "cjs"
+  importFileExtension = ""
 }
 
 datasource db {
@@ -15,4 +16,13 @@ model DatabaseProbe {
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
 
   @@map("database_probe")
+}
+
+model User {
+  id String @id @default(uuid()) @db.Uuid
+  email String @unique @db.VarChar(254)
+  passwordHash String @map("password_hash")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@map("users")
 }

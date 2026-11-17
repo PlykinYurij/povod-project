@@ -1,10 +1,9 @@
 import { spawnSync } from "node:child_process";
-import { readFileSync } from "node:fs";
-import { parseEnv } from "node:util";
 import { fileURLToPath } from "node:url";
 import { resolve, dirname, join } from "node:path";
 import { createRequire } from "node:module";
 import { verifyDatabaseTarget } from "./database-safety.mjs";
+import { localDatabaseUrl } from "./local-database-url.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const api = join(root, "apps/api");
@@ -20,10 +19,19 @@ function execute(args, env) {
     windowsHide: true,
     maxBuffer: 8 * 1024 * 1024,
   });
-  if (result.error || result.status !== 0)
+  if (result.error || result.status !== 0) {
+    if (env.POVOD_DB_DIAGNOSTICS === "1") {
+      const secret = new URL(env.DATABASE_URL).password;
+      console.error(
+        `${result.stdout ?? ""}\n${result.stderr ?? ""}`
+          .replaceAll(env.DATABASE_URL, "[database URL]")
+          .replaceAll(secret, "[password]"),
+      );
+    }
     throw new Error(
       "Database operation failed; raw output withheld to protect credentials.",
     );
+  }
   // Success output is useful for test evidence; remove the complete URL and password.
   const password = new URL(env.DATABASE_URL).password;
   console.log(
@@ -52,14 +60,7 @@ try {
     if (process.env.POVOD_TEST_DATABASE !== "povod_test")
       throw new Error("Explicit test marker is required.");
   } else {
-    const config = parseEnv(
-      readFileSync(join(root, "infra/local/.env.local"), "utf8"),
-    );
-    const password = config[`LOCAL_${target.toUpperCase()}_PASSWORD`];
-    const port = config.LOCAL_PG_PORT;
-    if (!/^[a-f0-9]{48}$/.test(password ?? "") || !/^\d{1,5}$/.test(port ?? ""))
-      throw new Error("Invalid local env.");
-    connectionString = `postgresql://povod_${target}:${password}@127.0.0.1:${port}/povod_${target}`;
+    connectionString = localDatabaseUrl(target);
   }
   // No migrations/seed/test writes occur before identity and privilege checks.
   await verifyDatabaseTarget(

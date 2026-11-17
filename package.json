@@ -25,7 +25,9 @@
     "db:migrate:test": "node scripts/database.mjs migrate test",
     "db:seed:dev": "node scripts/database.mjs seed dev",
     "db:seed:test": "node scripts/database.mjs seed test",
-    "test:database": "node scripts/database.mjs test test"
+    "test:database": "node scripts/database.mjs test test",
+    "dev:api:database": "node scripts/api-dev.mjs",
+    "api:openapi": "node scripts/export-openapi.mjs"
   },
   "devDependencies": {
     "@types/node": "26.6.6",

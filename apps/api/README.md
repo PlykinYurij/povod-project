@@ -1,5 +1,7 @@
 # API
 
+E1-04: [регистрация/Swagger/локальный DB-запуск](../../docs/operations/registration.md), [экспортированный контракт](openapi.json), [QA](../../docs/qa/e1-04-report.md). Приёмка backend отдельно от ещё не реализованных web/session. Root `npm run dev:api:database` загружает только локальный dev URL из ignored env; обычный `dev:api` его не загружает. В dev Swagger `/api/docs`, JSON `/api/openapi.json`.
+
 [План разработки с чекбоксами](development-plan.md). [Порядок ревью и совместной работы](../../docs/agent-workflow.md).
 
 NestJS API сервиса «Повод»: root GET `/health` → 200 `{"status":"ok"}`. Добавлены Prisma, техническая миграция и проверки БД по [E1-06](../../docs/operations/database-migrations.md). Бизнес-маршрутов пока нет; Nest не подключается к БД при старте. Команды каркаса — [корневой README](../../README.md).

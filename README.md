@@ -1,5 +1,7 @@
 # Повод
 
+Backend регистрации E1-04: [проверка и Swagger](docs/operations/registration.md). HTTP API 3001, PostgreSQL 15432 — SQL, не веб-страница. Web-форма и автоматический вход пока следующие этапы.
+
 Сервис сайтов-приглашений. Реализованы технический каркас, CI и сборка по SHA. Локальные PostgreSQL dev/test — [запуск и проверки](docs/operations/local-postgres.md). Редактора, авторизации и публикации приглашений пока нет; приложения ещё не подключены к БД.
 
 E1-06 добавляет [Prisma, техническую миграцию и тесты БД](docs/operations/database-migrations.md). Для них отдельная команда `npm run test:database`; обычный `npm test` по-прежнему работает без БД.

@@ -60,6 +60,9 @@ jobs:
       - name: Build web and API
         run: npm run build
 
+      - name: Verify generated OpenAPI contract
+        run: npm run api:openapi
+
       - name: Ensure tracked inputs are unchanged
         run: git diff --exit-code
 

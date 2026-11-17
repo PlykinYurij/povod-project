@@ -1,5 +1,15 @@
 # Состояние подготовки «Повода»
 
+Уточнение D-28 в той же ветке E1-04: по последнему поручению владельца пароль принимает только латинские A–Z/a–z, ASCII-цифры/спецсимволы и обычный пробел; Unicode/control characters запрещены. Длина/обязательные классы/запрет trim сохранены. Сервер, OpenAPI, критерии и инструкция согласованы. Типы/сборка API/экспорт и 13 DB/HTTP tests прошли, включая отрицательные non-ASCII/newline случаи. Принятие владельцем/main не менялось.
+
+## E1-04 · Backend регистрации, Review · 17 ноября
+
+Main обновлён ff-only до `311f808`; E1-06 принят владельцем и проверен в основной ветке. Ветка `feat/registration`. D-28 фиксирует принятые владельцем правила password/email/duplicate/auto-login; текущий PR реализует backend регистрации и OpenAPI, без web-формы/session. [Карточка](product/e1-04.md), [запуск/Swagger](operations/registration.md), [QA](qa/e1-04-report.md). Количество попыток регистрации ещё не утверждено: 5/15 — локальный пробный параметр, production без явной настройки закрыт.
+
+Реализованы SQL unique/user, Argon2id, безопасный DTO, серверная validation/error contract, Origin/CORS, настраиваемый throttle. Локально проходят 12 DB/HTTP tests, 8 artifact tests, типы и сборки; итоговые clean CI/kit дописываются в QA по факту. Автовход принят как целевой UX, но реализуется вместе с cookie-сессиями E1-04b, не выдаётся уже работающим. Ниже — история.
+
+Итог кода 46db0b1: 13 DB/HTTP tests после добавления отказа при отсутствующей БД; полный hosted CI 44050592409 success во всех четырёх jobs, OpenAPI стабилен на Windows/Linux. Windows isolated kit также успешен с native Argon2/Prisma и web/health/CSS 200. Первый чекбокс API-результата отмечен, owner/main остаются открытыми; финальный документальный коммит проверяется отдельно.
+
 ## E1-06 · Prisma и миграции, Review · 17 ноября
 
 Владелец подтвердил merge E1-05; main обновлён ff-only до `4f7394d`. Локальная БД — SQL-сервис, не страница в браузере; инструкция дополнена WebStorm Data Source и командой проверки. Ветка `feat/database-migrations`: Prisma 7.10.1 (стабильная вместо 8 RC), generated CommonJS client, одна техническая SQL-миграция, guarded dev/test commands, idempotent seed, 4 интеграционных Vitest-теста, отдельный disposable CI PostgreSQL. Product/auth API не создавались; `/health` остаётся liveness без БД.

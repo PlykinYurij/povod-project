@@ -133,6 +133,10 @@ async function main() {
     path.join(api, "apps/api/dist"),
     { recursive: true },
   );
+  await cp(
+    path.join(source, "apps/api/openapi.json"),
+    path.join(api, "apps/api/openapi.json"),
+  );
   // Committed schema and SQL travel with the same SHA; release execution is separate.
   await cp(
     path.join(source, "apps/api/prisma"),
