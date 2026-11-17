@@ -2,6 +2,8 @@
 
 Сервис сайтов-приглашений. Реализованы технический каркас, CI и сборка по SHA. Локальные PostgreSQL dev/test — [запуск и проверки](docs/operations/local-postgres.md). Редактора, авторизации и публикации приглашений пока нет; приложения ещё не подключены к БД.
 
+E1-06 добавляет [Prisma, техническую миграцию и тесты БД](docs/operations/database-migrations.md). Для них отдельная команда `npm run test:database`; обычный `npm test` по-прежнему работает без БД.
+
 ## Требования и установка
 
 Windows PowerShell, Node **26.13.0**, npm **11.20.0**. Версии зафиксированы в package.json / .node-version; несовместимая версия отклоняется npm через engine-strict. Docker, глобальный Nest CLI, pnpm и секреты этому этапу не нужны.

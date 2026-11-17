@@ -20,7 +20,12 @@
     "build": "npm run build --workspaces",
     "test": "vitest run scripts/artifact",
     "artifact:create": "node scripts/artifact/create.mjs",
-    "artifact:verify": "node scripts/artifact/verify.mjs"
+    "artifact:verify": "node scripts/artifact/verify.mjs",
+    "db:migrate:dev": "node scripts/database.mjs migrate dev",
+    "db:migrate:test": "node scripts/database.mjs migrate test",
+    "db:seed:dev": "node scripts/database.mjs seed dev",
+    "db:seed:test": "node scripts/database.mjs seed test",
+    "test:database": "node scripts/database.mjs test test"
   },
   "devDependencies": {
     "@types/node": "26.6.6",

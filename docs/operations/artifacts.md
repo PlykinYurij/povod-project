@@ -1,5 +1,7 @@
 # Комплект web/API · E1-07
 
+E1-06: API kit также содержит committed `apps/api/prisma` (schema/SQL) и скомпилированный generated client. Isolated smoke проверяет импорт Prisma/adapter. CLI миграций не включён как runtime dependency, выполнение release migrations ещё не реализовано; [порядок local/CI](database-migrations.md).
+
 Это подготовка переносимой версии сервиса по [карточке](../product/e1-07.md), не деплой и не сборка каждого пользовательского приглашения. [Фактические проверки](../qa/e1-07-report.md).
 
 ## Что создаётся

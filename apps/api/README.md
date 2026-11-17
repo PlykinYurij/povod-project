@@ -2,7 +2,7 @@
 
 [План разработки с чекбоксами](development-plan.md). [Порядок ревью и совместной работы](../../docs/agent-workflow.md).
 
-NestJS API сервиса «Повод»: реализован только технический каркас E1-01, root GET `/health` → 200 `{"status":"ok"}`. Без БД и бизнес-маршрутов. Команды и ограничения — [корневой README](../../README.md), проверки — [отчёт](../../docs/qa/e1-01-report.md).
+NestJS API сервиса «Повод»: root GET `/health` → 200 `{"status":"ok"}`. Добавлены Prisma, техническая миграция и проверки БД по [E1-06](../../docs/operations/database-migrations.md). Бизнес-маршрутов пока нет; Nest не подключается к БД при старте. Команды каркаса — [корневой README](../../README.md).
 
 Требования: [карта документов](../../docs/product/README.md).
 
