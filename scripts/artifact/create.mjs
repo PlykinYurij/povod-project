@@ -133,6 +133,12 @@ async function main() {
     path.join(api, "apps/api/dist"),
     { recursive: true },
   );
+  // Committed schema and SQL travel with the same SHA; release execution is separate.
+  await cp(
+    path.join(source, "apps/api/prisma"),
+    path.join(api, "apps/api/prisma"),
+    { recursive: true },
+  );
   const components = {};
   for (const [component, directory] of Object.entries({ web, api })) {
     await checkRuntimeFiles(directory);

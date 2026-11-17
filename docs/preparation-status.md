@@ -1,5 +1,11 @@
 # Состояние подготовки «Повода»
 
+## E1-06 · Prisma и миграции, Review · 17 ноября
+
+Владелец подтвердил merge E1-05; main обновлён ff-only до `4f7394d`. Локальная БД — SQL-сервис, не страница в браузере; инструкция дополнена WebStorm Data Source и командой проверки. Ветка `feat/database-migrations`: Prisma 7.10.1 (стабильная вместо 8 RC), generated CommonJS client, одна техническая SQL-миграция, guarded dev/test commands, idempotent seed, 4 интеграционных Vitest-теста, отдельный disposable CI PostgreSQL. Product/auth API не создавались; `/health` остаётся liveness без БД.
+
+Повтор migrate/seed на local прошёл, опасные test-target отказали, тесты/типизация и сборка успешны. Изменены упаковка schema/SQL и runtime-smoke для generated client; hosted/чистые проверки фиксируются в [QA](qa/e1-06-report.md). [Карточка](product/e1-06.md), [команды](operations/database-migrations.md). E1-05 — Done по подтверждению владельца и проверке main, E1-06 — Review. Авторизация E1-04 требует принятого E1-06 и Q-11, к реализации пока не переходили. Прежние статусы ниже — история.
+
 ## E1-05 · Локальный PostgreSQL, Review · 16 ноября
 
 Владелец подтвердил merge подготовки; main обновлён ff-only до `bd48bee`, создана ветка `feat/local-postgres`. Docker Desktop с WSL2 установлен ранее по отдельному разрешению, engine работает. В этом этапе системные настройки не менялись. Реализованы pinned PostgreSQL 17.12, dev/test-БД и роли, запрет cross-connect, loopback 15432, случайный ignored env и локальные scripts без новых зависимостей. 5432 оказался недоступен для bind, 15432 проверен. [Запуск](operations/local-postgres.md), [QA DB-01–07](qa/e1-05-report.md).

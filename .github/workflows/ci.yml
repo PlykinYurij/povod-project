@@ -65,10 +65,19 @@ jobs:
 
   artifact:
     name: Build kit (linux-x64)
-    needs: verify
+    needs: [verify, database]
+    # A failed database job must fail the existing required check, not skip it.
+    if: ${{ !cancelled() }}
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
+      - name: Require successful verification and database tests
+        env:
+          VERIFY_RESULT: ${{ needs.verify.result }}
+          DATABASE_RESULT: ${{ needs.database.result }}
+        run: |
+          test "$VERIFY_RESULT" = success
+          test "$DATABASE_RESULT" = success
       - name: Checkout exact source
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
@@ -106,3 +115,48 @@ jobs:
           ARTIFACT_URL: ${{ steps.upload.outputs.artifact-url }}
         run: |
           printf '\nArtifact ID: %s\n\nArtifact digest: `%s`\n\nDownload: %s\n' "$ARTIFACT_ID" "$ARTIFACT_DIGEST" "$ARTIFACT_URL" >> "$GITHUB_STEP_SUMMARY"
+
+  database:
+    name: Database integration
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:17.12-bookworm@sha256:40865bc877a289da75963d97d72b59633f639fc5af7a4e856bfa3714cae5b536
+        env:
+          POSTGRES_USER: ci_bootstrap
+          POSTGRES_PASSWORD: synthetic-ci-only
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U ci_bootstrap -d postgres"
+          --health-interval 2s --health-timeout 3s --health-retries 30
+    env:
+      POVOD_TEST_DATABASE_URL: postgresql://povod_test:synthetic-test-only@127.0.0.1:5432/povod_test
+      POVOD_TEST_DATABASE: povod_test
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version-file: .node-version
+          cache: npm
+      - run: npm install --global npm@11.20.0
+      - run: npm ci
+      - name: Provision isolated synthetic test role
+        env:
+          POSTGRES_CONTAINER: ${{ job.services.postgres.id }}
+        run: |
+          docker exec -i "$POSTGRES_CONTAINER" psql -X -U ci_bootstrap -d postgres -v ON_ERROR_STOP=1 < infra/ci/test-database.sql
+      - run: npm run build --workspace=@povod/api
+      - name: Apply committed migrations twice
+        run: |
+          npm run db:migrate:test
+          npm run db:migrate:test
+      - name: Apply synthetic seed twice
+        run: |
+          npm run db:seed:test
+          npm run db:seed:test
+      - run: npm run test:database
+      - run: git diff --exit-code

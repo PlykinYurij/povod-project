@@ -18,3 +18,4 @@ next-env.d.ts
 /.verification/
 /artifacts/
 /.artifact-work/
+/apps/api/src/database/generated/

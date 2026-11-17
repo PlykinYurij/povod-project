@@ -1,5 +1,7 @@
 # Локальный PostgreSQL · E1-05
 
+**Это не веб-сервер:** `127.0.0.1:15432` не открывается страницей в браузере. Для проверки используйте `node scripts/local-db.mjs check` либо PostgreSQL Data Source в окне Database WebStorm: Host `127.0.0.1`, Port `15432`, Database/User `povod_dev` (для тестов `povod_test`), соответствующий пароль из локального `.env.local`, затем Test Connection. UI конкретной версии WebStorm и скачивание JDBC-драйвера агентом не проверялись. Данные подключения не публикуйте.
+
 Windows/PowerShell, Node 26.13.0, Docker Desktop с работающим Linux engine, Compose v2+ (проверен v5.7.0). Next/Nest пока запускаются через npm в Windows; перенос проекта в WSL не нужен. Docker Desktop запускается до команд ниже. Системная установка — отдельное действие; scripts её не выполняют и не запускают Desktop автоматически.
 
 Из корня репозитория:

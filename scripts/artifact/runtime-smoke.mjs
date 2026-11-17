@@ -53,6 +53,10 @@ export async function smokeRuntime(directory) {
   }
   const children = [];
   try {
+    // Resolve the generated Prisma client and adapter from the isolated production kit.
+    await exec(process.execPath, ["-e", "const f=require('./apps/api/dist/database/create-database-client.js');if(typeof f.createDatabaseClient!=='function')process.exit(1)"], {
+      cwd: path.join(extracted, "api"), env: { ...process.env, NODE_PATH: "" }, windowsHide: true,
+    });
     const ports = { web: await freePort(), api: await freePort() };
     while (ports.api === ports.web) ports.api = await freePort();
     for (const component of ["web", "api"]) {

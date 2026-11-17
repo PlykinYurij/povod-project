@@ -1,5 +1,7 @@
 # API: инструкции агенту
 
+- E1-06: Prisma 7.10.1, schema/committed SQL в `prisma/`, generated client в `src/database/generated` (ignored). `npm run typecheck/build` явно генерируют client; typecheck включает тесты. Root `db:migrate:dev/test`, `db:seed:dev/test`, `test:database` используют проверенные локальные targets; [порядок](../../docs/operations/database-migrations.md). БД для обычной сборки не нужна; Nest liveness ещё не потребляет client. Не вводить reset/schema push или production target в локальный test-runner.
+
 Действуют вместе с [корневым AGENTS](../../AGENTS.md). [Backend-conventions](../../docs/architecture/backend-conventions.md) — согласованные правила D-27; точные версии и параметры проверить до установки. [D-решения](../../docs/product/decisions.md) важнее старых вариантов ТЗ. Последние договорённости беседы также имеют приоритет, даже если ещё не вошли в main.
 
 - Перед задачей: git status, [backlog](../../docs/product/backlog.md), конкретные FR/NFR, [API](../../docs/architecture/api-contract.md), [identity](../../docs/architecture/authentication.md), [QA](../../docs/qa/test-plan.md). Сохранять чужие изменения; не merge чужих веток, commit/push/deploy без поручения.

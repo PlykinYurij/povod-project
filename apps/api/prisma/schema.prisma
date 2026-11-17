@@ -1,0 +1,18 @@
+generator client {
+  provider = "prisma-client"
+  output = "../src/database/generated"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// Technical evidence only; not a product entity or user data.
+model DatabaseProbe {
+  id String @id
+  label String
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@map("database_probe")
+}
