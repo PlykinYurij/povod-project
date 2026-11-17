@@ -23,6 +23,28 @@ model User {
   email String @unique @db.VarChar(254)
   passwordHash String @map("password_hash")
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  sessions Session[]
 
   @@map("users")
+}
+
+model Session {
+  tokenHash String @id @map("token_hash") @db.Char(64)
+  userId String @map("user_id") @db.Uuid
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @map("created_at") @db.Timestamptz(3)
+  lastSeenAt DateTime @map("last_seen_at") @db.Timestamptz(3)
+  expiresAt DateTime @map("expires_at") @db.Timestamptz(3)
+  revokedAt DateTime? @map("revoked_at") @db.Timestamptz(3)
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("sessions")
+}
+
+model LoginAttempt {
+  key String @id @db.Char(64)
+  count Int
+  expiresAt DateTime @map("expires_at") @db.Timestamptz(3)
+  @@index([expiresAt])
+  @@map("login_attempts")
 }

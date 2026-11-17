@@ -1,21 +1,38 @@
-import { Body, Controller, Header, Post, UseGuards } from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  Header,
+  Post,
+  UseGuards,
+  Req,
+  Res,
+} from "@nestjs/common";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { RegisterDto, RegisterResponseDto } from "./register.dto";
 import { RegistrationService } from "./registration.service";
 import { RegistrationOriginGuard } from "./registration-origin.guard";
 import { ApiErrorDto } from "../../http/api-error";
 import { RegistrationRateGuard } from "./registration-rate.guard";
+import { SessionService } from "./session.service";
+import { CsrfGuard } from "./csrf.guard";
+import { readAuthCookie } from "./auth-cookies";
+import type { Request, Response } from "express";
+import { ApiHeader } from "@nestjs/swagger";
 
 @ApiTags("auth")
 @Controller("api/v1/auth")
 export class RegistrationController {
-  constructor(private readonly registration: RegistrationService) {}
+  constructor(
+    private readonly registration: RegistrationService,
+    private readonly sessions: SessionService,
+  ) {}
   @Post("register")
   @Header("Cache-Control", "no-store")
-  @UseGuards(RegistrationOriginGuard, RegistrationRateGuard)
+  @UseGuards(RegistrationOriginGuard, CsrfGuard, RegistrationRateGuard)
+  @ApiHeader({ name: "X-CSRF-Token", required: true })
   @ApiOperation({
     operationId: "register",
-    summary: "Create an owner account; session creation follows in E1-04b",
+    summary: "Create an owner account and authenticated session atomically",
   })
   @ApiResponse({ status: 201, type: RegisterResponseDto })
   @ApiResponse({
@@ -60,7 +77,16 @@ export class RegistrationController {
     type: ApiErrorDto,
     description: "SERVICE_UNAVAILABLE",
   })
-  register(@Body() input: RegisterDto): Promise<RegisterResponseDto> {
-    return this.registration.register(input);
+  async register(
+    @Body() input: RegisterDto,
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
+  ): Promise<RegisterResponseDto> {
+    const { user, token } = await this.registration.register(
+      input,
+      readAuthCookie(request, "session"),
+    );
+    this.sessions.attach(response, token);
+    return { user };
   }
 }

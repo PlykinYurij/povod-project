@@ -1,6 +1,8 @@
 # API
 
-E1-04: [регистрация/Swagger/локальный DB-запуск](../../docs/operations/registration.md), [экспортированный контракт](openapi.json), [QA](../../docs/qa/e1-04-report.md). Приёмка backend отдельно от ещё не реализованных web/session. Root `npm run dev:api:database` загружает только локальный dev URL из ignored env; обычный `dev:api` его не загружает. В dev Swagger `/api/docs`, JSON `/api/openapi.json`.
+E1-04b backend: [сессии/CSRF/автовход и проверка](../../docs/operations/sessions.md). Register/login/logout требуют cookie-контекст и X-CSRF-Token; сначала GET `/api/v1/auth/csrf`, после смены сессии обновить bootstrap. Idle 7 дней, absolute 30. Web UI/reset пока не реализованы. Этот абзац заменяет старое описание «Nest не подключается к БД»: liveness по-прежнему не требует БД, identity routes используют её.
+
+E1-04: [регистрация/Swagger/локальный DB-запуск](../../docs/operations/registration.md), [экспортированный контракт](openapi.json), [QA](../../docs/qa/e1-04-report.md). Backend регистрации принят; web отдельно, Session — E1-04b. Root `npm run dev:api:database` загружает только локальный dev URL из ignored env; обычный `dev:api` его не загружает. В dev Swagger `/api/docs`, JSON `/api/openapi.json`.
 
 [План разработки с чекбоксами](development-plan.md). [Порядок ревью и совместной работы](../../docs/agent-workflow.md).
 

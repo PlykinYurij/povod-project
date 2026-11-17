@@ -1,6 +1,8 @@
 # API: инструкции агенту
 
-- E1-04: `/api/v1/auth/register`, compiled OpenAPI snapshot `openapi.json` регенерировать root `npm run api:openapi` после build, не править JSON руками. Password/email правила — D-28; session/auto-login E1-04b ещё не реализованы. [Запуск/ограничения](../../docs/operations/registration.md). Регистрация требует точного WEB_ORIGIN и JSON; production требует явный REGISTER_RATE_LIMIT. Локальные 5/15 — пробный параметр, не принятие продуктового лимита. Не логировать пароли/hash/DTO/request bodies.
+- E1-04b: register создаёт Session атомарно, login/session/logout/csrf реализованы. [Правила](../../docs/architecture/authentication.md), [запуск/приёмка](../../docs/operations/sessions.md). D-29: idle 7 дней/absolute 30 дней, register 5/IP/15 минут, login 5 неверных/email+IP/15 минут. SessionGuard задаёт actor, не заменяет resource owner check. Reset обязан брать User lock и отзывать Session атомарно. Не возвращать raw token в JSON; production требует CSRF_SECRET/Secure cookie, local ключ эфемерен.
+
+- E1-04: `/api/v1/auth/register`, compiled OpenAPI snapshot `openapi.json` регенерировать root `npm run api:openapi` после build, не править JSON руками. Password/email правила — D-28; Session/автовход — E1-04b. [Запуск/ограничения](../../docs/operations/registration.md). Регистрация требует WEB_ORIGIN/JSON/CSRF; production лимит 5 принят D-29 и требуется CSRF_SECRET. Не логировать пароли/hash/DTO/request bodies.
 
 - E1-06: Prisma 7.10.1, schema/committed SQL в `prisma/`, generated client в `src/database/generated` (ignored). `npm run typecheck/build` явно генерируют client; typecheck включает тесты. Root `db:migrate:dev/test`, `db:seed:dev/test`, `test:database` используют проверенные локальные targets; [порядок](../../docs/operations/database-migrations.md). БД для обычной сборки не нужна; Nest liveness ещё не потребляет client. Не вводить reset/schema push или production target в локальный test-runner.
 

@@ -1,5 +1,11 @@
 # Состояние подготовки «Повода»
 
+## E1-04b · Backend сессий, Review · 17 ноября
+
+Регистрация принята владельцем, main обновлён до `9c0cc4c`; ветка `feat/identity-sessions`. D-29 закрывает idle 7 дней/absolute 30 дней и register/login лимиты. Реализованы PostgreSQL Session с hash токена, атомарный register+Session, login/session/logout, SessionGuard, signed CSRF bootstrap/Origin/CORS, нейтральный login и PostgreSQL counter неверных попыток. Контракт OpenAPI 0.2.0 обновлён.
+
+Локально успешны 25 DB/HTTP tests, 8 artifact tests, strict types и обе сборки; dev/test migration/повтор, реальный dev Swagger/health smoke и npm ci успешны. [Карточка](product/e1-04b.md), [приёмка](operations/sessions.md), [QA](qa/e1-04b-report.md). Hosted/kit результаты дописываются после выполнения. Web UI/reset/deploy не созданы; project/media resource owner isolation ещё не проверялась. Backend регистрации принят, родительские E1-04/04b не целиком Done без frontend. Прежние статусы ниже — история.
+
 Уточнение D-28 в той же ветке E1-04: по последнему поручению владельца пароль принимает только латинские A–Z/a–z, ASCII-цифры/спецсимволы и обычный пробел; Unicode/control characters запрещены. Длина/обязательные классы/запрет trim сохранены. Сервер, OpenAPI, критерии и инструкция согласованы. Типы/сборка API/экспорт и 13 DB/HTTP tests прошли, включая отрицательные non-ASCII/newline случаи. Принятие владельцем/main не менялось.
 
 ## E1-04 · Backend регистрации, Review · 17 ноября
