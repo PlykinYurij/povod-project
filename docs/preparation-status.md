@@ -6,6 +6,8 @@
 
 Локально успешны 25 DB/HTTP tests, 8 artifact tests, strict types и обе сборки; dev/test migration/повтор, реальный dev Swagger/health smoke и npm ci успешны. [Карточка](product/e1-04b.md), [приёмка](operations/sessions.md), [QA](qa/e1-04b-report.md). Hosted/kit результаты дописываются после выполнения. Web UI/reset/deploy не созданы; project/media resource owner isolation ещё не проверялась. Backend регистрации принят, родительские E1-04/04b не целиком Done без frontend. Прежние статусы ниже — история.
 
+Итог 51455ea: все 4 hosted jobs в run 44075260483 success, Windows isolated kit также success с web/health/CSS 200. Фактическая PowerShell WebSession приёмка прошла автовход/CSRF-refresh/logout/401; удалён только собственный синтетический review-аккаунт. Первая отметка API-плана выставлена, приёмка владельцем/main остаются открытыми. Последующий документальный коммит проходит отдельный CI.
+
 Уточнение D-28 в той же ветке E1-04: по последнему поручению владельца пароль принимает только латинские A–Z/a–z, ASCII-цифры/спецсимволы и обычный пробел; Unicode/control characters запрещены. Длина/обязательные классы/запрет trim сохранены. Сервер, OpenAPI, критерии и инструкция согласованы. Типы/сборка API/экспорт и 13 DB/HTTP tests прошли, включая отрицательные non-ASCII/newline случаи. Принятие владельцем/main не менялось.
 
 ## E1-04 · Backend регистрации, Review · 17 ноября
