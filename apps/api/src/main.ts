@@ -1,22 +1,27 @@
-import 'reflect-metadata';
-import { Logger } from '@nestjs/common';
-import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
+import "reflect-metadata";
+import { Logger } from "@nestjs/common";
+import { createApplication, enableOpenApi } from "./create-application";
 
 async function bootstrap(): Promise<void> {
-  const portValue = process.env.PORT ?? '3001';
+  const portValue = process.env.PORT ?? "3001";
   const port = Number(portValue);
 
-  if (!/^\d+$/.test(portValue) || !Number.isInteger(port) || port < 1 || port > 65535) {
-    throw new Error('PORT must be an integer between 1 and 65535.');
+  if (
+    !/^\d+$/.test(portValue) ||
+    !Number.isInteger(port) ||
+    port < 1 ||
+    port > 65535
+  ) {
+    throw new Error("PORT must be an integer between 1 and 65535.");
   }
 
-  const app = await NestFactory.create(AppModule);
+  const app = await createApplication();
+  enableOpenApi(app);
   app.enableShutdownHooks();
 
   try {
-    await app.listen(port, '127.0.0.1');
-    Logger.log(`API listening at http://127.0.0.1:${port}`, 'Bootstrap');
+    await app.listen(port, "127.0.0.1");
+    Logger.log(`API listening at http://127.0.0.1:${port}`, "Bootstrap");
   } catch (error: unknown) {
     await app.close();
     throw error;
@@ -24,6 +29,9 @@ async function bootstrap(): Promise<void> {
 }
 
 bootstrap().catch((error: unknown) => {
-  Logger.error(error instanceof Error ? error.message : 'API startup failed.', 'Bootstrap');
+  Logger.error(
+    error instanceof Error ? error.message : "API startup failed.",
+    "Bootstrap",
+  );
   process.exitCode = 1;
 });

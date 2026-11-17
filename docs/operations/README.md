@@ -5,6 +5,7 @@
 - [Windows, локальный каркас и разделение сред](local-development.md).
 - [Локальные PostgreSQL dev/test: запуск, изоляция, сохранность](local-postgres.md).
 - [Prisma: генерация, миграции, synthetic seed и тестовая БД в CI](database-migrations.md).
+- [Backend регистрации: локальный запуск, Swagger и приёмка](registration.md).
 - [CI Windows/Linux и обязательные проверки main](ci.md), [фактический отчёт](../qa/e1-02-report.md).
 - [Комплект web/API по SHA: упаковка, digests и runtime smoke](artifacts.md).
 - [PR → комплект SHA → dev → ручной production, миграции и откат](release-plan.md).

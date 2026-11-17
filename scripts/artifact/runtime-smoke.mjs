@@ -53,10 +53,31 @@ export async function smokeRuntime(directory) {
   }
   const children = [];
   try {
+    await exec(
+      process.execPath,
+      [
+        "-e",
+        "const a=require('@node-rs/argon2');a.hash('Synthetic1!').then(h=>a.verify(h,'Synthetic1!')).then(ok=>{if(!ok)process.exit(1)}).catch(()=>process.exit(1))",
+      ],
+      {
+        cwd: path.join(extracted, "api"),
+        env: { ...process.env, NODE_PATH: "" },
+        windowsHide: true,
+      },
+    );
     // Resolve the generated Prisma client and adapter from the isolated production kit.
-    await exec(process.execPath, ["-e", "const f=require('./apps/api/dist/database/create-database-client.js');if(typeof f.createDatabaseClient!=='function')process.exit(1)"], {
-      cwd: path.join(extracted, "api"), env: { ...process.env, NODE_PATH: "" }, windowsHide: true,
-    });
+    await exec(
+      process.execPath,
+      [
+        "-e",
+        "const f=require('./apps/api/dist/database/create-database-client.js');if(typeof f.createDatabaseClient!=='function')process.exit(1)",
+      ],
+      {
+        cwd: path.join(extracted, "api"),
+        env: { ...process.env, NODE_PATH: "" },
+        windowsHide: true,
+      },
+    );
     const ports = { web: await freePort(), api: await freePort() };
     while (ports.api === ports.web) ports.api = await freePort();
     for (const component of ["web", "api"]) {
