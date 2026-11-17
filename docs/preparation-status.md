@@ -6,6 +6,8 @@
 
 Повтор migrate/seed на local прошёл, опасные test-target отказали, тесты/типизация и сборка успешны. Изменены упаковка schema/SQL и runtime-smoke для generated client; hosted/чистые проверки фиксируются в [QA](qa/e1-06-report.md). [Карточка](product/e1-06.md), [команды](operations/database-migrations.md). E1-05 — Done по подтверждению владельца и проверке main, E1-06 — Review. Авторизация E1-04 требует принятого E1-06 и Q-11, к реализации пока не переходили. Прежние статусы ниже — история.
 
+Итог кода cde6659: hosted CI 44037371902 успешен на всех четырёх jobs; локальный полный Windows kit подтвердил generated runtime/adapter и web/health/CSS 200 вне checkout. Первая галочка API-плана выставлена по фактическим проверкам, owner/main не отмечены. Последующий документальный коммит проверяется собственным CI.
+
 ## E1-05 · Локальный PostgreSQL, Review · 16 ноября
 
 Владелец подтвердил merge подготовки; main обновлён ff-only до `bd48bee`, создана ветка `feat/local-postgres`. Docker Desktop с WSL2 установлен ранее по отдельному разрешению, engine работает. В этом этапе системные настройки не менялись. Реализованы pinned PostgreSQL 17.12, dev/test-БД и роли, запрет cross-connect, loopback 15432, случайный ignored env и локальные scripts без новых зависимостей. 5432 оказался недоступен для bind, 15432 проверен. [Запуск](operations/local-postgres.md), [QA DB-01–07](qa/e1-05-report.md).
