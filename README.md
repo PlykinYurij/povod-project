@@ -1,5 +1,7 @@
 # Повод
 
+Backend E1-04d: [регистрация теперь требует email-код](docs/operations/registration-confirmation.md). Start 202 без сессии → confirm 201 с автовходом. Web-формы и production-транспорт ещё не реализованы; инструкции ниже о старом немедленном register — история прежних этапов.
+
 Backend E1-04c: [восстановление пароля по коду и локальный inbox](docs/operations/password-reset.md). Web-формы ещё нет; регистрация с email-кодом D-30 остаётся отдельной E1-04d.
 
 Backend E1-04b: [автовход, вход/выход, cookie/CSRF и ручная приёмка](docs/operations/sessions.md). Для POST auth теперь нужен bootstrap; старый stateless register больше не контракт. Web-форма пока не реализована.

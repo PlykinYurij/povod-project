@@ -5,3 +5,5 @@
 [E1-04c: backend восстановления по коду](e1-04c-report.md) — HTTP/PostgreSQL/local inbox, без проверки web/SMTP/production.
 
 [E1-02b: оценка audit dev-зависимостей](e1-02b-report.md) — варианты для owner review, уязвимость не объявлена исправленной.
+
+[E1-04d: backend регистрации с email-кодом](e1-04d-report.md), без проверки UI/SMTP/production.

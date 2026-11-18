@@ -15,6 +15,7 @@ const { AuthClock }: typeof import("../src/modules/identity/auth-clock.js") = re
 const { ResetMailService }: typeof import("../src/modules/identity/reset-mail.service.js") = require("../dist/modules/identity/reset-mail.service.js");
 const { DatabaseService }: typeof import("../src/database/database.service.js") = require("../dist/database/database.service.js");
 const { verifyPassword }: typeof import("../src/modules/identity/password.js") = require("../dist/modules/identity/password.js");
+const { hashPassword }: typeof import("../src/modules/identity/password.js") = require("../dist/modules/identity/password.js");
 const digest = (s: string) => createHash("sha256").update(s).digest("hex");
 const oldPassword = "Original1!password";
 type ErrorPayload = { error: { code: string } };
@@ -54,7 +55,8 @@ class Browser {
 async function owner() {
   const value = email();
   const browser = new Browser();
-  expect((await browser.post("register", { email: value, password: oldPassword })).status).toBe(201);
+  await db.user.create({ data: { email: value, passwordHash: await hashPassword(oldPassword) } });
+  expect((await browser.post("login", { email: value, password: oldPassword })).status).toBe(200);
   return { email: value, browser };
 }
 async function letters(to: string) {

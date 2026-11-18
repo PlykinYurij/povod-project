@@ -1,6 +1,6 @@
 # План backend
 
-Актуализация D-30/31: backend сессий принят в main `6ccbf27`. Регистрация без письма исправляется отдельно E1-04d; reset E1-04c по коду, не ссылке. Параметры reset согласованы, параметры signup — Q-21.
+Актуализация D-30–32: backend сессий/reset принят ранее; E1-04d backend регистрации с email-кодом подготовлен к Review, 52 DB/HTTP и 8 unit успешны. Q-21 закрыт; legacy-маркер и политика — Q-22 до публичного запуска. UI/production mail отдельно.
 
 Читать [корневой AGENTS](../../AGENTS.md), [локальный AGENTS](AGENTS.md), [backend-conventions](../../docs/architecture/backend-conventions.md), [общий порядок](../../docs/agent-workflow.md), [backlog](../../docs/product/backlog.md), [API](../../docs/architecture/api-contract.md), [identity](../../docs/architecture/authentication.md), [адреса](../../docs/architecture/publication-addresses.md), [QA](../../docs/qa/test-plan.md). Backend-правила D-27 уже интегрированы в main; план их не заменяет и не переопределяет.
 
@@ -191,6 +191,6 @@ E5-02 — совместная проверка безопасности; E5-03/
 
 Вход: [карточка](../../docs/product/e1-04d.md), D-30, согласование Q-21. Backend: pending → код → атомарное подтверждение/автовход, локальная тестовая почта, реальный OpenAPI и интеграционные проверки. Существующие E1-04/04b не переоткрываются: новая задача меняет их поведение.
 
-- [ ] Backend реализован и проверен; доказательства записаны.
+- [x] Backend реализован и проверен: [QA](../../docs/qa/e1-04d-report.md), 52 DB/HTTP, 8 unit; owner/main отдельно.
 - [ ] Владелец принял результат.
 - [ ] Проверен в main; SHA записан.

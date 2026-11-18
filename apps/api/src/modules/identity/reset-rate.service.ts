@@ -9,7 +9,7 @@ import { AuthClock } from "./auth-clock";
 export class ResetRateService {
   constructor(private readonly database: DatabaseService, private readonly clock: AuthClock) {}
 
-  async reserve(email: string, ip: string, response: Response): Promise<void> {
+  async reserve(email: string, ip: string, response: Response, purpose = "reset-request"): Promise<void> {
     const now = this.clock.now();
     const deniedUntil = await this.database.getClient().$transaction(async tx => {
       // Stable order: IP then email. Blocked IPs cannot create unlimited email keys.
@@ -18,7 +18,7 @@ export class ResetRateService {
         ["ip", ip, 10, 15 * 60_000],
         ["email", email, 3, 60 * 60_000],
       ] as const) {
-        const key = hashAuthToken(JSON.stringify(["reset-request", scope, value]));
+        const key = hashAuthToken(JSON.stringify([purpose, scope, value]));
         const expiry = new Date(now.getTime() + ttl);
         const rows = await tx.$queryRaw<{ count: number; expiresAt: Date }[]>`
           INSERT INTO reset_rate_limits (key, count, expires_at) VALUES (${key}, 1, ${expiry})

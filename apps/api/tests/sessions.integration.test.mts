@@ -22,6 +22,7 @@ const {
 const {
   SessionService,
 }: typeof import("../src/modules/identity/session.service.js") = require("../dist/modules/identity/session.service.js");
+const { hashPassword }: typeof import("../src/modules/identity/password.js") = require("../dist/modules/identity/password.js");
 const hash = (value: string) =>
   createHash("sha256").update(value).digest("hex");
 const password = "Synthetic1!password";
@@ -75,8 +76,9 @@ class Browser {
 async function owner() {
   const email = newEmail();
   const browser = new Browser();
-  const response = await browser.post("register", { email, password });
-  expect(response.status).toBe(201);
+  await db.user.create({ data: { email, passwordHash: await hashPassword(password) } });
+  const response = await browser.post("login", { email, password });
+  expect(response.status).toBe(200);
   const body = (await response.json()) as {
     user: { id: string; email: string };
   };
@@ -114,7 +116,7 @@ afterAll(async () => {
   await app?.close();
 });
 
-test("register logs in atomically, exposes only user DTO and stores only token hash", async () => {
+test("login exposes only user DTO and stores only token hash", async () => {
   const { browser, user, response } = await owner();
   const cookie = response.headers
     .getSetCookie()
@@ -136,17 +138,6 @@ test("register logs in atomically, exposes only user DTO and stores only token h
   expect(current.status).toBe(200);
   expect(current.headers.get("cache-control")).toBe("no-store");
   expect(await current.json()).toEqual({ user });
-});
-
-test("failed session creation rolls back registration user insert", async () => {
-  const email = newEmail();
-  vi.spyOn(app.get(SessionService), "create").mockRejectedValueOnce(
-    new Error("Controlled failure"),
-  );
-  expect(
-    (await new Browser().post("register", { email, password })).status,
-  ).toBe(503);
-  expect(await db.user.count({ where: { email } })).toBe(0);
 });
 
 test("two owners stay isolated and switching account rotates/revokes the old browser session", async () => {
@@ -310,6 +301,7 @@ test("successful login clears previous failures for the pair", async () => {
 
 test("missing, tampered, expired and different-browser CSRF are rejected; session rotation invalidates old CSRF", async () => {
   const email = newEmail();
+  await db.user.create({ data: { email, passwordHash: await hashPassword(password) } });
   const body = JSON.stringify({ email, password });
   const plain = { Origin: TEST_ORIGIN, "Content-Type": "application/json" };
   expect(
@@ -333,7 +325,7 @@ test("missing, tampered, expired and different-browser CSRF are rejected; sessio
   const a = await csrfHeaders(url),
     b = await csrfHeaders(url);
   const post = (headers: Record<string, string>) =>
-    fetch(`${url}/api/v1/auth/register`, {
+    fetch(`${url}/api/v1/auth/login`, {
       method: "POST",
       headers: { ...plain, ...headers },
       body,
@@ -361,7 +353,7 @@ test("missing, tampered, expired and different-browser CSRF are rejected; sessio
   const preAuth = await csrfHeaders(url);
   browser.cookies = preAuth.Cookie;
   const registration = await post(preAuth);
-  expect(registration.status).toBe(201);
+  expect(registration.status).toBe(200);
   browser.cookies = mergeCookies(browser.cookies, registration);
   const stale = await fetch(`${url}/api/v1/auth/logout`, {
     method: "POST",
@@ -470,11 +462,10 @@ test("production cookies use Secure host prefixes and the approved registration 
     production = await createApplication();
     await production.listen(0, "127.0.0.1");
     const browser = new Browser(await production.getUrl());
-    const response = await browser.post("register", {
-      email: newEmail(),
-      password,
-    });
-    expect(response.status).toBe(201);
+    const email = newEmail();
+    await db.user.create({ data: { email, passwordHash: await hashPassword(password) } });
+    const response = await browser.post("login", { email, password });
+    expect(response.status).toBe(200);
     const cookie = response.headers
       .getSetCookie()
       .find((c) => c.startsWith("__Host-povod-session="))!;
@@ -483,7 +474,7 @@ test("production cookies use Secure host prefixes and the approved registration 
     expect(attributes).toContain("HttpOnly");
     expect(attributes).toContain("Path=/");
     expect(attributes).not.toContain("Domain=");
-    for (let i = 0; i < 4; i++)
+    for (let i = 0; i < 5; i++)
       expect((await browser.post("register", {})).status).toBe(422);
     expect((await browser.post("register", {})).status).toBe(429);
   } finally {
