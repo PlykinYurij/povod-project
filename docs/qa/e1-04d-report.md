@@ -21,3 +21,9 @@
 Реальный dev helper запущен на свободном loopback-порту: start 202 → отсутствие User и session 401 → письмо → confirm 201 → session 200 → replay 400. После smoke удалены только свой синтетический User/pending/limiter fixtures и своё письмо; остановлено только собственное дерево процессов. Значения кода/паролей/cookie не печатались.
 
 Не выполнены: UI/Orval/E2E, SMTP/production TLS/proxy/load, реальная 24-часовая выдержка (вместо неё управляемый clock и SQL cleanup), public retention/backup/метрики и legacy-правило Q-22. Приёмка владельцем и main не отмечены. CI/isolated artifact будут указаны по факту после публикации кода.
+
+## Итог опубликованного кода
+
+Код 51dc34b06e909c955c805fa9e5782132f91c3f63: [CI 44296283422](https://github.com/PlykinYurij/povod-project/actions/runs/44296283422) — четыре jobs success (Windows, Linux, Database integration, Linux build kit). Windows preview kit также успешно собран через npm run artifact:create из git archive: clean npm ci, типы/сборки, native imports и runtime smoke вне репозитория; web/health/staticAsset — 200. Manifest SHA-256: 894f678bb57b5edfc3762c41b4d195b589d0917d6ed5794b9e4c1ec30a76389a. Локальный ignored-каталог: artifacts/51dc34b06e909c955c805fa9e5782132f91c3f63-win32-x64-local-bde4346a-0633-4756-a4af-4e9b0c09c714-1. Проверка integrity командой artifact:verify с этим SHA/digest и --allow-preview выполнена отдельно.
+
+Просмотрены diff/новые файлы, diff --check; проверено 211 локальных путей Markdown (без якорей), неизменность ТЗ и отсутствие локальных credentials в изменениях. Lockfile/зависимости не менялись. Известные пять high dev-entries E1-02b остаются; audit не объявляется зелёным. Последующий коммит меняет только документы, kit относится к коду 51dc34b06e909c955c805fa9e5782132f91c3f63. Owner acceptance/main не отмечены.

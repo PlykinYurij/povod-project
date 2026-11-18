@@ -1,6 +1,6 @@
 # План backend
 
-Актуализация D-30/31: backend сессий принят в main `6ccbf27`. Регистрация без письма исправляется отдельно E1-04d; reset E1-04c по коду, не ссылке. Параметры reset согласованы, параметры signup — Q-21.
+Актуализация D-30–32: backend сессий/reset принят ранее; E1-04d backend регистрации с email-кодом подготовлен к Review, 52 DB/HTTP и 8 unit успешны. Q-21 закрыт; legacy-маркер и политика — Q-22 до публичного запуска. UI/production mail отдельно.
 
 Читать [корневой AGENTS](../../AGENTS.md), [локальный AGENTS](AGENTS.md), [backend-conventions](../../docs/architecture/backend-conventions.md), [общий порядок](../../docs/agent-workflow.md), [backlog](../../docs/product/backlog.md), [API](../../docs/architecture/api-contract.md), [identity](../../docs/architecture/authentication.md), [адреса](../../docs/architecture/publication-addresses.md), [QA](../../docs/qa/test-plan.md). Backend-правила D-27 уже интегрированы в main; план их не заменяет и не переопределяет.
 
