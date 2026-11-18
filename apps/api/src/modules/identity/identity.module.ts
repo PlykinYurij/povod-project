@@ -11,6 +11,10 @@ import { CsrfGuard } from "./csrf.guard";
 import { LoginAttemptsService } from "./login-attempts.service";
 import { SessionGuard } from "./session.guard";
 import { AuthClock } from "./auth-clock";
+import { PasswordResetController } from "./password-reset.controller";
+import { PasswordResetService } from "./password-reset.service";
+import { ResetMailService } from "./reset-mail.service";
+import { ResetRateService } from "./reset-rate.service";
 import {
   RegistrationRateGuard,
   registrationLimit,
@@ -22,7 +26,7 @@ import {
       useFactory: () => [{ ttl: 15 * 60 * 1000, limit: registrationLimit() }],
     }),
   ],
-  controllers: [RegistrationController, SessionController],
+  controllers: [RegistrationController, SessionController, PasswordResetController],
   providers: [
     DatabaseService,
     RegistrationService,
@@ -34,6 +38,9 @@ import {
     LoginAttemptsService,
     SessionGuard,
     AuthClock,
+    PasswordResetService,
+    ResetMailService,
+    ResetRateService,
   ],
   exports: [SessionGuard, SessionService],
 })

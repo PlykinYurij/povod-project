@@ -22,6 +22,7 @@ ID исходного §13 сохранены. Ранее широкие пун�
 | E1-00 Проверка точных tool pins на Node 26.13.0/npm 11.20.0 (Done) | Ведущий/DevOps | Нет | NFR-14; новое поручение | [Проверенные pins](../operations/toolchain.md), B-02 снят; принят вместе с каркасом |
 | E1-01 Каркас web/API (Done) | Ведущий | E1-00 | NFR-13/14, §12 | [Полная карточка](first-task.md), [отчёт T-01–06](../qa/e1-01-report.md); принят в main aac3aca |
 | E1-02 PR CI существующих проверок (Done) | DevOps | E1-01 | NFR-14 | [Порядок](../operations/ci.md), [hosted-прогоны и обязательность checks](../qa/e1-02-report.md); принят в main 361abc9 |
+| E1-02b Audit dev-зависимостей (Backlog) | Tooling/QA | npm lockfile/CI; ревью варианта | NFR-07/09/14/15 | [Карточка](e1-02b.md): picomatch ReDoS, оценка путей входа, согласованное исправление/ограничение и регрессия; без автоматического downgrade Vitest |
 | E1-05 Локальный PostgreSQL dev/test (Done) | DevOps | E1-01 | §10, NFR-15 | [Карточка](e1-05.md), [DB-01–07](../qa/e1-05-report.md); принят в main 4f7394d |
 | E1-06 Миграционный слой и изолированная test-БД в CI (Done) | Backend/DevOps | E1-02/05; D-27 | NFR-14/15 | [Карточка](e1-06.md), [проверки](../qa/e1-06-report.md); принято в main 311f808 |
 | E1-07 Неизменяемый комплект сборки SHA/digests (Done) | DevOps | E1-02 | NFR-16 | [Карточка](e1-07.md), [инструкция](../operations/artifacts.md), [отчёт](../qa/e1-07-report.md): принято в main 2f919a9, main CI и upload успешны |
@@ -34,7 +35,7 @@ ID исходного §13 сохранены. Ранее широкие пун�
 | --- | --- | --- | --- | --- |
 | E1-04 Регистрация email/пароль (backend принят, UI Backlog) | Backend/Frontend | E1-06; D-28/29 | FR-02 с D-02 | [Backend](e1-04.md) принят в main 9c0cc4c; web ещё нет, автовход backend расширен E1-04b |
 | E1-04b Сессии, вход/выход и права владельца (backend принят) | Backend/Frontend | Backend E1-04; D-29 | FR-03, NFR-07 | Backend принят в main 6ccbf27; UI и resource owner check ещё отдельно; регистрацию корректирует E1-04d |
-| E1-04c Reset и тестовая почта | Backend/Frontend | E1-04b; D-31; local test mail | FR-04, NFR-07 | Код вместо ссылки, шесть цифр/10 минут/пять попыток; resend/лимиты/отзыв сессий; перехваченная почта, гонки/ошибки; И |
+| E1-04c Reset и тестовая почта (backend Review, web Backlog) | Backend/Frontend | E1-04b; D-31 | FR-04, NFR-07 | [Карточка](e1-04c.md), [QA](../qa/e1-04c-report.md): код/лимиты/отзыв сессий, локальный файловый inbox; production-почта отдельно |
 | E1-04d Подтверждение регистрации кодом (Backlog, Q-21) | Backend, затем Frontend/Design | E1-04/04b; D-30; Q-21 | FR-02/03, NFR-07/09 | [Карточка исправления](e1-04d.md): нет автовхода до кода, подтверждение атомарно создаёт аккаунт/сессию; обновить OpenAPI, тесты и сценарии |
 | E2-01 Схема/рендерер «Тихий сад» | Frontend | E0-02/03; Q-03 | FR-06/07/09, D-14 | Обязательные/опциональные блоки, две палитры, длинные строки/360 px; Р + schema-проверки |
 | E2-01b Каталог/демо и выбор первого шаблона | Frontend | E2-01, E1-04b | FR-01/05 | Выбор→вход→создание без смены templateVersion, демо без настоящих RSVP; E/Р |

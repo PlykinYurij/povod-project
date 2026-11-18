@@ -164,3 +164,13 @@ D-24/25: правила [web](architecture/web-conventions.md) и [адресо�
 Документировано D-30: email/пароль → код → подтверждение → автоматический вход; ordinary login без кода. Зафиксировано предыдущее согласование D-31 для reset по коду вместо ссылки. Проверен RegistrationService: сейчас User и Session создаются сразу, почта/подтверждение не реализованы. Добавлена отдельная [E1-04d](product/e1-04d.md) с backend, QA и передачей UX/web; Q-21 отделяет предложенные параметры signup от принятых reset. Новая задача не Ready до Q-21. Публичный запуск требует выполнения D-30.
 
 В этой задаче изменены только инструкции и документация; приложение, миграции, OpenAPI snapshot и инфраструктура не менялись. Typecheck/build/HTTP/SMTP-проверки не запускались: поведение приложения не изменено. Проверки документации отражаются в итоговом отчёте; выполнение будущих критериев не заявляется.
+
+## 18.11.2026 · E1-04c backend reset по коду · Review
+
+После подтверждённого owner merge D-30 ветки проверены status/origin HEAD (main). Чистый checkout → main → pull --ff-only → feat/password-reset-code от 0a4fa0b. Взят независимый готовый E1-04c/D-31; E1-04d пока Q-21, его параметры не приняты автоматически.
+
+Реализованы request/confirm, PG HMAC challenge/rate counters, одноразовость/10 минут/пять ошибок, resend, общий User lock с login, атомарная смена пароля и отзыв всех Session. Добавлен локальный файловый inbox без сетевой доставки/новых зависимостей; production reset закрыт. OpenAPI 0.3.0 из реального backend. [Карточка](product/e1-04c.md), [операции](operations/password-reset.md), [QA](qa/e1-04c-report.md).
+
+Проверены типы/сборки обоих workspace, 8 unit и 43 HTTP/DB, migration dev/test, реальный dev helper/письмо/сброс/отзыв/вход новым паролем. Синтетические smoke-данные и собственные процессы убраны. Hosted CI/isolated kit записываются после выполнения; owner/main для этой задачи не отмечаются. Код приложения регистрации не изменён по сценарию D-30; только переиспользован прежний декоратор правил пароля. Web, production mail, очередь/ретраи, retention и deploy не выполнены.
+
+E1-04c код dc990eb: [CI 44269526421](https://github.com/PlykinYurij/povod-project/actions/runs/44269526421) — четыре jobs success, включая Windows/Linux и DB. Windows isolated preview kit также успешен; digest и границы — [QA](qa/e1-04c-report.md). Выявленный npm audit finding в dev-цепочке picomatch/Vitest отслеживается отдельно [E1-02b](product/e1-02b.md), без изменения lockfile; audit production-дерева — 0. Общий audit не считается успешным. Owner acceptance/main для E1-04c по-прежнему ожидаются.

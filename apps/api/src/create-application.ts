@@ -45,7 +45,7 @@ export function createOpenApiDocument(app: INestApplication) {
     app,
     new DocumentBuilder()
       .setTitle("Повод API")
-      .setVersion("0.2.0")
+      .setVersion("0.3.0")
       .addCookieAuth(
         "__Host-povod-session",
         { type: "apiKey", in: "cookie" },

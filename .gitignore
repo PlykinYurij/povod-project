@@ -19,3 +19,4 @@ next-env.d.ts
 /artifacts/
 /.artifact-work/
 /apps/api/src/database/generated/
+/.local-mail/
