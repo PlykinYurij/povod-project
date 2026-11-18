@@ -174,3 +174,9 @@ D-24/25: правила [web](architecture/web-conventions.md) и [адресо�
 Проверены типы/сборки обоих workspace, 8 unit и 43 HTTP/DB, migration dev/test, реальный dev helper/письмо/сброс/отзыв/вход новым паролем. Синтетические smoke-данные и собственные процессы убраны. Hosted CI/isolated kit записываются после выполнения; owner/main для этой задачи не отмечаются. Код приложения регистрации не изменён по сценарию D-30; только переиспользован прежний декоратор правил пароля. Web, production mail, очередь/ретраи, retention и deploy не выполнены.
 
 E1-04c код dc990eb: [CI 44269526421](https://github.com/PlykinYurij/povod-project/actions/runs/44269526421) — четыре jobs success, включая Windows/Linux и DB. Windows isolated preview kit также успешен; digest и границы — [QA](qa/e1-04c-report.md). Выявленный npm audit finding в dev-цепочке picomatch/Vitest отслеживается отдельно [E1-02b](product/e1-02b.md), без изменения lockfile; audit production-дерева — 0. Общий audit не считается успешным. Owner acceptance/main для E1-04c по-прежнему ожидаются.
+
+## 18.11.2026 · E1-02b — анализ audit, Review
+
+После owner merge E1-04c проверены чистый status/origin main, выполнен pull --ff-only; ветка chore/dependency-audit-review от a085ab9. [Отчёт](qa/e1-02b-report.md): npm registry по-прежнему отдаёт picomatch 4.0.7, patched version в advisory не указана. Пять high entries относятся к одной advisory в dev-цепочке Vitest; production audit — 0. Путь HTTP input → glob в текущих приложениях не обнаружен. Предложено временно сохранить pins и существующую изоляцию/timeout CI, пересмотреть до 25.11.2026. Это не принятое исключение и не исправленная уязвимость: E1-02b ожидает решения владельца.
+
+Зависимости/lockfile/приложение/CI не менялись, повторные build/typecheck/DB/kit не запускались. Проверены audit/версии/конфигурации, ссылки, diff и неизменность ТЗ. Для следующей регистрации E1-04d запрошено решение Q-21; согласование ещё не подменяется merge предыдущего отчёта.
