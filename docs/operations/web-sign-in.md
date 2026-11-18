@@ -18,6 +18,8 @@ npm run dev:api:database
 npm run dev:web
 ```
 
+Если watch пишет `Failed running 'src/main.ts'`, смотрите предшествующую диагностику. `port is already in use` означает, что прежний API всё ещё занимает 3001: остановить его в исходном терминале через Ctrl+C, затем запустить helper. Не запускать одновременно `dev:api` и `dev:api:database` на одном порту. Не завершать все процессы node на компьютере. `/health` проверяет процесс, но не наличие DATABASE_URL.
+
 Открыть `http://127.0.0.1:3000/login`. API — 3001, WEB_ORIGIN по умолчанию `http://127.0.0.1:3000`, cookies host-only на 127.0.0.1. Не смешивать localhost/127.0.0.1: это разные cookie hosts и Origins. PostgreSQL 15432 не HTTP.
 
 UI регистрации ещё нет: создать свой синтетический аккаунт и подтвердить email по [backend-инструкции](registration-confirmation.md), затем использовать этот email/password в форме. Истинные credentials/письма не печатать в отчёте и не добавлять в Git. Тестовые браузерные fixtures создавались отдельно и после проверки удалены; готового общего тестового пароля репозиторий не содержит.
