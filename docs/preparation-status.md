@@ -194,3 +194,9 @@ E1-04c код dc990eb: [CI 44269526421](https://github.com/PlykinYurij/povod-pro
 Проверены типы/сборки, 52 HTTP/DB и 8 unit, миграции dev/test и реальный helper/start/mail/confirm/session/replay. Web/дизайн/Orval, SMTP/production, legacy-политика Q-22 ещё не выполнены. Старые пользователи не удалены и не объявлены подтверждёнными. CI/isolated kit указываются после факта; принятие владельцем и main не отмечены.
 
 E1-04d код 51dc34b06e909c955c805fa9e5782132f91c3f63: [CI](https://github.com/PlykinYurij/povod-project/actions/runs/44296283422) — четыре jobs success; Windows isolated kit успешен, digest и границы — в [QA](qa/e1-04d-report.md). Результат подготовлен к ревью владельца, не принят автоматически; следующая часть — макеты/web identity по отдельному поручению.
+
+## E0-02 · Пакет «Кабинет и identity», Review
+
+После owner merge E1-04d проверены чистый status/origin main, выполнен pull --ff-only; ветка design/identity-flow от 0026548. Подготовлен [локальный HTML](design/identity-flow.html) с register/code/login/reset и оболочкой кабинета, [UX/API mapping](design/identity-flow.md), [проверки](design/identity-review.md). Сохранены D-28–32, нейтральный reset, одноразовый confirm, отдельный login после reset. Примеры проектов не выданы за реализованный API.
+
+Chrome/CDP: 336 сочетаний экран/состояние/размер/тема/язык, 360/1280 px; DOM/layout без overflow/JS errors, demo journeys/focus/Tab успешны. Снято 8 PNG, выборочные экраны визуально просмотрены; 4 опорных снимка в docs/design/previews. Приложение/зависимости/CI/инфраструктура не менялись; app tests/build не запускались. UI/production mail, screen-reader/полный WCAG и реальные mobile devices не проверены. Пакет ожидает owner review; родительская E0-02 и frontend не закрыты.
