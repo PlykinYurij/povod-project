@@ -14,7 +14,8 @@ export async function createApplication(): Promise<INestApplication> {
     app.enableCors({
       origin,
       methods: ["GET", "POST", "OPTIONS"],
-      allowedHeaders: ["Content-Type"],
+      allowedHeaders: ["Content-Type", "X-CSRF-Token"],
+      credentials: true,
     });
   app.useGlobalFilters(new ApiExceptionFilter());
   app.useGlobalPipes(
@@ -42,7 +43,15 @@ export async function createApplication(): Promise<INestApplication> {
 export function createOpenApiDocument(app: INestApplication) {
   return SwaggerModule.createDocument(
     app,
-    new DocumentBuilder().setTitle("Повод API").setVersion("0.1.0").build(),
+    new DocumentBuilder()
+      .setTitle("Повод API")
+      .setVersion("0.2.0")
+      .addCookieAuth(
+        "__Host-povod-session",
+        { type: "apiKey", in: "cookie" },
+        "session",
+      )
+      .build(),
   );
 }
 export function enableOpenApi(app: INestApplication): void {

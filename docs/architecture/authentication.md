@@ -1,40 +1,41 @@
 # Регистрация, аутентификация и права
 
-Актуализация 17.11.2026: [D-28](../product/decisions.md) закрывает email normalization, password policy, явный 409 и целевой auto-login. Backend register реализован в [E1-04](../product/e1-04.md), сессии/автовход E1-04b ещё впереди. Реальные поля/команды — [OpenAPI](../../apps/api/openapi.json), [инструкция](../operations/registration.md). Пароль 8–128 печатных ASCII-символов, минимум A–Z, 0–9 и спецсимвол; trim только email, не пароль. Rate limit и TTL остаются Q-11; не считать локальные пробные значения принятыми.
+Backend E1-04 принят в main `9c0cc4c`; E1-04b — реализация для Review, не готовая web-форма или production release. Основания: FR-02–04/NFR-07, D-02/27/28/29 из [решений](../product/decisions.md). [OpenAPI 0.2.0](../../apps/api/openapi.json), [запуск/контракт сессий](../operations/sessions.md), [QA](../qa/e1-04b-report.md).
 
-Статус: проектный контракт для ревью, не реализация. Основание: FR-02–04, NFR-07, D-02 и [решения владельца](../product/decisions.md). Базовый подход уже был в архитектуре и E1-04/04b/04c; этот документ уточняет методы. Авторизация в смысле прав владельца применяется отдельно к каждому проекту/фото/экспорту, а не только при входе.
+## Правила и подход
 
-## Подход
+Email trim/lowercase, точки/plus сохраняются, SQL unique. Новые пароли: 8–128 печатных ASCII-символов, минимум A–Z, цифра и спецсимвол; обычный пробел допустим, но не спецсимвол, без trim. Argon2id (@node-rs/argon2 2.2.2, m=19456 KiB/t=2/p=1), случайная соль. Login проверяет полный введённый пароль, не применяет заново правила состава к старым credentials. Роль/ownerId не принимаются из payload. User/passwordHash не возвращается целиком из ORM.
 
-Email/пароль; пароль хранится только как стойкий hash. Argon2id выбран D-27, конкретную библиотеку/параметры выбрать и проверить перед E1-04. Вход создаёт новую серверную Session в PostgreSQL со случайным opaque-токеном в HttpOnly/Secure cookie; в БД хранить его hash. JWT/refresh-token в localStorage для этого потока не нужны. Cookie кабинета host-only, SameSite с выбранной CSRF-политикой; не распространять на домен приглашений. Idle/absolute expiry и rate limits — Q-11. Длина/состав пароля приняты D-28, не открытый вопрос.
+Register атомарно создаёт user+Session, автоматически входит. Подтверждение email после входа не требуется, verify-email не скрытый барьер. Это не доказывает владение адресом: доступ к ящику нужен для reset. Явный 409 занятого email принят D-28 и раскрывает наличие аккаунта.
 
-После входа подтверждение email для создания/публикации не требуется. Не использовать verify-email как скрытый барьер. D-28 принимает автоматический вход после регистрации; сессии добавятся в E1-04b, текущий register только создаёт аккаунт. Доступ к почтовому ящику нужен для восстановления пароля; отсутствие барьера подтверждения не гарантирует, что пользователь владеет указанным адресом.
+D-29: вход сохраняется после закрытия браузера; idle 7 дней без аутентифицированных HTTP-запросов, absolute 30 дней с выдачи. При равенстве границе доступ закрыт; активность не продлевает absolute. Это сроки входа, не 90 дней публикации/хранение RSVP.
 
-## Методы под `/api/v1/auth`
+## /api/v1/auth
 
-| Метод | Вход | Ответ и последствия |
+| Метод | Вход | Результат |
 | --- | --- | --- |
-| POST `/register` | `{email,password}` | 201 `{user:{id,email}}`, без hash/токенов; email уникален. 409 EMAIL_UNAVAILABLE принят D-28, раскрывает занятость адреса. Автовход добавится в E1-04b |
-| POST `/login` | `{email,password}` | 200 `{user:{id,email}}` и новая session-cookie; неверный пароль/неизвестный адрес — одинаковый 401 INVALID_CREDENTIALS, без различимых подробностей |
-| GET `/session` | Session-cookie | 200 минимальный user; без действующей сессии 401 AUTH_REQUIRED. Не возвращает токен сессии в JSON |
-| POST `/logout` | Session-cookie + CSRF | 204, текущая сессия отозвана и cookie очищена; повтор/истёкшая сессия также 204 |
-| POST `/password-reset/request` | `{email}` | 202 с одинаковым ответом существующему/неизвестному email, ограничение частоты. Для существующего — задание письма в перехватчик dev или реальный принятый канал prod |
-| POST `/password-reset/confirm` | `{token,newPassword}` | 204, пароль заменён, reset-токен использован однократно, старые сессии отозваны атомарно. Неверный/истёкший/повторный токен — нейтральный 400 RESET_TOKEN_INVALID. После успеха обычный вход |
+| GET `/csrf` | Необязательные context/session cookies | 200 `{csrfToken,expiresAt}`, HttpOnly context-cookie; нет авторизованной Session/DB-строки |
+| POST `/register` | JSON email/password, Origin/CSRF | 201 `{user:{id,email}}`, новая session-cookie; 409 EMAIL_UNAVAILABLE, 422 VALIDATION_FAILED |
+| POST `/login` | JSON email/password, Origin/CSRF | 200 user и новая cookie, прежняя cookie браузера отозвана; одинаковый 401 INVALID_CREDENTIALS для неизвестного email/неверного пароля |
+| GET `/session` | Session-cookie | 200 user текущей Session или 401 AUTH_REQUIRED; токен не возвращается |
+| POST `/logout` | Origin/CSRF, необязательная session-cookie | 204, текущая Session отозвана, cookie очищена; повтор/истёкшая/anonymous также 204 при валидном CSRF |
 
-Все маршруты no-store; единый формат errors из [API](api-contract.md). Валидация 422 с безопасными paths, превышение частоты 429/Retry-After, сбой 503 не показывается как успех. Не логировать пароли, cookies, reset-токены, их URL или полные request bodies. Reset-ссылка строится от доверенного runtime-origin кабинета, не от произвольного Host клиента. В БД только hash reset-токена, срок/usedAt; конкурирующее подтверждение проходит один раз.
+Всё auth no-store. Общие: 400 malformed JSON, 413 body limit, 415 content type, 422 DTO, 403 CSRF_FAILED, 429 RATE_LIMITED/Retry-After, 503 SERVICE_UNAVAILABLE. Формат errors/requestId — [API](api-contract.md). Не логировать пароли/hash/cookie/CSRF/reset URL/request bodies.
 
-## Защита и права
+## Cookie/CSRF/доступ
 
-Изменения состояния защищаются от CSRF. Для login/register/reset ещё до авторизации также нужны проверка Origin и согласованный механизм CSRF: предложение — bootstrap `GET /auth/csrf` с серверным pre-auth контекстом/токеном, без создания авторизованной сессии; cookie и заголовок согласовать в E1-04b. Не считать SameSite единственной защитой. Подробная реализация токена/expiry пока Q-11.
+Session token — 32 случайных байта, в PostgreSQL только SHA-256 и lifecycle. Host-only cookie, Path=/, HttpOnly, SameSite=Lax, Max-Age 30 дней. Production Secure/__Host-prefix/без Domain; local HTTP — отдельные имена без Secure/prefix. Нет JWT/refresh token в localStorage или bearer в JSON. Вход выдаёт новый token, не повышает pre-auth context до Session.
 
-Session ID обновляется при входе, не переиспользует anonymous-контекст. Каждый private endpoint проверяет current user и ownerId; чужой project/media/ответы/XLSX — нейтральный 404. Роль superadmin не принимается из register/login payload; выдаётся отдельной контролируемой процедурой. Вход не даёт обхода сроков, квот или soft-delete.
+Signed double-submit: случайная HttpOnly context-cookie, HMAC-SHA256 с context/session-cookie/expiry, constant-time проверка. CSRF живёт час; после смены session-cookie/key получить bootstrap. Это техническая настройка, не новый session TTL. Production CSRF_SECRET из secret storage, local key в памяти. Origin/JSON/CORS дополняют SameSite; credentials только для WEB_ORIGIN кабинета, не гостевых поддоменов.
 
-## UX и приёмка
+Register создаёт user+Session в одной транзакции. Login проверяет Argon2 вне транзакции, затем User FOR UPDATE/проверка актуального hash/новая Session/отзыв прежней cookie/очистка ошибок в короткой транзакции. SessionGuard задаёт actor; каждый будущий project/media/RSVP/XLSX use-case отдельно проверяет ownerId, чужой private resource — нейтральный 404. Эти resource-маршруты ещё не реализованы.
 
-Формы регистрации/входа: email, пароль, отправка/ожидание/ошибка, переходы «Уже есть аккаунт»/«Создать аккаунт»/«Забыли пароль». После входа вернуть пользователя к выбранному шаблону — UX-предложение. При истечении сессии в редакторе не показывать «сохранено», сохранить видимый ввод до сверки серверной ревизии. Для reset — запрос ссылки, нейтральное подтверждение, новый пароль, истёкшая ссылка, успех с переходом ко входу.
+D-29: register 5/IP/15 минут, login 5 неверных/email+IP/15 минут, без постоянного account lock. Login counter атомарен в PostgreSQL: резерв до verify, успех сбрасывает ошибки, infrastructure failure освобождает резерв. Register пока single-process Nest throttler: рестарт сбрасывает counter, несколько инстанций не делят его. Trust proxy выключен; настройка реального proxy/shared storage/TLS smoke обязательна до публичного выпуска. [Пределы и физическая очистка](../operations/sessions.md).
 
-Будущие проверки: A/B изоляция; неверные credentials; выход/повтор; login CSRF; фиксация/истечение сессии; уникальность email в конкуренции; reset одного токена дважды/параллельно; отзыв всех сессий после смены пароля; отсутствие секретов в логах; rate limits. Основные backend-проверки интеграционные, один E2E на вход и один на reset через Mailpit. Проверки register/unique/validation/Origin/throttle выполнены по QA E1-04; session/reset/owner-access проверки ещё не запускались. Связь: E1-04/04b/04c и P-01/02 [QA-плана](../qa/test-plan.md).
+## Следующая E1-04c, не реализация
 
-Открыто для следующих identity-задач: Q-11 (TTL, лимиты, session CSRF). Пароль/нормализация/конфликт и целевой автовход приняты D-28. Argon2id m=19456 KiB/t=2/p=1 реализован E1-04 и проверен локально; нагрузочная настройка до публичного выпуска. Текущий stateless register защищён Origin/JSON/CORS, cookie/CSRF bootstrap ещё не реализован.
+POST `/password-reset/request` — предложенный одинаковый 202 для существующего/неизвестного email, перехватчик local и принятый канал production. POST `/password-reset/confirm` — предложенный 204 с заменой hash/одноразовым reset-token/отзывом всех Session атомарно; неверный/истёкший/повторный token — нейтральный 400 RESET_TOKEN_INVALID. В БД только hash/expiry/usedAt, ссылка от доверенного origin, не Host клиента. Reset должен брать тот же User lock перед сменой пароля/отзывом сессий. После успеха обычный вход.
 
-Источники проверены 11 ноября 2026: [OWASP Session Management](https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html) — жизненный цикл сессии и cookie; [OWASP Forgot Password](https://cheatsheetseries.owasp.org/cheatsheets/Forgot_Password_Cheat_Sheet.html) — нейтральные ответы, одноразовые токены/восстановление. Источники поддерживают подход, но не означают прохождения security-проверки проекта.
+Q-11 остаётся для reset TTL/rate, RSVP idempotency/feedback/jobs; password/email/auto-login, Session TTL и количественные register/login limits приняты, повторно не спрашивать. Правовые retention/backup ещё Q-10. UI/reset/load/proxy/production — будущие проверки.
+
+Источники проверены 17.11.2026: [OWASP Session Management](https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html), [OWASP CSRF](https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html), [OWASP Forgot Password](https://cheatsheetseries.owasp.org/cheatsheets/Forgot_Password_Cheat_Sheet.html). Конкретные 7/30 дней и 5/15 минут — решение владельца, не рекомендации OWASP.

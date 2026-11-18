@@ -5,6 +5,7 @@ import { verifyDatabaseTarget } from "../../../scripts/database-safety.mjs";
 import type { INestApplication } from "@nestjs/common";
 import type { RegisterResponseDto } from "../src/modules/identity/register.dto.js";
 import type { ApiErrorDto } from "../src/http/api-error.js";
+import { csrfHeaders } from "./auth-client.mjs";
 
 const json = <T,>(response: Response): Promise<T> =>
   response.json() as Promise<T>;
@@ -47,14 +48,17 @@ const request = (
   origin: string | undefined = "http://127.0.0.1:3000",
   contentType = "application/json",
 ) =>
-  fetch(`${url}/api/v1/auth/register`, {
-    method: "POST",
-    headers: {
-      "Content-Type": contentType,
-      ...(origin ? { Origin: origin } : {}),
-    },
-    body: typeof body === "string" ? body : JSON.stringify(body),
-  });
+  csrfHeaders(url).then((csrf) =>
+    fetch(`${url}/api/v1/auth/register`, {
+      method: "POST",
+      headers: {
+        "Content-Type": contentType,
+        ...csrf,
+        ...(origin ? { Origin: origin } : {}),
+      },
+      body: typeof body === "string" ? body : JSON.stringify(body),
+    }),
+  );
 
 beforeAll(async () => {
   await verifyDatabaseTarget(
@@ -85,8 +89,9 @@ test("creates a safe owner DTO, normalizes email without losing dots/plus, hashe
   });
   expect(response.status).toBe(201);
   expect(response.headers.get("cache-control")).toBe("no-store");
-  expect(response.headers.get("set-cookie")).toBeNull();
+  expect(response.headers.get("set-cookie")).toContain("povod-session=");
   const body = await json<RegisterResponseDto>(response);
+  expect(Object.keys(body)).toEqual(["user"]);
   expect(Object.keys(body.user).sort()).toEqual(["email", "id"]);
   expect(body.user.email).toBe(address);
   const stored = await database.user.findUniqueOrThrow({
@@ -211,6 +216,7 @@ test("rate limiter counts invalid forms, ignores forged forwarded IP and returns
     const options = {
       method: "POST",
       headers: {
+        ...(await csrfHeaders(await limited.getUrl())),
         "Content-Type": "application/json",
         Origin: "http://127.0.0.1:3000",
       },
@@ -229,7 +235,7 @@ test("rate limiter counts invalid forms, ignores forged forwarded IP and returns
   }
 });
 
-test("trusted CORS preflight works and production registration stays closed without explicit limit", async () => {
+test("trusted CORS preflight works and production CSRF stays closed without its secret", async () => {
   const preflight = await fetch(`${url}/api/v1/auth/register`, {
     method: "OPTIONS",
     headers: {
@@ -255,15 +261,8 @@ test("trusted CORS preflight works and production registration stays closed with
     production = await createApplication();
     await production.listen(0, "127.0.0.1");
     const response = await fetch(
-      `${await production.getUrl()}/api/v1/auth/register`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Origin: "http://127.0.0.1:3000",
-        },
-        body: JSON.stringify({ email: email(), password }),
-      },
+      `${await production.getUrl()}/api/v1/auth/csrf`,
+      { headers: { Origin: "http://127.0.0.1:3000" } },
     );
     expect(response.status).toBe(503);
   } finally {
@@ -292,6 +291,7 @@ test("missing database produces safe 503 without falsely creating an account", a
       {
         method: "POST",
         headers: {
+          ...(await csrfHeaders(await unavailable.getUrl())),
           "Content-Type": "application/json",
           Origin: "http://127.0.0.1:3000",
         },
