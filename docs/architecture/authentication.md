@@ -1,6 +1,6 @@
 # Регистрация, аутентификация и права
 
-Backend E1-04/04b принят владельцем и доступен в main `6ccbf27`. Новое D-30 требует подтверждения регистрации email-кодом; это ещё не реализовано. Исправление — [E1-04d](../product/e1-04d.md). Ниже таблица фактического OpenAPI 0.2.0, не целевого нового API. Основания FR-02–04/NFR-07, D-02/27–31 из [решений](../product/decisions.md); [OpenAPI](../../apps/api/openapi.json), [сессии](../operations/sessions.md), [QA](../qa/e1-04b-report.md).
+Backend E1-04/04b принят в main `6ccbf27`; E1-04c подготовлен к ревью (backend/local mail), [QA](../qa/e1-04c-report.md). D-30 ещё требует исправления регистрации [E1-04d](../product/e1-04d.md). Таблица ниже сохраняет текущий register/login/session API; reset описан отдельно. [Решения](../product/decisions.md), [OpenAPI 0.3.0](../../apps/api/openapi.json), [запуск](../operations/password-reset.md).
 
 ## Правила и подход
 
@@ -32,10 +32,12 @@ Signed double-submit: случайная HttpOnly context-cookie, HMAC-SHA256 с
 
 D-29: register 5/IP/15 минут, login 5 неверных/email+IP/15 минут, без постоянного account lock. Login counter атомарен в PostgreSQL: резерв до verify, успех сбрасывает ошибки, infrastructure failure освобождает резерв. Register пока single-process Nest throttler: рестарт сбрасывает counter, несколько инстанций не делят его. Trust proxy выключен; настройка реального proxy/shared storage/TLS smoke обязательна до публичного выпуска. [Пределы и физическая очистка](../operations/sessions.md).
 
-## Следующая E1-04c, не реализация
+## E1-04c · Реализованный backend восстановления, не web/production
 
-D-31: POST `/password-reset/request` — планируемый одинаковый 202 для существующего/неизвестного email; письмо с шестизначным кодом, не ссылкой. POST `/password-reset/confirm` — email/code/newPassword, планируемый 204 с атомарной заменой hash, одноразовым потреблением кода и отзывом всех Session под User lock. Неверный/истёкший/повторный код — нейтральная ошибка; окончательные DTO/коды ошибок фиксируются перед реализацией. Код действует 10 минут, максимум пять попыток; resend отменяет предыдущий. Три письма/email/час и десять запросов/IP/15 минут. После успеха обычный вход. Signup/reset purpose разделены, код не хранится/не логируется открытым; конкретный защищённый способ хранения выбрать при реализации.
+D-31: POST `/password-reset/request` с email — одинаковый 202/message, resend тем же маршрутом. POST `/password-reset/confirm` с email/code/newPassword — 204; неверный/истёкший/повторный код — 400 RESET_CODE_INVALID. Код шесть цифр/10 минут/пять неверных попыток; resend отменяет старый. Три запроса/email/час и десять/IP/15 минут; PG fixed windows, 429/Retry-After. Unknown email учитывается так же. Общие Origin/CSRF/JSON/no-store/DTO guards сохранены. После успеха обычный вход, не автовход.
 
-Q-11 остаётся для RSVP idempotency/feedback/jobs; reset-параметры приняты D-31. Для signup остаётся Q-21; целевой контракт, pending и критерии — [E1-04d](../product/e1-04d.md). UI/mail/reset/signup/load/proxy/production проверки ещё впереди.
+Код с CSPRNG, в БД только HMAC-SHA256 с purpose/nonce/emailKey и отдельным секретом. Request сохраняет новую заявку под User lock, доставка вне транзакции, активация только текущего UUID после доставки. Confirm проверяет кандидата, хеширует пароль вне lock, затем повторно проверяет под User → challenge lock; смена hash/usedAt/отзыв всех Session атомарны. Неверные попытки commit до ответа об ошибке. Публичная почта/queue/очистка ещё не реализованы. Local inbox запрещён в production; без транспорта 503. [Подробности и сбои](../operations/password-reset.md). Signup/reset purpose раздельные, signup ещё не реализован. Q-11 только RSVP/feedback/jobs, Q-21 параметры signup; Q-10 retention/backup.
 
 Источники проверены 17.11.2026: [OWASP Session Management](https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html), [OWASP CSRF](https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html), [OWASP Forgot Password](https://cheatsheetseries.owasp.org/cheatsheets/Forgot_Password_Cheat_Sheet.html). Конкретные 7/30 дней и 5/15 минут — решение владельца, не рекомендации OWASP.
+
+Для E1-04c повторно проверен 18.11.2026 [OWASP Forgot Password](https://cheatsheetseries.owasp.org/cheatsheets/Forgot_Password_Cheat_Sheet.html): нейтральные ответы, криптографическая генерация, одноразовость, срок и отзыв сессий. Числа D-31 — выбор владельца. Равенство времени ответа и реальная доставка требуют отдельной проверки перед production.

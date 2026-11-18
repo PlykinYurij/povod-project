@@ -17,6 +17,7 @@ const child = spawn(
     env: {
       ...process.env,
       DATABASE_URL: localDatabaseUrl("dev"),
+      LOCAL_MAIL_DIR: process.env.LOCAL_MAIL_DIR ?? fileURLToPath(new URL("../.local-mail/", import.meta.url)),
     },
   },
 );

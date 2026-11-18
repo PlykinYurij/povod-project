@@ -1,5 +1,7 @@
 # Повод
 
+Backend E1-04c: [восстановление пароля по коду и локальный inbox](docs/operations/password-reset.md). Web-формы ещё нет; регистрация с email-кодом D-30 остаётся отдельной E1-04d.
+
 Backend E1-04b: [автовход, вход/выход, cookie/CSRF и ручная приёмка](docs/operations/sessions.md). Для POST auth теперь нужен bootstrap; старый stateless register больше не контракт. Web-форма пока не реализована.
 
 Backend регистрации E1-04: [проверка и Swagger](docs/operations/registration.md). HTTP API 3001, PostgreSQL 15432 — SQL, не веб-страница. Web-форма ещё впереди; backend автоматического входа — E1-04b.

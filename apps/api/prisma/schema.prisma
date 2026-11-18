@@ -24,6 +24,7 @@ model User {
   passwordHash String @map("password_hash")
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
   sessions Session[]
+  passwordResets PasswordReset[]
 
   @@map("users")
 }
@@ -47,4 +48,26 @@ model LoginAttempt {
   expiresAt DateTime @map("expires_at") @db.Timestamptz(3)
   @@index([expiresAt])
   @@map("login_attempts")
+}
+
+model PasswordReset {
+  emailKey String @id @map("email_key") @db.Char(64)
+  id String @unique @db.Uuid
+  userId String? @map("user_id") @db.Uuid
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+  codeHash String @map("code_hash") @db.Char(64)
+  attempts Int @default(0)
+  expiresAt DateTime @map("expires_at") @db.Timestamptz(3)
+  deliveredAt DateTime? @map("delivered_at") @db.Timestamptz(3)
+  usedAt DateTime? @map("used_at") @db.Timestamptz(3)
+  @@index([expiresAt])
+  @@map("password_resets")
+}
+
+model ResetRateLimit {
+  key String @id @db.Char(64)
+  count Int
+  expiresAt DateTime @map("expires_at") @db.Timestamptz(3)
+  @@index([expiresAt])
+  @@map("reset_rate_limits")
 }
