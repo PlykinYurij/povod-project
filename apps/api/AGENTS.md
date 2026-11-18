@@ -1,5 +1,7 @@
 # API: инструкции агенту
 
+- Новое D-30: регистрация только с подтверждением email кодом; текущий register+Session ниже — реализованное старое поведение, не целевое правило. Исправление [E1-04d](../../docs/product/e1-04d.md). Reset по коду D-31, без ссылок. Не выдавать pending-регистрации права владельца.
+
 - E1-04b: register создаёт Session атомарно, login/session/logout/csrf реализованы. [Правила](../../docs/architecture/authentication.md), [запуск/приёмка](../../docs/operations/sessions.md). D-29: idle 7 дней/absolute 30 дней, register 5/IP/15 минут, login 5 неверных/email+IP/15 минут. SessionGuard задаёт actor, не заменяет resource owner check. Reset обязан брать User lock и отзывать Session атомарно. Не возвращать raw token в JSON; production требует CSRF_SECRET/Secure cookie, local ключ эфемерен.
 
 - E1-04: `/api/v1/auth/register`, compiled OpenAPI snapshot `openapi.json` регенерировать root `npm run api:openapi` после build, не править JSON руками. Password/email правила — D-28; Session/автовход — E1-04b. [Запуск/ограничения](../../docs/operations/registration.md). Регистрация требует WEB_ORIGIN/JSON/CSRF; production лимит 5 принят D-29 и требуется CSRF_SECRET. Не логировать пароли/hash/DTO/request bodies.

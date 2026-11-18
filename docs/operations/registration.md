@@ -1,5 +1,7 @@
 # Backend регистрации · E1-04 / E1-04b
 
+Текущее поведение ниже: email не подтверждается, аккаунт создаётся сразу. Это рабочая инструкция старого API, который не соответствует новому D-30; исправление [E1-04d](../product/e1-04d.md) ещё не реализовано. Команд подтверждения пока нет.
+
 Базовый E1-04 принят в main `9c0cc4c`. E1-04b расширяет его: регистрация атомарно создаёт аккаунт и Session, автоматически входит и требует CSRF bootstrap. Web-форма ещё не реализована. [Актуальный запуск и ручная приёмка](sessions.md), [QA регистрации](../qa/e1-04-report.md), [QA сессий](../qa/e1-04b-report.md).
 
 Последовательность клиента: GET `/api/v1/auth/csrf` с cookie credentials → POST `/api/v1/auth/register` с JSON email/password, Origin и X-CSRF-Token → 201 `{user:{id,email}}`/session-cookie → GET `/api/v1/auth/session` 200. После смены Session получить новый CSRF перед мутацией. Пример WebSession для PowerShell и Swagger шаги находятся в sessions.md; старый POST без cookie/CSRF больше не поддерживается.
