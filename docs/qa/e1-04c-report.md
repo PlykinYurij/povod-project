@@ -27,3 +27,13 @@
 Не проверены и не заявлены: web UX/E2E, SMTP/реальные адресаты, production TLS/proxy/load/timing uniformity, worker/retry/retention. Файловая доставка — исключительно local. Регистрация D-30 остаётся E1-04d/Q-21, не исправлена reset-задачей. Сроки публикации/RSVP не менялись.
 
 Hosted CI и сборка isolated kit будут записаны после фактического выполнения. Принятие владельцем и merge не отмечены.
+
+Код `dc990eb9741d934904e2d5ed99ccaa2d93b42568`: [CI 44269526421](https://github.com/PlykinYurij/povod-project/actions/runs/44269526421) — успешно все четыре jobs: Verify Windows/Linux, Database integration и Linux build kit. Windows isolated kit проверяется отдельно; его результат ниже по факту.
+
+Чистая установка не меняла lockfile, но актуальный audit выявил одну advisory picomatch ReDoS, пять high entries в dev-цепочке Vitest. `npm audit --omit=dev --json` — 0 findings. Общий audit **не зелёный**; отдельная [E1-02b](../product/e1-02b.md) для оценки/исправления без случайного downgrade. Это существующее дерево зависимостей, E1-04c не добавляла npm packages. Сборка/тесты успешны независимо от этого незакрытого finding.
+
+Windows isolated kit кода dc990eb9741d934904e2d5ed99ccaa2d93b42568 успешно создан через npm run artifact:create из git archive, с чистой npm ci, повторной типизацией/сборками, native Argon2/Prisma imports и runtime вне репозитория. Web/health/staticAsset — 200. Preview manifest SHA-256: 78f89b6a15b96916387d5d552b3a1805ac08fe72d3389dc901c630486254b6c1. Каталог: artifacts/dc990eb9741d934904e2d5ed99ccaa2d93b42568-win32-x64-local-5c4b6a5d-479f-4bea-89ef-86d1f6f20d0e-1 (локальный ignored). Это проверка готового runtime, не SMTP/reset через production transport. Последующий коммит меняет только документы/отчёт, новый runtime SHA для него не заявляется.
+
+Просмотрены diff и новые файлы, diff --check, исходное ТЗ побайтно неизменно; 194 локальные Markdown-ссылки проверены до коммита кода. Локальные credentials отсутствуют в изменениях, inbox игнорируется. Backend готов к owner review; web и production-условия не приняты за выполненные.
+
+`npm run artifact:verify -- <каталог выше> dc990eb9741d934904e2d5ed99ccaa2d93b42568 78f89b6a15b96916387d5d552b3a1805ac08fe72d3389dc901c630486254b6c1 --allow-preview` — verified true. Заключительные изменения только в документах; дополнительно проверены 82 локальные ссылки в них, без проверки якорей.
