@@ -174,3 +174,7 @@ D-24/25: правила [web](architecture/web-conventions.md) и [адресо�
 Проверены типы/сборки обоих workspace, 8 unit и 43 HTTP/DB, migration dev/test, реальный dev helper/письмо/сброс/отзыв/вход новым паролем. Синтетические smoke-данные и собственные процессы убраны. Hosted CI/isolated kit записываются после выполнения; owner/main для этой задачи не отмечаются. Код приложения регистрации не изменён по сценарию D-30; только переиспользован прежний декоратор правил пароля. Web, production mail, очередь/ретраи, retention и deploy не выполнены.
 
 E1-04c код dc990eb: [CI 44269526421](https://github.com/PlykinYurij/povod-project/actions/runs/44269526421) — четыре jobs success, включая Windows/Linux и DB. Windows isolated preview kit также успешен; digest и границы — [QA](qa/e1-04c-report.md). Выявленный npm audit finding в dev-цепочке picomatch/Vitest отслеживается отдельно [E1-02b](product/e1-02b.md), без изменения lockfile; audit production-дерева — 0. Общий audit не считается успешным. Owner acceptance/main для E1-04c по-прежнему ожидаются.
+
+## D-32 · Приняты параметры регистрации
+
+Владелец подтвердил Q-21: 6 цифр/10 минут/5 неверных попыток, resend, лимиты писем и замену pending с очисткой через 24 часа. Обновлены решения, правила, сценарии, критерии и backlog; E1-04d backend Ready, контракт уточняется в начале реализации. Код/миграции не изменены. Согласие с правилами регистрации не отмечено как принятие риска E1-02b. Проверки документации — ссылки/diff/неизменность ТЗ; typecheck/build/HTTP не запускались для документального изменения.
