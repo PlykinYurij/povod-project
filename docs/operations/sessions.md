@@ -1,6 +1,6 @@
 # Вход и сессии · E1-04b
 
-D-30 (18.11.2026): приведённый register пока немедленно авторизует, без email-кода. Это фактическое поведение main, а не целевая приёмка регистрации. После [E1-04d](../product/e1-04d.md) Session должна выдаваться только при подтверждении.
+E1-04d: автовход происходит только после email-кода. [Актуальная регистрация](registration-confirmation.md); обычный login/session/logout прежние. Письма только local.
 
 При работающем Docker Desktop, из корня:
 
@@ -26,16 +26,20 @@ $csrf = Invoke-RestMethod http://127.0.0.1:3001/api/v1/auth/csrf -SessionVariabl
 $headers = @{ Origin = 'http://127.0.0.1:3000'; 'X-CSRF-Token' = $csrf.csrfToken }
 $reviewEmail = 'session-review-' + [guid]::NewGuid().ToString('N') + '@example.test'
 $registration = @{ email = $reviewEmail; password = 'Review1!password' } | ConvertTo-Json
-Invoke-RestMethod -Method Post -Uri http://127.0.0.1:3001/api/v1/auth/register -WebSession $povodAuthBrowser -ContentType application/json -Headers $headers -Body $registration
+$pending = Invoke-RestMethod -Method Post -Uri http://127.0.0.1:3001/api/v1/auth/register -WebSession $povodAuthBrowser -ContentType application/json -Headers $headers -Body $registration
+# После start нет входа; найдите своё письмо локально, не печатая код в диагностике.
+$letter = Get-ChildItem .local-mail -Filter '*.json' | Sort-Object LastWriteTime -Descending | ForEach-Object { Get-Content -LiteralPath $_.FullName -Raw | ConvertFrom-Json } | Where-Object { $_.purpose -eq 'registration' -and $_.to -eq $reviewEmail } | Select-Object -First 1
+$confirmation = @{ registrationId = $pending.registrationId; code = $letter.code } | ConvertTo-Json
+Invoke-RestMethod -Method Post -Uri http://127.0.0.1:3001/api/v1/auth/register/confirm -WebSession $povodAuthBrowser -ContentType application/json -Headers $headers -Body $confirmation
 Invoke-RestMethod http://127.0.0.1:3001/api/v1/auth/session -WebSession $povodAuthBrowser
 $csrf = Invoke-RestMethod http://127.0.0.1:3001/api/v1/auth/csrf -WebSession $povodAuthBrowser
 $headers['X-CSRF-Token'] = $csrf.csrfToken
 Invoke-RestMethod -Method Post -Uri http://127.0.0.1:3001/api/v1/auth/logout -WebSession $povodAuthBrowser -ContentType application/json -Headers $headers -Body '{}'
 ```
 
-Ожидается user.id/email после регистрации и сразу после GET session, без отдельного login. Logout — 204. Следующий GET session в этом WebSession должен дать 401 (PowerShell выдаст HTTP-ошибку, это ожидаемо). Тестовый аккаунт остаётся в dev. Для входа снова получить csrf и сделать POST `/api/v1/auth/login` с теми же email/password; ответ 200 и новая cookie, затем GET session 200.
+Ожидается user.id/email после подтверждения кода и после GET session, без отдельного login. Logout — 204. Следующий GET session в этом WebSession должен дать 401 (PowerShell выдаст HTTP-ошибку, это ожидаемо). Тестовый аккаунт остаётся в dev. Для входа снова получить csrf и сделать POST `/api/v1/auth/login` с теми же email/password; ответ 200 и новая cookie, затем GET session 200.
 
-Эта последовательность проверена PowerShell 5.1/WebSession на отдельном API-порту 3101: регистрация/автовход/refresh CSRF/logout/401 успешны. Синтетический review-аккаунт удалён точным id+email, его Session каскадно; собственное дерево API-процессов остановлено. Использовать только синтетические данные, не печатать WebSession/Cookie/headers/token и не коммитить их. Cookies хранит WebSession, в JSON session token не возвращается.
+Историческая последовательность без кода была проверена PowerShell 5.1/WebSession на отдельном API-порту 3101: регистрация/автовход/refresh CSRF/logout/401 успешны. Синтетический review-аккаунт удалён точным id+email, его Session каскадно; собственное дерево API-процессов остановлено. Использовать только синтетические данные, не печатать WebSession/Cookie/headers/token и не коммитить их. Cookies хранит WebSession, в JSON session token не возвращается.
 
 ## Контракт для frontend
 

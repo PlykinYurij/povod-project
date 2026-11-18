@@ -4,6 +4,7 @@ import { isAbsolute, join } from "node:path";
 import { ApiError } from "../../http/api-error";
 
 export interface ResetMessage {
+  purpose?: "registration" | "password-reset";
   id: string;
   to: string;
   code: string;
@@ -26,8 +27,8 @@ export class ResetMailService {
     // Random server UUID, never an email/filename from the request.
     await writeFile(join(this.directory(), `${message.id}.json`), JSON.stringify({
       purpose: "password-reset", ...message,
-      subject: "Код восстановления пароля «Повод»",
-      text: `Код: ${message.code}. Действует 10 минут. Если вы не запрашивали восстановление, проигнорируйте письмо.`,
+      subject: message.purpose === "registration" ? "Подтверждение регистрации «Повод»" : "Код восстановления пароля «Повод»",
+      text: `Код: ${message.code}. Действует до ${message.expiresAt}. Если вы не запрашивали код, проигнорируйте письмо.`,
     }), { encoding: "utf8", flag: "wx", mode: 0o600 });
   }
 }

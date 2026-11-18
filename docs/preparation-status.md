@@ -186,3 +186,9 @@ E1-04c код dc990eb: [CI 44269526421](https://github.com/PlykinYurij/povod-pro
 Зависимости/lockfile/приложение/CI не менялись, повторные build/typecheck/DB/kit не запускались. Проверены audit/версии/конфигурации, ссылки, diff и неизменность ТЗ. Для следующей регистрации E1-04d запрошено решение Q-21; согласование ещё не подменяется merge предыдущего отчёта.
 
 Актуальное уточнение после объединения веток: исторический запрос Q-21 выше закрыт решением D-32; E1-04d backend Ready. Решение по временно сохраняемому риску E1-02b остаётся отдельным и не считается принятым вместе с правилами регистрации.
+
+## E1-04d · Backend подтверждения регистрации, Review
+
+После owner merge проверены чистый status и origin main; pull --ff-only, ветка feat/registration-email-code от 89175db. Реализованы pending без User/Session, confirm с автовходом и marker, resend/замена, mail limits, HMAC, expiry/24h sweep, ошибки/гонки/откат, OpenAPI 0.4.0. [Инструкция](operations/registration-confirmation.md), [QA](qa/e1-04d-report.md).
+
+Проверены типы/сборки, 52 HTTP/DB и 8 unit, миграции dev/test и реальный helper/start/mail/confirm/session/replay. Web/дизайн/Orval, SMTP/production, legacy-политика Q-22 ещё не выполнены. Старые пользователи не удалены и не объявлены подтверждёнными. CI/isolated kit указываются после факта; принятие владельцем и main не отмечены.
