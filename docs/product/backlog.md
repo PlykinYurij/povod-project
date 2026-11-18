@@ -34,7 +34,7 @@ ID исходного §13 сохранены. Ранее широкие пун�
 | ID / результат | Роль | Зависимости | Требования | Приёмка / проверка |
 | --- | --- | --- | --- | --- |
 | E1-04 Регистрация email/пароль (backend принят, UI Backlog) | Backend/Frontend | E1-06; D-28/29 | FR-02 с D-02 | [Backend](e1-04.md) принят в main 9c0cc4c; web ещё нет, автовход backend расширен E1-04b |
-| E1-04b Сессии, вход/выход и права владельца (backend принят) | Backend/Frontend | Backend E1-04; D-29 | FR-03, NFR-07 | Backend принят в main 6ccbf27; UI и resource owner check ещё отдельно; регистрацию корректирует E1-04d |
+| E1-04b Сессии, вход/выход и права владельца (backend принят; web login Review) | Backend/Frontend | Backend E1-04; D-29 | FR-03, NFR-07 | Backend принят в main 6ccbf27; UI и resource owner check ещё отдельно; регистрацию корректирует E1-04d; [web-часть](e1-04b-web.md), [QA](../qa/e1-04b-web-report.md) |
 | E1-04c Reset и тестовая почта (backend Review, web Backlog) | Backend/Frontend | E1-04b; D-31 | FR-04, NFR-07 | [Карточка](e1-04c.md), [QA](../qa/e1-04c-report.md): код/лимиты/отзыв сессий, локальный файловый inbox; production-почта отдельно |
 | E1-04d Подтверждение регистрации кодом (backend Review, web Backlog) | Backend, затем Frontend/Design | E1-04/04b/04c; D-30/32 | FR-02/03, NFR-07/09 | [Карточка](e1-04d.md), [QA](../qa/e1-04d-report.md): start без User, confirm/Session/одноразовость/cleanup; UI и production mail отдельно |
 | E2-01 Схема/рендерер «Тихий сад» | Frontend | E0-02/03; Q-03 | FR-06/07/09, D-14 | Обязательные/опциональные блоки, две палитры, длинные строки/360 px; Р + schema-проверки |

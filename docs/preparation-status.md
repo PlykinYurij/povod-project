@@ -212,3 +212,5 @@ Chrome/CDP: 336 сочетаний экран/состояние/размер/т
 Владелец явно разрешил next-intl 4.15.1 с известным риском picomatch для local/checks/commit/push. Pin восстановлен, прежний блокер снят; 4.5.8 не итоговое решение. Повторяются проверки фактического дерева, затем ветка передаётся на Review. Production остаётся запрещён этим ограниченным разрешением.
 
 Web pin 4.15.1: финальные локальные проверки на этом pin успешны — types/build/format, 13 unit, 52 DB/HTTP, real browser login/logout/two owners/mobile/locales/themes. Orval generation воспроизводима. Текущий npm audit — 0 findings без заявления, что known advisory устранена. Результат передаётся на Review после commit/push и проверки комплекта; production не разрешён.
+
+Web login код 70da260d2c62bbca0eed4611d0635a94df05f6ce: [CI](https://github.com/PlykinYurij/povod-project/actions/runs/44366261060) — четыре jobs success. Windows isolated kit/integrity и отдельный /login из архива успешны, digest в QA. Traced watcher paths — 0, без заявления устранённой advisory. Этап Review, owner/main/production не отмечены. Следующая реализация — signup/code UI после ревью текущего результата.
