@@ -1,0 +1,48 @@
+{
+  "Common": {
+    "brand": "Повод",
+    "language": "Interface language",
+    "theme": "Switch theme",
+    "light": "Light theme",
+    "dark": "Dark theme",
+    "loading": "Loading…",
+    "retry": "Try again",
+    "home": "Back to home",
+    "account": "Your account",
+    "story": "Every great moment starts with an invitation.",
+    "storyText": "Choose a mood, tell your story and bring your favourite people together with one link.",
+    "caption": "A reason to be together"
+  },
+  "Auth": {
+    "title": "Welcome back",
+    "intro": "Sign in to continue working on your invitations.",
+    "email": "Email",
+    "password": "Password",
+    "show": "Show password",
+    "hide": "Hide password",
+    "submit": "Sign in",
+    "pending": "Signing in…",
+    "invalid": "Invalid email or password.",
+    "validation": "Check the values you entered.",
+    "emailInvalid": "Enter a valid email.",
+    "passwordInvalid": "Enter your password (up to 128 characters).",
+    "unavailable": "The service is temporarily unavailable. Please try again.",
+    "network": "We could not receive a response. Check your connection and try again.",
+    "rate": "Too many attempts. Try again in {seconds} sec.",
+    "csrf": "Request protection has expired. Please try signing in again.",
+    "future": "Registration and password recovery will follow in separate stages. For now, use an existing test account.",
+    "logout": "Sign out",
+    "loggingOut": "Ending your session…",
+    "logoutFailed": "We could not confirm sign-out. Retry the request; the session may still be active.",
+    "rateUnknown": "Too many attempts. Please try again later."
+  },
+  "Account": {
+    "title": "My invitations",
+    "signedIn": "Signed in as {email}",
+    "empty": "Your first occasion starts here",
+    "description": "Sign-in and sign-out are available. Creating invitations will follow in the next stage.",
+    "expired": "Your session has ended. Sign in again.",
+    "error": "We could not check your session. Please try again.",
+    "signIn": "Go to sign in"
+  }
+}

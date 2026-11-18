@@ -1,0 +1,16 @@
+.form {
+  display: grid;
+  gap: var(--identity-space-md);
+  margin-top: var(--identity-space-lg);
+}
+.primary {
+  min-height: var(--identity-control-height);
+  background: var(--identity-brand);
+  color: var(--identity-surface);
+}
+:global([data-mantine-color-scheme="dark"]) .primary {
+  color: var(--identity-bg);
+}
+.error {
+  overflow-wrap: anywhere;
+}

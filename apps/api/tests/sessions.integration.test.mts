@@ -365,6 +365,8 @@ test("missing, tampered, expired and different-browser CSRF are rejected; sessio
 });
 
 test("OpenAPI describes session/csrf operations, cookie and csrf header and uses credentialed CORS", async () => {
+  const csrfResponse = await fetch(`${url}/api/v1/auth/csrf`, { headers: { Origin: TEST_ORIGIN } });
+  expect(csrfResponse.headers.get("access-control-expose-headers")).toContain("Retry-After");
   const doc = (await fetch(`${url}/api/openapi.json`).then((r) =>
     r.json(),
   )) as {

@@ -63,6 +63,9 @@ jobs:
       - name: Verify generated OpenAPI contract
         run: npm run api:openapi
 
+      - name: Verify generated API client
+        run: npm run api:generate
+
       - name: Ensure tracked inputs are unchanged
         run: git diff --exit-code
 

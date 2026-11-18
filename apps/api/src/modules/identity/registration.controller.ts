@@ -41,7 +41,6 @@ export class RegistrationController {
   @HttpCode(202)
   @Header("Cache-Control", "no-store")
   @UseGuards(RegistrationRateGuard)
-  @ApiHeader({ name: "X-CSRF-Token", required: true })
   @ApiOperation({
     operationId: "register",
     summary: "Start registration; no account or authenticated session before email confirmation",

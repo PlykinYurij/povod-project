@@ -15,6 +15,7 @@ export async function createApplication(): Promise<INestApplication> {
       origin,
       methods: ["GET", "POST", "OPTIONS"],
       allowedHeaders: ["Content-Type", "X-CSRF-Token"],
+      exposedHeaders: ["Retry-After"],
       credentials: true,
     });
   app.useGlobalFilters(new ApiExceptionFilter());

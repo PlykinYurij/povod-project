@@ -110,6 +110,7 @@ async function main() {
     ".npmrc",
     "apps/api/package.json",
     "apps/web/package.json",
+    "packages/api-client/package.json",
   ]) {
     await mkdir(path.dirname(path.join(api, file)), { recursive: true });
     await cp(path.join(source, file), path.join(api, file));

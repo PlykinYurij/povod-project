@@ -200,3 +200,15 @@ E1-04d код 51dc34b06e909c955c805fa9e5782132f91c3f63: [CI](https://github.com/
 После owner merge E1-04d проверены чистый status/origin main, выполнен pull --ff-only; ветка design/identity-flow от 0026548. Подготовлен [локальный HTML](design/identity-flow.html) с register/code/login/reset и оболочкой кабинета, [UX/API mapping](design/identity-flow.md), [проверки](design/identity-review.md). Сохранены D-28–32, нейтральный reset, одноразовый confirm, отдельный login после reset. Примеры проектов не выданы за реализованный API.
 
 Chrome/CDP: 336 сочетаний экран/состояние/размер/тема/язык, 360/1280 px; DOM/layout без overflow/JS errors, demo journeys/focus/Tab успешны. Снято 8 PNG, выборочные экраны визуально просмотрены; 4 опорных снимка в docs/design/previews. Приложение/зависимости/CI/инфраструктура не менялись; app tests/build не запускались. UI/production mail, screen-reader/полный WCAG и реальные mobile devices не проверены. Пакет ожидает owner review; родительская E0-02 и frontend не закрыты.
+
+## Первая web identity-часть · работа, ожидает dependency approval
+
+После owner merge макетов чистый checkout обновлён main d19e115, создана feat/web-sign-in. Использован skill apps/web/.agents/skills/povod-web-task/SKILL.md. Добавлены login/account, реальный API, Orval workspace, Mantine/next-intl/Query providers только identity, CSS Modules/shared tokens и правила понятного кода в root/web/API AGENTS. Swagger исправлен для Orval (дубль CSRF header), CORS expose Retry-After, JSON logout.
+
+Типы/сборки, 13 unit и 52 DB/HTTP успешны в ходе работы; real browser login/logout/A-B/mobile/темы/локали и симулированные 422/429/503 проверены. Подробные условия/ограничения — [QA](qa/e1-04b-web-report.md). Исследовательская next-intl 4.5.8 не принята для релиза; возврат 4.15.1 отклонён automatic approval review как known vulnerable production dependency без owner risk acceptance. Запрос владельцу отправлен, ответа пока нет. Финальные pin/build/browser/kit/CI и commit/push ещё не выполнены. Чужие изменения не откатывались, исходное ТЗ не редактировалось.
+
+### Web identity · разрешение D-33
+
+Владелец явно разрешил next-intl 4.15.1 с известным риском picomatch для local/checks/commit/push. Pin восстановлен, прежний блокер снят; 4.5.8 не итоговое решение. Повторяются проверки фактического дерева, затем ветка передаётся на Review. Production остаётся запрещён этим ограниченным разрешением.
+
+Web pin 4.15.1: финальные локальные проверки на этом pin успешны — types/build/format, 13 unit, 52 DB/HTTP, real browser login/logout/two owners/mobile/locales/themes. Orval generation воспроизводима. Текущий npm audit — 0 findings без заявления, что known advisory устранена. Результат передаётся на Review после commit/push и проверки комплекта; production не разрешён.

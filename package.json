@@ -4,7 +4,8 @@
   "private": true,
   "workspaces": [
     "apps/web",
-    "apps/api"
+    "apps/api",
+    "packages/api-client"
   ],
   "packageManager": "npm@11.20.0",
   "engines": {
@@ -18,7 +19,7 @@
     "start:api": "npm run start --workspace=@povod/api",
     "typecheck": "npm run typecheck --workspaces",
     "build": "npm run build --workspaces",
-    "test": "vitest run scripts/artifact",
+    "test": "vitest run scripts/artifact apps/web/tests",
     "artifact:create": "node scripts/artifact/create.mjs",
     "artifact:verify": "node scripts/artifact/verify.mjs",
     "db:migrate:dev": "node scripts/database.mjs migrate dev",
@@ -27,10 +28,15 @@
     "db:seed:test": "node scripts/database.mjs seed test",
     "test:database": "node scripts/database.mjs test test",
     "dev:api:database": "node scripts/api-dev.mjs",
-    "api:openapi": "node scripts/export-openapi.mjs"
+    "api:openapi": "node scripts/export-openapi.mjs",
+    "api:generate": "orval --config orval.config.ts",
+    "test:web": "vitest run --config apps/web/vitest.config.mts",
+    "format:web": "prettier --check \"apps/web/src/**/*.{ts,tsx,css,json}\" \"packages/api-client/src/*.ts\""
   },
   "devDependencies": {
     "@types/node": "26.6.6",
+    "orval": "8.48.0",
+    "prettier": "3.10.1",
     "typescript": "5.9.3",
     "vitest": "4.1.12"
   }
