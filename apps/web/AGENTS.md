@@ -1,6 +1,8 @@
 # Web: инструкции агенту
 
-- Текущая первая web identity-часть: [карточка](../../docs/product/e1-04b-web.md), [QA](../../docs/qa/e1-04b-web-report.md). Generated API client — packages/api-client; client/server entry разделены. Общие CSS tokens — shared/ui/identity-tokens.module.css. Next-intl 4.15.1 с известным риском picomatch явно разрешена D-33 для local/checks/commit/push; production не разрешён. Не подменять это разрешение утверждением чистого audit.
+- Продолжение identity: [signup/code/reset](../../docs/product/e1-04-identity-web.md), [локальная приёмка](../../docs/operations/web-identity.md), [QA](../../docs/qa/e1-04-identity-web-report.md). Auth-композиции — entities/identity; общие стили — shared/ui/identity-form/form.module.css.
+
+- Первая web identity-часть: [карточка](../../docs/product/e1-04b-web.md), [QA](../../docs/qa/e1-04b-web-report.md). Generated API client — packages/api-client; client/server entry разделены. Общие CSS tokens — shared/ui/identity-tokens.module.css. Next-intl 4.15.1 с известным риском picomatch явно разрешена D-33 для local/checks/commit/push; production не разрешён. Не подменять это разрешение утверждением чистого audit.
 
 Действуют для `apps/web/**` вместе с [корневыми правилами](../../AGENTS.md). Это основная краткая инструкция frontend; [web-conventions](../../docs/architecture/web-conventions.md) содержит подробности и обоснования. Решения владельца важнее старых предложений.
 

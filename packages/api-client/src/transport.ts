@@ -130,6 +130,17 @@ export async function apiFetch<T>(
       typeof body.user.email !== "string")
   )
     throw new ApiRequestError(503, "SERVICE_UNAVAILABLE");
+  if (
+    ["/api/v1/auth/register", "/api/v1/auth/register/resend"].includes(path) &&
+    (!isObject(body) ||
+      typeof body.registrationId !== "string" ||
+      !/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(
+        body.registrationId,
+      ) ||
+      typeof body.expiresAt !== "string" ||
+      !Number.isFinite(Date.parse(body.expiresAt)))
+  )
+    throw new ApiRequestError(503, "SERVICE_UNAVAILABLE");
   // Success shape is generated from the server-owned OpenAPI contract.
   return body as T;
 }

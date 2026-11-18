@@ -13,7 +13,7 @@ import { Alert, Button, PasswordInput, TextInput } from "../../shared/ui";
 import { clearPrivateQueries } from "../../shared/api/private-cache";
 import { signInErrorKey } from "./error-message";
 import { useRetryAfter } from "../../shared/lib/use-retry-after";
-import styles from "./sign-in-form.module.css";
+import styles from "../../shared/ui/identity-form/form.module.css";
 import { safeReturnTo } from "../../shared/config/auth-navigation";
 
 export function SignInForm({ returnTo }: { returnTo: string }) {

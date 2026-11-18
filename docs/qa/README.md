@@ -7,3 +7,5 @@
 [E1-02b: оценка audit dev-зависимостей](e1-02b-report.md) — варианты для owner review, уязвимость не объявлена исправленной.
 
 [E1-04d: backend регистрации с email-кодом](e1-04d-report.md), без проверки UI/SMTP/production.
+
+[Web signup/code/reset](e1-04-identity-web-report.md) — реальный browser/API/test-БД/inbox и отдельно UI fixtures; передано на Review.

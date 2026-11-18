@@ -1,0 +1,26 @@
+.form {
+  display: grid;
+  gap: var(--identity-space-md);
+  margin-top: var(--identity-space-lg);
+}
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--identity-space-md);
+  margin-top: var(--identity-space-lg);
+}
+.primary {
+  min-height: var(--identity-control-height);
+  background: var(--identity-brand);
+  color: var(--identity-on-brand);
+}
+.error {
+  overflow-wrap: anywhere;
+}
+.links a {
+  color: var(--identity-brand);
+}
+.links a:focus-visible {
+  outline: 2px solid var(--identity-focus);
+  outline-offset: 4px;
+}

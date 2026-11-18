@@ -220,3 +220,9 @@ Web login код 70da260d2c62bbca0eed4611d0635a94df05f6ce: [CI](https://github.c
 Продолжена текущая feat/web-sign-in (чистый checkout перед правками). По замечаниям владельца добавлены CTA главной, session guard login, safe returnTo/private redirect и возврат после входа. Homepage markup перенесён в FSD _pages/home, RU/EN; identity provider получает только свои namespaces. Регистрация UI остаётся следующей задачей.
 
 Types, web build, format и 28 unit успешны. Browser переходы (включая query/hash/external returnTo) прошли с отдельным настоящим API и той же dev-БД. Пользовательские сервисы не остановлены: API 3001 дал 503 в исходном login-прогоне, конфигурация этого процесса не объявлена исправленной. Свои тестовые данные/процессы удалены. Подробности в QA web identity.
+
+## 19.11.2026 · Web signup/code/reset на той же ветке
+
+По прямому поручению владельца после навигационных исправлений продолжена feat/web-sign-in. Регистрация с email-кодом/resend/автовходом и reset по коду/новому паролю/обычному login реализованы через готовые Orval hooks. Новых зависимостей, backend endpoints или миграций нет. Два flow в памяти страницы, без секретов в URL/storage, ошибки и неопределённый confirm не выданы за успех.
+
+[Карточка](product/e1-04-identity-web.md), [QA](qa/e1-04-identity-web-report.md), [приёмка](operations/web-identity.md). Реальный браузерный прогон с собственным API, test-БД и отдельным inbox прошёл: User только после кода, resend, оба пути, отзыв старых сеансов, обычный вход новым паролем. RU/EN, 360 px, обе темы, исправлены dark contrast и hydration aria-pressed. UI fixtures 422/429/503 помечены отдельно. Ролевые checkbox реализации отмечены; принятие владельцем/main остаются открытыми. Production не проверялся/не разрешён.

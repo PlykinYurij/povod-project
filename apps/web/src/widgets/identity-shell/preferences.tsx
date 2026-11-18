@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useComputedColorScheme, useMantineColorScheme } from "@mantine/core";
 import { Button } from "../../shared/ui";
+import { useEffect, useState } from "react";
 import { LOCALE_COOKIE, parseLocale } from "../../shared/config/locale";
 import styles from "./identity-shell.module.css";
 
@@ -13,6 +14,10 @@ export function Preferences() {
   const router = useRouter();
   const { toggleColorScheme } = useMantineColorScheme();
   const colorScheme = useComputedColorScheme("light");
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   return (
     <div className={styles.controls}>
       <label>
@@ -32,7 +37,8 @@ export function Preferences() {
       <Button
         variant="default"
         onClick={toggleColorScheme}
-        aria-pressed={colorScheme === "dark"}
+        // The saved browser theme is unknown during SSR. Keep hydration deterministic.
+        aria-pressed={mounted && colorScheme === "dark"}
       >
         {t("theme")}
       </Button>

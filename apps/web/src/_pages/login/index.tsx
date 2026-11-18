@@ -9,9 +9,12 @@ import { IdentityShell } from "../../widgets/identity-shell";
 import { SignInForm } from "../../features/sign-in";
 import styles from "../../widgets/identity-shell/identity-shell.module.css";
 import { safeReturnTo } from "../../shared/config/auth-navigation";
+import Link from "next/link";
+import formStyles from "../../shared/ui/identity-form/form.module.css";
 
 export function LoginPage({ returnTo }: { returnTo: string }) {
   const t = useTranslations("Auth");
+  const identity = useTranslations("Identity");
   const common = useTranslations("Common");
   const account = useTranslations("Account");
   const router = useRouter();
@@ -60,7 +63,14 @@ export function LoginPage({ returnTo }: { returnTo: string }) {
           {t("intro")}
         </Text>
         <SignInForm returnTo={returnTo} />
-        <p className={styles.foot}>{t("future")}</p>
+        <nav className={formStyles.links} aria-label={identity("navigation")}>
+          <Link
+            href={`/register?${new URLSearchParams({ returnTo: safeReturnTo(returnTo) })}`}
+          >
+            {identity("register")}
+          </Link>
+          <Link href="/password-reset">{identity("forgotPassword")}</Link>
+        </nav>
       </>
     );
   else content = <Text role="status">{common("loading")}</Text>;

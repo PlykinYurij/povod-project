@@ -69,6 +69,11 @@
 .content label {
   color: var(--identity-ink);
 }
+.content :global(.mantine-InputWrapper-description) {
+  color: var(--identity-muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
 .content :global(.mantine-Input-input) {
   min-height: 46px;
   background: var(--identity-surface);

@@ -2,6 +2,8 @@
 
 Ветка `feat/web-sign-in` от main `d19e115`, после принятого дизайн-пакета E0-02. Один PR в рамках существующего E1-04b, не закрытие всего identity. FR-03/NFR-01/06/07/14; [макеты](../design/identity-flow.md), [backend](../architecture/authentication.md), [ролевой план](../../apps/web/development-plan.md).
 
+Продолжение по новому поручению владельца: [signup/code и reset на той же ветке](e1-04-identity-web.md). Описание ниже — границы первоначальной login-части, не актуальное утверждение отсутствия этих форм.
+
 Результат: `/login`, `/account`, настоящий login/session/logout, client guard без private данных в anonymous HTML, светлая/тёмная тема, RU/EN, Mantine/shared/ui, next-intl, Orval/TanStack Query. Каркас лендинга остаётся прежним; регистрация с кодом, reset UI, admin, проекты, приглашения и Zustand не входят. Ссылки на ещё не реализованные формы не изображаются работающими.
 
 Уточнение владельца по review: главная получает явный CTA кабинета; авторизованный `/login` направляет в account; неавторизованный private route — на login с безопасным returnTo и возвратом после входа; logout — непосредственно login. Регистрация с кодом в UI остаётся следующей задачей, готовый backend не выдаётся за готовую форму.
