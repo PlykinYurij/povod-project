@@ -1,15 +1,16 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useQueryClient } from "@tanstack/react-query";
-import { ApiRequestError, useGetSession, useLogout } from "@povod/api-client";
+import { ApiRequestError, useGetSession } from "@povod/api-client";
 import { Alert, Button, Group, Loader, Text, Title } from "../../shared/ui";
 import { clearPrivateQueries } from "../../shared/api/private-cache";
 import { useSignOut } from "../../features/sign-out";
 import { IdentityShell } from "../../widgets/identity-shell";
 import styles from "../../widgets/identity-shell/identity-shell.module.css";
+import { loginHref } from "../../shared/config/auth-navigation";
 
 export function AccountPage() {
   const t = useTranslations("Account"),
@@ -23,11 +24,18 @@ export function AccountPage() {
   });
   const unauthorized =
     session.error instanceof ApiRequestError && session.error.status === 401;
+  const redirecting = useRef(false);
   useEffect(() => {
-    if (unauthorized) {
-      void clearPrivateQueries(client).then(() => router.replace("/login"));
+    if (unauthorized && !leaving && !redirecting.current) {
+      redirecting.current = true;
+      const target = loginHref(
+        window.location.pathname +
+          window.location.search +
+          window.location.hash,
+      );
+      void clearPrivateQueries(client).then(() => router.replace(target));
     }
-  }, [unauthorized, client, router]);
+  }, [unauthorized, leaving, client, router]);
   let content;
   if (leaving)
     content = logoutFailed ? (

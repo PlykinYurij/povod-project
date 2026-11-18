@@ -1,6 +1,6 @@
 # Работа над «Поводом»
 
-- Frontend quality зафиксирована ниже. Рабочая web-задача добавляет @povod/api-client: root typecheck/build проверяют три workspace, npm test включает 8 artifact + 5 web tests. Проверки/версии и статус зависят от фактического финального pin, см. [web QA](docs/qa/e1-04b-web-report.md); итоговый pin next-intl 4.15.1 явно разрешён владельцем D-33 для local/checks/commit/push, без production.
+- Frontend quality зафиксирована ниже. Рабочая web-задача добавляет @povod/api-client: root typecheck/build проверяют три workspace, npm test включает artifact/startup и web unit tests. Проверки/версии и статус зависят от фактического финального pin, см. [web QA](docs/qa/e1-04b-web-report.md); итоговый pin next-intl 4.15.1 явно разрешён владельцем D-33 для local/checks/commit/push, без production.
 
 - Для задач backend читай [apps/api/AGENTS.md](apps/api/AGENTS.md). Рекомендации по стеку и валидации: [backend-conventions](docs/architecture/backend-conventions.md); стек и правила согласованы D-27, версии и параметры проверяются перед реализацией.
 

@@ -14,8 +14,9 @@ import { clearPrivateQueries } from "../../shared/api/private-cache";
 import { signInErrorKey } from "./error-message";
 import { useRetryAfter } from "../../shared/lib/use-retry-after";
 import styles from "./sign-in-form.module.css";
+import { safeReturnTo } from "../../shared/config/auth-navigation";
 
-export function SignInForm() {
+export function SignInForm({ returnTo }: { returnTo: string }) {
   const t = useTranslations("Auth");
   const client = useQueryClient();
   const router = useRouter();
@@ -51,8 +52,10 @@ export function SignInForm() {
       if (!active.current) return;
       const result = await mutation.mutateAsync({ data: { email, password } });
       if (!active.current) return;
+      await clearPrivateQueries(client);
+      if (!active.current) return;
       client.setQueryData(getGetSessionQueryKey(), result);
-      router.replace("/account");
+      router.replace(safeReturnTo(returnTo));
     } catch (failure) {
       if (active.current) setError(failure);
     } finally {

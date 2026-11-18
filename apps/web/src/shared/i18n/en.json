@@ -44,5 +44,15 @@
     "expired": "Your session has ended. Sign in again.",
     "error": "We could not check your session. Please try again.",
     "signIn": "Go to sign in"
+  },
+  "Home": {
+    "eyebrow": "For your special occasions",
+    "title": "Повод",
+    "description": "Invitations that start a celebration.",
+    "detail": "Turn the story of your occasion into an invitation website for your favourite people.",
+    "notice": "We are preparing the service. Creating invitations is not available yet.",
+    "action": "Go to your account",
+    "hint": "If you are not signed in, we will open the sign-in page. Registration will follow in the next stage.",
+    "footer": "Every great occasion needs a reason."
   }
 }

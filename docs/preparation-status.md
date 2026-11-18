@@ -214,3 +214,9 @@ Chrome/CDP: 336 сочетаний экран/состояние/размер/т
 Web pin 4.15.1: финальные локальные проверки на этом pin успешны — types/build/format, 13 unit, 52 DB/HTTP, real browser login/logout/two owners/mobile/locales/themes. Orval generation воспроизводима. Текущий npm audit — 0 findings без заявления, что known advisory устранена. Результат передаётся на Review после commit/push и проверки комплекта; production не разрешён.
 
 Web login код 70da260d2c62bbca0eed4611d0635a94df05f6ce: [CI](https://github.com/PlykinYurij/povod-project/actions/runs/44366261060) — четыре jobs success. Windows isolated kit/integrity и отдельный /login из архива успешны, digest в QA. Traced watcher paths — 0, без заявления устранённой advisory. Этап Review, owner/main/production не отмечены. Следующая реализация — signup/code UI после ревью текущего результата.
+
+## 19.11.2026 · Review: навигация входа
+
+Продолжена текущая feat/web-sign-in (чистый checkout перед правками). По замечаниям владельца добавлены CTA главной, session guard login, safe returnTo/private redirect и возврат после входа. Homepage markup перенесён в FSD _pages/home, RU/EN; identity provider получает только свои namespaces. Регистрация UI остаётся следующей задачей.
+
+Types, web build, format и 28 unit успешны. Browser переходы (включая query/hash/external returnTo) прошли с отдельным настоящим API и той же dev-БД. Пользовательские сервисы не остановлены: API 3001 дал 503 в исходном login-прогоне, конфигурация этого процесса не объявлена исправленной. Свои тестовые данные/процессы удалены. Подробности в QA web identity.

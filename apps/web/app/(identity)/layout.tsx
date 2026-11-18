@@ -11,8 +11,10 @@ export default async function IdentityLayout({
   children: ReactNode;
 }) {
   const locale = parseLocale((await cookies()).get(LOCALE_COOKIE)?.value);
-  const messages = (await import(`../../src/shared/i18n/${locale}.json`))
-    .default;
+  const { Common, Auth, Account } = (
+    await import(`../../src/shared/i18n/${locale}.json`)
+  ).default;
+  const messages = { Common, Auth, Account };
   return (
     <>
       <ColorSchemeScript defaultColorScheme="light" />

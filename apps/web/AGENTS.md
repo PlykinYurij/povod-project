@@ -28,6 +28,8 @@
 
 ## Данные и API
 
+- Auth-навигация: общие `safeReturnTo`/`loginHref` в shared/config/auth-navigation. Authenticated `/login` → безопасный returnTo/default `/account`; guest private page → login с исходным внутренним адресом; logout → login без автоматического возврата. Allowlist расширять только при реализации реального private route; не принимать внешний URL из query. При неизвестном состоянии Session (сеть/503) не выдавать его за 401.
+
 - TanStack Query — клиентское серверное состояние; server fetch — initial/server rendering. Не дублируй fetch без необходимости. QueryClient на сервере на запрос; private cache не делится между владельцами, очищается при logout.
 - OpenAPI NestJS — источник DTO и ошибок. Orval генерирует типы/методы/hooks в `packages/api-client`, shared/api — transport/адаптер. Generated-файлы руками не менять; не придумывать endpoint/DTO вместо изменения контракта.
 - Server entry использует plain generated methods, не React-hooks. Cookie/CSRF передавать только доверенному API; приватные токены не попадут в localStorage, Zustand, логи или публичный HTML.
