@@ -1,0 +1,12 @@
+.email {
+  overflow-wrap: anywhere;
+}
+.empty {
+  margin-top: var(--identity-space-xl);
+  padding: var(--identity-space-lg);
+  border: 1px solid var(--identity-border);
+  border-radius: var(--identity-radius-md);
+}
+.muted {
+  color: var(--identity-muted);
+}

@@ -1,3 +1,4 @@
+import createNextIntlPlugin from "next-intl/plugin";
 import type { NextConfig } from "next";
 import path from "node:path";
 
@@ -9,4 +10,5 @@ const nextConfig: NextConfig = {
   outputFileTracingRoot: path.join(__dirname, "../.."),
 };
 
-export default nextConfig;
+const withNextIntl = createNextIntlPlugin("./src/shared/i18n/request.ts");
+export default withNextIntl(nextConfig);

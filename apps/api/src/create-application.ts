@@ -15,6 +15,7 @@ export async function createApplication(): Promise<INestApplication> {
       origin,
       methods: ["GET", "POST", "OPTIONS"],
       allowedHeaders: ["Content-Type", "X-CSRF-Token"],
+      exposedHeaders: ["Retry-After"],
       credentials: true,
     });
   app.useGlobalFilters(new ApiExceptionFilter());
@@ -45,7 +46,7 @@ export function createOpenApiDocument(app: INestApplication) {
     app,
     new DocumentBuilder()
       .setTitle("Повод API")
-      .setVersion("0.4.0")
+      .setVersion("0.6.0")
       .addCookieAuth(
         "__Host-povod-session",
         { type: "apiKey", in: "cookie" },

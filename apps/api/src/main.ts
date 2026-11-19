@@ -1,6 +1,6 @@
 import "reflect-metadata";
-import { Logger } from "@nestjs/common";
 import { createApplication, enableOpenApi } from "./create-application";
+import { startupErrorMessage } from "./startup-error";
 
 async function bootstrap(): Promise<void> {
   const portValue = process.env.PORT ?? "3001";
@@ -21,7 +21,7 @@ async function bootstrap(): Promise<void> {
 
   try {
     await app.listen(port, "127.0.0.1");
-    Logger.log(`API listening at http://127.0.0.1:${port}`, "Bootstrap");
+    console.info(`API listening at http://127.0.0.1:${port}`);
   } catch (error: unknown) {
     await app.close();
     throw error;
@@ -29,9 +29,6 @@ async function bootstrap(): Promise<void> {
 }
 
 bootstrap().catch((error: unknown) => {
-  Logger.error(
-    error instanceof Error ? error.message : "API startup failed.",
-    "Bootstrap",
-  );
+  console.error(startupErrorMessage(error));
   process.exitCode = 1;
 });

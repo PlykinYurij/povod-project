@@ -254,6 +254,7 @@ test("DTO rejects unknown fields, non-ASCII password and malformed code; CSRF re
     { email: value, code: 123456, newPassword },
     { email: value, code: "123456\n", newPassword },
     { email: value, code: "123456", newPassword: "Пароль1!A" },
+    { email: value, code: "123456", newPassword: " Abcdef1! " },
     { email: value, code: "123456", newPassword, userId: randomUUID() },
   ]) expect((await browser.post("password-reset/confirm", body)).status).toBe(422);
   const denied = await fetch(`${url}/api/v1/auth/password-reset/request`, { method: "POST", headers: { Origin: TEST_ORIGIN, "Content-Type": "application/json" }, body: JSON.stringify({ email: value }) });

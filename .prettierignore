@@ -1,0 +1,11 @@
+node_modules
+.next
+dist
+.verification
+.artifact-work
+artifacts
+package-lock.json
+apps/web/src/shared/api/generated
+apps/api/src/database/generated
+apps/api/openapi.json
+docs/povod-mvp-spec-v0.1.md

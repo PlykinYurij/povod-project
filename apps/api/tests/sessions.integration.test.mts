@@ -84,6 +84,15 @@ async function owner() {
   };
   return { browser, email, user: body.user, response };
 }
+
+test("existing unnamed owners can log in with an existing password containing spaces", async () => {
+  const email = newEmail(), legacyPassword = " Synthetic1!password ";
+  await db.user.create({ data: { email, passwordHash: await hashPassword(legacyPassword) } });
+  const browser = new Browser();
+  const response = await browser.post("login", {email,password:legacyPassword});
+  expect(response.status).toBe(200);
+  expect((await response.json() as {user:{userName:string|null}}).user.userName).toBeNull();
+});
 function freeze(now: number) {
   vi.spyOn(app.get(AuthClock), "now").mockImplementation(() => new Date(now));
 }
@@ -365,6 +374,8 @@ test("missing, tampered, expired and different-browser CSRF are rejected; sessio
 });
 
 test("OpenAPI describes session/csrf operations, cookie and csrf header and uses credentialed CORS", async () => {
+  const csrfResponse = await fetch(`${url}/api/v1/auth/csrf`, { headers: { Origin: TEST_ORIGIN } });
+  expect(csrfResponse.headers.get("access-control-expose-headers")).toContain("Retry-After");
   const doc = (await fetch(`${url}/api/openapi.json`).then((r) =>
     r.json(),
   )) as {

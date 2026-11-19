@@ -1,5 +1,7 @@
 # Повод
 
+Web login/account: [запуск и приёмка](docs/operations/web-sign-in.md), [QA и границы](docs/qa/e1-04b-web-report.md). Next-intl 4.15.1 разрешена владельцем для разработки/проверок и публикации ветки; production отдельно.
+
 Backend E1-04d: [регистрация теперь требует email-код](docs/operations/registration-confirmation.md). Start 202 без сессии → confirm 201 с автовходом. Web-формы и production-транспорт ещё не реализованы; инструкции ниже о старом немедленном register — история прежних этапов.
 
 Backend E1-04c: [восстановление пароля по коду и локальный inbox](docs/operations/password-reset.md). Web-формы ещё нет; регистрация с email-кодом D-30 остаётся отдельной E1-04d.

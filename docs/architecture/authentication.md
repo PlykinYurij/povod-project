@@ -4,7 +4,9 @@ Backend E1-04d подготовлен к ревью: start → email-код → 
 
 ## Правила и подход
 
-Email trim/lowercase, точки/plus сохраняются, SQL unique. Новые пароли: 8–128 печатных ASCII-символов, минимум A–Z, цифра и спецсимвол; обычный пробел допустим, но не спецсимвол, без trim. Argon2id (@node-rs/argon2 2.2.2, m=19456 KiB/t=2/p=1), случайная соль. Login проверяет полный введённый пароль, не применяет заново правила состава к старым credentials. Роль/ownerId не принимаются из payload. User/passwordHash не возвращается целиком из ORM.
+Email trim/lowercase, точки/plus сохраняются, SQL unique. Новые пароли: 8–128 печатных символов U+0021–U+007E, минимум A–Z, цифра и спецсимвол; пробелы и другой whitespace запрещены D-34, без trim. Пользователь видит простой список правил без термина ASCII. Argon2id (@node-rs/argon2 2.2.2, m=19456 KiB/t=2/p=1), случайная соль. Login проверяет полный введённый пароль, не применяет заново правила состава к старым credentials. Роль/ownerId не принимаются из payload. User/passwordHash не возвращается целиком из ORM.
+
+D-34/35: register принимает обязательный userName (имя для обращения, не уникальное, trim/1–80/без управляющих символов). Хранится в PendingRegistration, переносится в User на confirm. Первоначальная добавляющая миграция оставляет существующие записи с null; последующая переименовывает display_name → user_name без удаления данных. Старые pending подтверждаются, legacy login не требует имени. Confirm/login/session возвращают `{user:{id,email,userName}}`, где userName nullable для старых аккаунтов. Поле повторного пароля в web не является DTO-полем. OpenAPI 0.6.0 — источник Orval в apps/web/src/shared/api.
 
 D-30/32 реализованы для новых регистраций: pending без owner-прав → код → атомарное создание User+Session. Обычный login без кода сохранён; D-02 не вводит повторного барьера после авторизации. Явный 409 занятого подтверждённого email — D-28. Q-21 закрыт; legacy User с null emailVerifiedAt ещё Q-22, не считать их автоматически подтверждёнными.
 
@@ -15,7 +17,7 @@ D-29: вход сохраняется после закрытия браузер
 | Метод | Вход | Результат |
 | --- | --- | --- |
 | GET `/csrf` | Необязательные context/session cookies | 200 `{csrfToken,expiresAt}`, HttpOnly context-cookie; нет авторизованной Session/DB-строки |
-| POST `/register` | email/password, Origin/CSRF | 202 registrationId/expiresAt, без User/новой Session; 409 EMAIL_UNAVAILABLE |
+| POST `/register` | userName/email/password, Origin/CSRF | 202 registrationId/expiresAt, без User/новой Session; 409 EMAIL_UNAVAILABLE |
 | POST `/register/confirm` | registrationId/code, Origin/CSRF | 201 user + session-cookie; неверный/истёкший/повторный код 400 REGISTRATION_CODE_INVALID |
 | POST `/register/resend` | registrationId, Origin/CSRF | 202 registrationId/expiresAt, старый код отменён; 429 Retry-After |
 | POST `/login` | JSON email/password, Origin/CSRF | 200 user и новая cookie, прежняя cookie браузера отозвана; одинаковый 401 INVALID_CREDENTIALS для неизвестного email/неверного пароля |

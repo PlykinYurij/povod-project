@@ -1,0 +1,39 @@
+.scope {
+  --identity-bg: #f1f2ed;
+  --identity-surface: #fffefb;
+  --identity-ink: #243d34;
+  --identity-muted: #65736b;
+  --identity-border: #d6dfd7;
+  --identity-brand: #315f4b;
+  --identity-on-brand: #fffefb;
+  --identity-error: #b42318;
+  --identity-success: #267247;
+  --identity-wash: #e8efe7;
+  --identity-focus: #b47939;
+  --identity-space: 8px;
+  --identity-space-xs: 8px;
+  --identity-space-sm: 16px;
+  --identity-space-md: 20px;
+  --identity-space-lg: 24px;
+  --identity-space-xl: 28px;
+  --identity-space-2xl: 32px;
+  --identity-space-3xl: 40px;
+  --identity-space-4xl: 48px;
+  --identity-radius-sm: 8px;
+  --identity-radius-md: 12px;
+  --identity-radius-lg: 24px;
+  --identity-control-height: 46px;
+}
+:global([data-mantine-color-scheme="dark"]) .scope {
+  --identity-bg: #141e1a;
+  --identity-surface: #1e2b24;
+  --identity-ink: #eef2e8;
+  --identity-muted: #b1c1b5;
+  --identity-border: #425348;
+  --identity-brand: #b0d6b7;
+  --identity-on-brand: #141e1a;
+  --identity-error: #ffaaa3;
+  --identity-success: #b0d6b7;
+  --identity-wash: #293c30;
+  --identity-focus: #edc38f;
+}

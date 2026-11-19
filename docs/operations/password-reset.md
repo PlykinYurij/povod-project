@@ -2,7 +2,7 @@
 
 E1-04d: тестовый аккаунт для reset теперь сначала регистрируется с email-кодом по [новой инструкции](registration-confirmation.md); старый немедленный register ниже больше не контракт. Сам reset не изменился.
 
-Реализован backend по D-31; web-формы ещё нет. [Карточка](../product/e1-04c.md), [QA](../qa/e1-04c-report.md), [контракт](../architecture/authentication.md). Регистрацию с кодом эта задача не реализует: E1-04d/Q-21 отдельно.
+Реализован backend по D-31; web-форма на Review: [приёмка](web-identity.md). [Карточка](../product/e1-04c.md), [QA](../qa/e1-04c-report.md), [контракт](../architecture/authentication.md). Регистрацию с кодом эта задача не реализует: E1-04d/Q-21 отдельно.
 
 ## Запуск на Windows / PowerShell 5.1
 

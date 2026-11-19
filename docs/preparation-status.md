@@ -200,3 +200,43 @@ E1-04d код 51dc34b06e909c955c805fa9e5782132f91c3f63: [CI](https://github.com/
 После owner merge E1-04d проверены чистый status/origin main, выполнен pull --ff-only; ветка design/identity-flow от 0026548. Подготовлен [локальный HTML](design/identity-flow.html) с register/code/login/reset и оболочкой кабинета, [UX/API mapping](design/identity-flow.md), [проверки](design/identity-review.md). Сохранены D-28–32, нейтральный reset, одноразовый confirm, отдельный login после reset. Примеры проектов не выданы за реализованный API.
 
 Chrome/CDP: 336 сочетаний экран/состояние/размер/тема/язык, 360/1280 px; DOM/layout без overflow/JS errors, demo journeys/focus/Tab успешны. Снято 8 PNG, выборочные экраны визуально просмотрены; 4 опорных снимка в docs/design/previews. Приложение/зависимости/CI/инфраструктура не менялись; app tests/build не запускались. UI/production mail, screen-reader/полный WCAG и реальные mobile devices не проверены. Пакет ожидает owner review; родительская E0-02 и frontend не закрыты.
+
+## Первая web identity-часть · работа, ожидает dependency approval
+
+После owner merge макетов чистый checkout обновлён main d19e115, создана feat/web-sign-in. Использован skill apps/web/.agents/skills/povod-web-task/SKILL.md. Добавлены login/account, реальный API, Orval workspace, Mantine/next-intl/Query providers только identity, CSS Modules/shared tokens и правила понятного кода в root/web/API AGENTS. Swagger исправлен для Orval (дубль CSRF header), CORS expose Retry-After, JSON logout.
+
+Типы/сборки, 13 unit и 52 DB/HTTP успешны в ходе работы; real browser login/logout/A-B/mobile/темы/локали и симулированные 422/429/503 проверены. Подробные условия/ограничения — [QA](qa/e1-04b-web-report.md). Исследовательская next-intl 4.5.8 не принята для релиза; возврат 4.15.1 отклонён automatic approval review как known vulnerable production dependency без owner risk acceptance. Запрос владельцу отправлен, ответа пока нет. Финальные pin/build/browser/kit/CI и commit/push ещё не выполнены. Чужие изменения не откатывались, исходное ТЗ не редактировалось.
+
+### Web identity · разрешение D-33
+
+Владелец явно разрешил next-intl 4.15.1 с известным риском picomatch для local/checks/commit/push. Pin восстановлен, прежний блокер снят; 4.5.8 не итоговое решение. Повторяются проверки фактического дерева, затем ветка передаётся на Review. Production остаётся запрещён этим ограниченным разрешением.
+
+Web pin 4.15.1: финальные локальные проверки на этом pin успешны — types/build/format, 13 unit, 52 DB/HTTP, real browser login/logout/two owners/mobile/locales/themes. Orval generation воспроизводима. Текущий npm audit — 0 findings без заявления, что known advisory устранена. Результат передаётся на Review после commit/push и проверки комплекта; production не разрешён.
+
+Web login код 70da260d2c62bbca0eed4611d0635a94df05f6ce: [CI](https://github.com/PlykinYurij/povod-project/actions/runs/44366261060) — четыре jobs success. Windows isolated kit/integrity и отдельный /login из архива успешны, digest в QA. Traced watcher paths — 0, без заявления устранённой advisory. Этап Review, owner/main/production не отмечены. Следующая реализация — signup/code UI после ревью текущего результата.
+
+## 19.11.2026 · Review: навигация входа
+
+Продолжена текущая feat/web-sign-in (чистый checkout перед правками). По замечаниям владельца добавлены CTA главной, session guard login, safe returnTo/private redirect и возврат после входа. Homepage markup перенесён в FSD _pages/home, RU/EN; identity provider получает только свои namespaces. Регистрация UI остаётся следующей задачей.
+
+Types, web build, format и 28 unit успешны. Browser переходы (включая query/hash/external returnTo) прошли с отдельным настоящим API и той же dev-БД. Пользовательские сервисы не остановлены: API 3001 дал 503 в исходном login-прогоне, конфигурация этого процесса не объявлена исправленной. Свои тестовые данные/процессы удалены. Подробности в QA web identity.
+
+## 19.11.2026 · Web signup/code/reset на той же ветке
+
+По прямому поручению владельца после навигационных исправлений продолжена feat/web-sign-in. Регистрация с email-кодом/resend/автовходом и reset по коду/новому паролю/обычному login реализованы через готовые Orval hooks. Новых зависимостей, backend endpoints или миграций нет. Два flow в памяти страницы, без секретов в URL/storage, ошибки и неопределённый confirm не выданы за успех.
+
+[Карточка](product/e1-04-identity-web.md), [QA](qa/e1-04-identity-web-report.md), [приёмка](operations/web-identity.md). Реальный браузерный прогон с собственным API, test-БД и отдельным inbox прошёл: User только после кода, resend, оба пути, отзыв старых сеансов, обычный вход новым паролем. RU/EN, 360 px, обе темы, исправлены dark contrast и hydration aria-pressed. UI fixtures 422/429/503 помечены отдельно. Ролевые checkbox реализации отмечены; принятие владельцем/main остаются открытыми. Production не проверялся/не разрешён.
+
+## 19.11.2026 · Review D-34: формы и имя владельца
+
+На feat/web-sign-in выполнены шесть замечаний: иконки темы, язык без видимой подписи, ошибки ввода под полями без native tooltip, шесть живых правил нового пароля без пробелов, повтор пароля в signup/reset, обязательное displayName при регистрации. Имя переносится pending → User при confirm, возвращается в login/session и используется для обращения; старые записи остаются nullable. Миграция 20261119010000_identity_display_name применена в dev/test без удаления данных. OpenAPI 0.5.0 и Orval обновлены; новых зависимостей нет. Это историческая запись итерации; последующее переименование — D-35 ниже.
+
+[Решение D-34](product/decisions.md), [QA](qa/identity-review-report.md), [локальная приёмка](operations/web-identity.md). Реальные 55 HTTP/PG тестов и browser/API/test inbox прошли; проверены 0 native invalid events, оба языка/темы/360 px/Tab и имя после reset. Владелец ещё не принял результат; production не менялся.
+
+## 19.11.2026 · Code review D-35: поддерживаемость frontend
+
+Продолжение того же review в feat/web-sign-in: userName/OpenAPI 0.6.0/сохраняющая данные миграция, FSD-алиасы, React Hook Form, отдельные компоненты состояний и полей, серверные getTranslations, постоянные theme/query конфигурации. Orval и transport перенесены в apps/web/src/shared/api; отдельный workspace удалён, artifact builder обновлён. Правила закреплены в apps/web/AGENTS.md. Исходное ТЗ неизменно, владелец ещё не принял результат и merge не объявлен.
+
+[QA D-35](qa/identity-code-review-report.md): 57 frontend-проверок, включая 13 DOM-тестов, 55 API/PG-проверок; реальный browser/test API/inbox успешно пройден. Root npm test — 67 проверок; typecheck/build обоих workspace, format и воспроизводимая генерация успешны. Чистый npm ci проверен отдельно из-за Windows file lock в работающем checkout. Первые замечания проверок и ограничения записаны отдельно, не выданы за успех. Build-комплект/CI оцениваются отдельно по SHA.
+
+По последующему уточнению владельца frontend-тесты размещены рядом с фичами, компонентами и shared-модулями; общая apps/web/tests удалена. Обновлены правила AGENTS и discovery/команды Vitest. Набор проверок сохранён: 57 web, 67 вместе с artifact/startup; это перенос тестов без изменения продукта.
