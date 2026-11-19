@@ -1,5 +1,5 @@
-import { LoginPage } from "../../../src/_pages/login";
-import { safeReturnTo } from "../../../src/shared/config/auth-navigation";
+import { LoginPage } from "@pages/login";
+import { safeReturnTo } from "@shared/config/auth-navigation";
 
 export default async function Page({
   searchParams,

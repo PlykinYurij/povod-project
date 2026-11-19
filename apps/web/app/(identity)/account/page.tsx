@@ -1,2 +1,2 @@
-import { AccountPage } from "../../../src/_pages/account";
+import { AccountPage } from "@pages/account";
 export default AccountPage;

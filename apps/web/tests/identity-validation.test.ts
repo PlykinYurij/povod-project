@@ -4,15 +4,15 @@ import {
   validEmailCode,
   passwordRules,
   validEmail,
-  validDisplayName,
+  validUserName,
   passwordsMatch,
-} from "../src/shared/lib/identity-validation";
+} from "@shared/lib/identity-validation";
 import {
   hasFieldError,
   identityErrorKey,
   hasInlineFieldErrors,
-} from "../src/shared/api/identity-errors";
-import { ApiRequestError } from "@povod/api-client";
+} from "@shared/api/identity-errors";
+import { ApiRequestError } from "@shared/api";
 
 test.each(["Abcdef1!", "A1!" + "a".repeat(125)])(
   "new password accepts D-28 boundaries",
@@ -59,9 +59,9 @@ test("inline validation catches malformed emails and missing names", () => {
   expect(validEmail("test")).toBe(false);
   expect(validEmail("test@example.test")).toBe(true);
   for (const name of ["", "   ", "A".repeat(81), "Имя\nФамилия"])
-    expect(validDisplayName(name)).toBe(false);
-  expect(validDisplayName(" Андрей ")).toBe(true);
-  expect(validDisplayName("Анна-Мария")).toBe(true);
+    expect(validUserName(name)).toBe(false);
+  expect(validUserName(" Андрей ")).toBe(true);
+  expect(validUserName("Анна-Мария")).toBe(true);
 });
 test("email codes preserve leading zeros and reject number-like input", () => {
   expect(validEmailCode("000123")).toBe(true);

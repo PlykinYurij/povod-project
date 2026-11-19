@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ApiRequestError } from "@povod/api-client";
+import { ApiRequestError } from "@shared/api";
 import { useRetryAfter } from "./use-retry-after";
 
 /** One in-flight operation per mounted form; navigation invalidates late UI results. */

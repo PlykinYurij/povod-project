@@ -3,7 +3,7 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import tokens from "../../shared/ui/identity-tokens.module.css";
+import tokens from "@shared/ui/identity-tokens.module.css";
 import { Preferences } from "./preferences";
 import styles from "./identity-shell.module.css";
 

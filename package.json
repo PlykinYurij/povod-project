@@ -4,8 +4,7 @@
   "private": true,
   "workspaces": [
     "apps/web",
-    "apps/api",
-    "packages/api-client"
+    "apps/api"
   ],
   "packageManager": "npm@11.20.0",
   "engines": {
@@ -31,10 +30,13 @@
     "api:openapi": "node scripts/export-openapi.mjs",
     "api:generate": "orval --config orval.config.ts",
     "test:web": "vitest run --config apps/web/vitest.config.mts",
-    "format:web": "prettier --check \"apps/web/src/**/*.{ts,tsx,css,json}\" \"packages/api-client/src/*.ts\""
+    "format:web": "prettier --check \"apps/web/app/**/*.{ts,tsx,css}\" \"apps/web/src/**/*.{ts,tsx,css,json}\" \"apps/web/tests/**/*.{ts,tsx}\""
   },
   "devDependencies": {
+    "@testing-library/react": "16.3.3",
+    "@testing-library/user-event": "14.6.13",
     "@types/node": "26.6.6",
+    "jsdom": "31.0.1",
     "orval": "8.48.0",
     "prettier": "3.10.1",
     "typescript": "5.9.3",

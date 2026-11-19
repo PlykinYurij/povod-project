@@ -1,14 +1,12 @@
-"use client";
-
 import Link from "next/link";
-import { useTranslations } from "next-intl";
-import { PasswordResetForm } from "../../features/password-reset";
-import { IdentityShell } from "../../widgets/identity-shell";
-import { Title } from "../../shared/ui";
-import styles from "../../shared/ui/identity-form/form.module.css";
+import { getTranslations } from "next-intl/server";
+import { PasswordResetForm } from "@features/password-reset";
+import { IdentityShell } from "@widgets/identity-shell";
+import { Title } from "@shared/ui";
+import styles from "@shared/ui/identity-form/form.module.css";
 
-export function PasswordResetPage() {
-  const t = useTranslations("Identity");
+export async function PasswordResetPage() {
+  const t = await getTranslations("Identity");
   return (
     <IdentityShell>
       <Title order={1}>{t("resetTitle")}</Title>

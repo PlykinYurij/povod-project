@@ -2,7 +2,7 @@
 
 Краткие обязательные правила для выполнения web-задач вынесены в [apps/web/AGENTS.md](../../apps/web/AGENTS.md). Этот документ сохраняет подробную структуру, обоснования и ссылки; не является второй независимо меняющейся инструкцией. При изменении правил сначала обновить решения владельца и локальный AGENTS, затем соответствующие пояснения здесь. Рабочий процесс агента — [povod-web-task](../../apps/web/.agents/skills/povod-web-task/SKILL.md).
 
-Статус: правила согласованы владельцем (D-26), 11 ноября 2026; точные версии и последующие технические настройки ещё проверяются. Код/зависимости/конфиги пока не создаются. Приоритет [решений](../product/decisions.md); план каркаса не расширяется установкой всего стека сразу.
+Статус: основа согласована владельцем D-26, дополнена ревью D-35. Реализованная identity-вертикаль и версии описаны в [QA ревью](../qa/identity-code-review-report.md). Приоритет [решений](../product/decisions.md); следующие задачи не расширяются установкой всего стека заранее.
 
 ## Принято владельцем
 
@@ -23,16 +23,23 @@ apps/web/
     entities/          # project, invitation, session-user
     shared/
       ui/              # адаптеры UI-kit, общие примитивы, без бизнес-правил
-      api/             # transport, ошибки, browser/server entry points
+      api/             # Orval generated/, transport, ошибки, browser/server entry points
       config/
       lib/
       styles/          # tokens.css, themes.css, минимальные global/reset
-packages/api-client/   # сгенерированные Orval-модели и функции
 ```
 
 Это проектная адаптация, не требование заранее создать пустые папки. Next app и FSD _app/_pages разделены, чтобы не конфликтовать с особым значением app/pages для Next. Импорты идут вниз по слоям; соседние features не связывать через внутренние файлы, композиция выше. Slice открывает небольшой публичный API. Разделять `index.ts` и `index.server.ts`; server-only модуль не экспортируется из client-barrel. `use client` только на интерактивной границе, не на всём приложении. FSD не оправдывает лишние обёртки или абстракции для одного поля.
 
 ## UI-kit, стили и темы
+
+Ревью D-35: межслойные импорты — алиасы `@pages/*`, `@widgets/*`, `@features/*`, `@entities/*`, `@shared/*`; `@app/*` — для route/layout-композиции. Внутри slice/сегмента относительные импорты. Одно объявление `const`/`let` на переменную, деструктуризация допустима. Крупные страницы разделять на состояния/компоненты; маленький index открывает публичный API. Не заменять читаемые ранние возвраты универсальной фабрикой состояний.
+
+Формы identity используют React Hook Form, общий EmailInput и NewPasswordFields из entities/identity. Конфигурация Mantine вынесена в `_app/identity-theme.ts`. `_app/query-client.ts` создаёт новый cache на сервере и стабильный browser instance; private cache очищается при смене владельца/logout. `useState` для стабильного клиента был допустим, но заменён явной фабрикой по ревью. Простая module-level константа `new QueryClient()` в SSR-модуле запрещена.
+
+`next-intl` работает с Server Components: async-страницы используют `getTranslations`, конфигурация загрузки словарей централизована в shared/i18n/request.ts. Переводы не требуют `use client`; в browser provider передаются только identity namespaces. AccountPage/LoginPage — серверные композиции; их интерактивные Session-компоненты остаются клиентскими из-за Query, навигации и работы с API-session. Серверную авторизацию нельзя имитировать по наличию UI: доступ всегда проверяет backend.
+
+Проверено 19.11.2026 по официальным источникам: [next-intl Server/Client](https://next-intl.dev/docs/environments/server-client-components), [TanStack advanced SSR](https://tanstack.com/query/latest/docs/framework/react/guides/advanced-ssr), [React Hook Form useForm](https://react-hook-form.com/docs/useform). Точные версии реализации закреплены в package-lock.json, примеры из latest-документации сверены с установленными типами и сборкой.
 
 **Согласовано:** Mantine для кабинета и admin (уже начальный вариант §9). Он подходит к CSS Modules и переменным; выбор kit принят D-26. Компоненты kit используются через shared/ui; бизнес-композиция остаётся в features/widgets. Адаптер создаётся по реальной потребности, не копировать весь kit заранее. Прямые vendor-импорты допускаются в этом слое и конфигурации provider; правило импортов позже автоматизировать.
 
@@ -54,7 +61,7 @@ Server Components для первоначального чтения и публ
 
 Swagger UI — представление, источник генерации — OpenAPI JSON NestJS со стабильными operationId, DTO, статусами/ошибками и описанием cookie/CSRF/идемпотентности. Доступ к UI/JSON по среде согласовать, не считать документацию auth-защитой API. Генерация из проверенной версии схемы, без скачивания production-секретов. Generated-файлы не редактировать; исправлять схему и перегенерировать. Продуктовые view models не обязательно совпадают с DTO, но DTO/enum не копируются руками.
 
-Предложение: раздельные browser/server entry points в packages/api-client. Browser получает Orval React Query hooks/methods; server — generated plain fetch-функции без React hooks, browser globals и client-провайдеров. Orval-конфигурация и версия должны быть проверены перед созданием генерации, не импортировать hook-модуль в RSC. Общий transport обрабатывает base URL, credentials/CSRF, AbortSignal и согласованный Error DTO. Сервер передаёт cookie только доверенному API для текущего запроса; никогда не пересылает её произвольному routeUrl/гостевому host. Mutator не должен скрывать 401/409/422 как успех.
+По ревью D-35 раздельные browser/server entry points находятся в apps/web/src/shared/api. Browser получает Orval React Query hooks/methods; server — generated plain fetch-функции без React hooks, browser globals и client-провайдеров. Не импортировать hook-модуль в RSC. Общий transport обрабатывает base URL, credentials/CSRF, AbortSignal и согласованный Error DTO. Сервер передаёт cookie только доверенному API для текущего запроса; никогда не пересылает её произвольному routeUrl/гостевому host. Mutator не должен скрывать 401/409/422 как успех. Отдельный packages/api-client удалён: сейчас это frontend-код с одним потребителем.
 
 Publication retry использует тот же operation key; generic автоматический retry мутаций не должен создавать новый ключ/период. Ошибки полей отображаются по paths, конфликт ревизии не затирается retry. Будущий CI сверяет схему и generated diff, typecheck потребителей; hooks генерировать только по существующему контракту.
 

@@ -1,4 +1,4 @@
-import { ApiRequestError } from "@povod/api-client";
+import { ApiRequestError } from "./transport";
 
 export function identityErrorKey(error: unknown, confirming = false) {
   if (!(error instanceof ApiRequestError))

@@ -229,6 +229,12 @@ Types, web build, format и 28 unit успешны. Browser переходы (в
 
 ## 19.11.2026 · Review D-34: формы и имя владельца
 
-На feat/web-sign-in выполнены шесть замечаний: иконки темы, язык без видимой подписи, ошибки ввода под полями без native tooltip, шесть живых правил нового пароля без пробелов, повтор пароля в signup/reset, обязательное displayName при регистрации. Имя переносится pending → User при confirm, возвращается в login/session и используется для обращения; старые записи остаются nullable. Миграция 20261119010000_identity_display_name применена в dev/test без удаления данных. OpenAPI 0.5.0 и Orval обновлены; новых зависимостей нет.
+На feat/web-sign-in выполнены шесть замечаний: иконки темы, язык без видимой подписи, ошибки ввода под полями без native tooltip, шесть живых правил нового пароля без пробелов, повтор пароля в signup/reset, обязательное displayName при регистрации. Имя переносится pending → User при confirm, возвращается в login/session и используется для обращения; старые записи остаются nullable. Миграция 20261119010000_identity_display_name применена в dev/test без удаления данных. OpenAPI 0.5.0 и Orval обновлены; новых зависимостей нет. Это историческая запись итерации; последующее переименование — D-35 ниже.
 
 [Решение D-34](product/decisions.md), [QA](qa/identity-review-report.md), [локальная приёмка](operations/web-identity.md). Реальные 55 HTTP/PG тестов и browser/API/test inbox прошли; проверены 0 native invalid events, оба языка/темы/360 px/Tab и имя после reset. Владелец ещё не принял результат; production не менялся.
+
+## 19.11.2026 · Code review D-35: поддерживаемость frontend
+
+Продолжение того же review в feat/web-sign-in: userName/OpenAPI 0.6.0/сохраняющая данные миграция, FSD-алиасы, React Hook Form, отдельные компоненты состояний и полей, серверные getTranslations, постоянные theme/query конфигурации. Orval и transport перенесены в apps/web/src/shared/api; отдельный workspace удалён, artifact builder обновлён. Правила закреплены в apps/web/AGENTS.md. Исходное ТЗ неизменно, владелец ещё не принял результат и merge не объявлен.
+
+[QA D-35](qa/identity-code-review-report.md): 57 frontend-проверок, включая 13 DOM-тестов, 55 API/PG-проверок; реальный browser/test API/inbox успешно пройден. Root npm test — 67 проверок; typecheck/build обоих workspace, format и воспроизводимая генерация успешны. Чистый npm ci проверен отдельно из-за Windows file lock в работающем checkout. Первые замечания проверок и ограничения записаны отдельно, не выданы за успех. Build-комплект/CI оцениваются отдельно по SHA.

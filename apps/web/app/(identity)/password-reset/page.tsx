@@ -1,1 +1,1 @@
-export { PasswordResetPage as default } from "../../../src/_pages/password-reset";
+export { PasswordResetPage as default } from "@pages/password-reset";

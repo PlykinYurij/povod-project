@@ -91,7 +91,7 @@
     "rate": "Too many requests. Try again in {seconds} sec.",
     "rateUnknown": "Too many requests. Please try again later.",
     "codeRejected": "Check the code or request a new one.",
-    "displayName": "Your name",
+    "userName": "Your name",
     "nameInvalid": "Enter a name of 1–80 characters without line breaks.",
     "confirmPassword": "Repeat password",
     "passwordMismatch": "Passwords must match.",

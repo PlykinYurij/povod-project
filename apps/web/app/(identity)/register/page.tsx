@@ -1,5 +1,5 @@
-import { RegisterPage } from "../../../src/_pages/register";
-import { safeReturnTo } from "../../../src/shared/config/auth-navigation";
+import { RegisterPage } from "@pages/register";
+import { safeReturnTo } from "@shared/config/auth-navigation";
 
 export default async function Page({
   searchParams,

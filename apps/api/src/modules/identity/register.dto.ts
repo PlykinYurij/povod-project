@@ -24,7 +24,7 @@ export class RegisterDto {
   @MinLength(1)
   @MaxLength(80)
   @Matches(/^[^\x00-\x1f\x7f-\x9f\u2028\u2029]+$/)
-  displayName!: string;
+  userName!: string;
 
   @ApiProperty({
     format: "email",
@@ -53,7 +53,7 @@ export class RegisteredUserDto {
     maxLength: 80,
     description: "May be null for an existing account",
   })
-  displayName!: string | null;
+  userName!: string | null;
 }
 export class RegisterResponseDto {
   @ApiProperty({ type: RegisteredUserDto }) user!: RegisteredUserDto;

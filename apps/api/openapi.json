@@ -889,7 +889,7 @@
   "info": {
     "title": "Повод API",
     "description": "",
-    "version": "0.5.0",
+    "version": "0.6.0",
     "contact": {}
   },
   "tags": [],
@@ -971,7 +971,7 @@
       "RegisterDto": {
         "type": "object",
         "properties": {
-          "displayName": {
+          "userName": {
             "type": "string",
             "minLength": 1,
             "maxLength": 80,
@@ -996,7 +996,7 @@
           }
         },
         "required": [
-          "displayName",
+          "userName",
           "email",
           "password"
         ]
@@ -1049,7 +1049,7 @@
             "type": "string",
             "format": "email"
           },
-          "displayName": {
+          "userName": {
             "type": "string",
             "nullable": true,
             "maxLength": 80,
@@ -1059,7 +1059,7 @@
         "required": [
           "id",
           "email",
-          "displayName"
+          "userName"
         ]
       },
       "RegisterResponseDto": {

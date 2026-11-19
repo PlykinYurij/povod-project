@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
-import { useLogout } from "@povod/api-client";
-import { clearPrivateQueries } from "../../shared/api/private-cache";
+import { useLogout } from "@shared/api";
+import { clearPrivateQueries } from "@shared/api/private-cache";
 
 export function useSignOut() {
   const router = useRouter();

@@ -1,10 +1,10 @@
 # Web: инструкции агенту
 
-- D-34: переключатели темы/языка компактны, с aria-label. Identity-формы noValidate, ошибки ввода только под полем; общие сетевые ошибки отдельно. Новый пароль с постоянным живым списком правил и повторным вводом, без пробелов; login не применяет новые правила к старому паролю. Имя displayName требуется при регистрации; в ответе nullable для старых аккаунтов. [Review QA](../../docs/qa/identity-review-report.md).
+- D-34: переключатели темы/языка компактны, с aria-label. Identity-формы noValidate, ошибки ввода только под полем; общие сетевые ошибки отдельно. Новый пароль с постоянным живым списком правил и повторным вводом, без пробелов; login не применяет новые правила к старому паролю. Имя userName требуется при регистрации; в ответе nullable для старых аккаунтов. [Review QA](../../docs/qa/identity-review-report.md).
 
 - Продолжение identity: [signup/code/reset](../../docs/product/e1-04-identity-web.md), [локальная приёмка](../../docs/operations/web-identity.md), [QA](../../docs/qa/e1-04-identity-web-report.md). Auth-композиции — entities/identity; общие стили — shared/ui/identity-form/form.module.css.
 
-- Первая web identity-часть: [карточка](../../docs/product/e1-04b-web.md), [QA](../../docs/qa/e1-04b-web-report.md). Generated API client — packages/api-client; client/server entry разделены. Общие CSS tokens — shared/ui/identity-tokens.module.css. Next-intl 4.15.1 с известным риском picomatch явно разрешена D-33 для local/checks/commit/push; production не разрешён. Не подменять это разрешение утверждением чистого audit.
+- Первая web identity-часть: [карточка](../../docs/product/e1-04b-web.md), [QA](../../docs/qa/e1-04b-web-report.md). Generated API client — apps/web/src/shared/api; client/server entry разделены. Общие CSS tokens — shared/ui/identity-tokens.module.css. Next-intl 4.15.1 с известным риском picomatch явно разрешена D-33 для local/checks/commit/push; production не разрешён. Не подменять это разрешение утверждением чистого audit.
 
 Действуют для `apps/web/**` вместе с [корневыми правилами](../../AGENTS.md). Это основная краткая инструкция frontend; [web-conventions](../../docs/architecture/web-conventions.md) содержит подробности и обоснования. Решения владельца важнее старых предложений.
 
@@ -17,6 +17,9 @@
 
 ## Стек и структура
 
+- Между слоями и slices импортировать через `@pages/*`, `@widgets/*`, `@features/*`, `@entities/*`, `@shared/*`; `@app/*` предназначен для route/layout-композиции. Алиасы настроены одинаково в TypeScript, Next.js и Vitest. Внутри одного slice или сегмента shared — относительные импорты. Использовать публичный API чужого slice, не обходить границы через deep imports. Generated Orval сохраняет собственные относительные импорты.
+- Каждое объявление переменной — отдельное `const` или `let`; не объединять разные переменные запятыми в одном объявлении. Деструктуризация одного результата допустима.
+- Компоненты и hooks разделять по ответственности и файлам; `index` — небольшой публичный API или композиция. Вместо длинного `if/else` в странице — отдельные состояния и короткие ранние возвраты. Не создавать мелкие обёртки без самостоятельной обязанности.
 - npm workspaces, один корневой package-lock.json, Node 26.13.0 (проверенный npm 11.20.0). Не использовать pnpm/yarn/Corepack. Зависимости вводи по реальному потребителю; существенные изменения обсуждай до установки.
 - TypeScript strict; unknown проверять на границе, не обходить типы через any/необоснованные assertions.
 - Next App Router: `app/` — тонкие route/layout/loading/error/metadata. FSD в `src/_app`, `_pages`, `widgets`, `features`, `entities`, `shared`; пустые слои заранее не создавай. Импорты вниз, композиция соседних features — выше; без deep imports в чужой slice.
@@ -28,6 +31,8 @@
 - Mantine — кабинет/admin, через `src/shared/ui` и provider-конфигурацию; адаптеры по необходимости. Бизнес-композиции не класть в shared/ui. Приглашения — оригинальные versioned components, без UI-kit/providers кабинета.
 - CSS Modules; глобально только reset/tokens/themes. Переиспользуемые цвета/spacing/типографику/радиусы задавай CSS variables, используй семантические имена. Light/dark кабинета не меняют themeId приглашения. Подробная шкала — в web-conventions.
 - next-intl для RU/EN сервиса/кабинета; приглашения/RSVP RU. UI/ошибки через ключи, даты/числа форматировать с locale/поясом; тексты владельца не переводить автоматически. В client передавать нужные сообщения, не весь словарь.
+- Серверные переводы получать через `next-intl/server` (`getTranslations`, `getMessages`, `getLocale`), конфигурация словарей — shared/i18n/request.ts. Не импортировать JSON словаря в страницах и не переводить страницу в client только ради переводов.
+- Постоянную тему, палитры и настройки провайдеров держать в именованных конфигурациях `_app`, а не внутри JSX. QueryClient: отдельный на серверный вызов, стабильный экземпляр в браузере через getQueryClient; глобальный серверный cache запрещён.
 - Доступные label/focus/errors, клавиатура, reduced-motion; проверяй мобильную ширину 360 px. Для данных показывай empty/loading/error/success; ошибка сохранения не равна успеху.
 
 ## Данные и API
@@ -35,9 +40,9 @@
 - Auth-навигация: общие `safeReturnTo`/`loginHref` в shared/config/auth-navigation. Authenticated `/login` → безопасный returnTo/default `/account`; guest private page → login с исходным внутренним адресом; logout → login без автоматического возврата. Allowlist расширять только при реализации реального private route; не принимать внешний URL из query. При неизвестном состоянии Session (сеть/503) не выдавать его за 401.
 
 - TanStack Query — клиентское серверное состояние; server fetch — initial/server rendering. Не дублируй fetch без необходимости. QueryClient на сервере на запрос; private cache не делится между владельцами, очищается при logout.
-- OpenAPI NestJS — источник DTO и ошибок. Orval генерирует типы/методы/hooks в `packages/api-client`, shared/api — transport/адаптер. Generated-файлы руками не менять; не придумывать endpoint/DTO вместо изменения контракта.
+- OpenAPI NestJS — источник DTO и ошибок. Orval генерирует типы/методы/hooks в `apps/web/src/shared/api`, shared/api — transport/адаптер. Generated-файлы руками не менять; не придумывать endpoint/DTO вместо изменения контракта.
 - Server entry использует plain generated methods, не React-hooks. Cookie/CSRF передавать только доверенному API; приватные токены не попадут в localStorage, Zustand, логи или публичный HTML.
-- Формы держат собственный ввод; Zustand только для необходимого общего UI-state, не копия Query cache. При SSR не использовать глобальный store между запросами.
+- Формы с валидацией и несколькими полями — React Hook Form: один источник значений/errors/touched, без параллельных invalid-флагов и ручного FormData. Общие бизнес-поля identity — entities/identity; shared/ui содержит адаптеры UI-kit. Серверные ошибки/Retry-After/защиту от позднего ответа после unmount сохранять отдельно от клиентской валидации. Пароль и его повтор не нормализовать; повтор не входит в API DTO. Zustand только для необходимого общего UI-state, не копия Query cache.
 - Save — expectedRevision, конфликт не затирать. Publish retry — тот же idempotency key; не включай слепой retry, который выдаёт новый ключ/период. Ошибки 401/409/422 и field paths отображай явно.
 
 ## Инварианты продукта
@@ -51,6 +56,7 @@
 ## Проверки и завершение
 
 - Vitest для значимого поведения логики/компонентов; не тестировать внутреннюю реализацию или копию константы. Browser E2E/SSR/API не подменять Vitest. ESLint + стандартный Prettier; не добавлять Biome/второй форматтер.
+- Frontend-тесты находятся в `apps/web/tests`; запуск из корня `npm run test:web`. Компоненты и формы проверять в Vitest + Testing Library/jsdom по действиям пользователя, HTTP boundary допустимо подменять. Реальный API/БД проверяются отдельно. Generated-код вручную не форматировать, исключение закреплено в .prettierignore.
 - Найди реальные scripts в manifest и workspace-контекст до запуска. Установка/lockfile — из корня монорепозитория; не создавать отдельный lockfile внутри apps/web. Typecheck включает next typegen; не править generated next-env.d.ts вручную. Для пока отсутствующих scripts явно писать «не запускалось», не выдумывать команды.
 - Для UI проверь состояния, клавиатуру, mobile, темы и локали по области изменения. Для server/client — build/typecheck после появления инструментов. Обновляй поведение в docs и команды в README только после фактической проверки.
 - Отчёт: изменено; проверено (команды/результаты); не проверено и причина; оставшиеся вопросы. Не выдавать макет, stub или тестовый успех за рабочий backend.

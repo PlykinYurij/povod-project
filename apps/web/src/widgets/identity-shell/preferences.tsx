@@ -3,10 +3,10 @@
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useComputedColorScheme, useMantineColorScheme } from "@mantine/core";
-import { ActionIcon } from "../../shared/ui";
-import { ThemeIcon } from "../../shared/ui/theme-icon";
+import { ActionIcon } from "@shared/ui";
+import { ThemeIcon } from "@shared/ui/theme-icon";
 import { useEffect, useState } from "react";
-import { LOCALE_COOKIE, parseLocale } from "../../shared/config/locale";
+import { LOCALE_COOKIE, parseLocale } from "@shared/config/locale";
 import styles from "./identity-shell.module.css";
 
 export function Preferences() {

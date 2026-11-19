@@ -91,7 +91,7 @@ test("existing unnamed owners can log in with an existing password containing sp
   const browser = new Browser();
   const response = await browser.post("login", {email,password:legacyPassword});
   expect(response.status).toBe(200);
-  expect((await response.json() as {user:{displayName:string|null}}).user.displayName).toBeNull();
+  expect((await response.json() as {user:{userName:string|null}}).user.userName).toBeNull();
 });
 function freeze(now: number) {
   vi.spyOn(app.get(AuthClock), "now").mockImplementation(() => new Date(now));

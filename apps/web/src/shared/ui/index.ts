@@ -14,3 +14,4 @@ export {
   Title,
 } from "@mantine/core";
 export { PasswordInput } from "./password-input";
+export type { TextInputProps } from "@mantine/core";

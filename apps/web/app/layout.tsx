@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import "./globals.css";
 import { cookies } from "next/headers";
-import { LOCALE_COOKIE, parseLocale } from "../src/shared/config/locale";
+import { LOCALE_COOKIE, parseLocale } from "@shared/config/locale";
 
 export const metadata: Metadata = {
   title: "Повод — сайты-приглашения",

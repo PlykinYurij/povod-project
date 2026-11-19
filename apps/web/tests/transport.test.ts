@@ -1,24 +1,19 @@
 import { afterEach, expect, test, vi } from "vitest";
-import {
-  apiFetch,
-  ApiRequestError,
-} from "../../../packages/api-client/src/transport";
+import { apiFetch, ApiRequestError } from "@shared/api/transport";
 
 afterEach(() => vi.unstubAllGlobals());
 test("invalid display name payload cannot reach the greeting", async () => {
   vi.stubGlobal(
     "fetch",
-    vi
-      .fn()
-      .mockResolvedValue(
-        Response.json({
-          user: {
-            id: "synthetic",
-            email: "owner@example.test",
-            displayName: { unexpected: true },
-          },
-        }),
-      ),
+    vi.fn().mockResolvedValue(
+      Response.json({
+        user: {
+          id: "synthetic",
+          email: "owner@example.test",
+          userName: { unexpected: true },
+        },
+      }),
+    ),
   );
   await expect(apiFetch("/api/v1/auth/session")).rejects.toMatchObject({
     status: 503,

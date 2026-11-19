@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
 import { QueryClient } from "@tanstack/react-query";
-import { clearPrivateQueries } from "../src/shared/api/private-cache";
+import { clearPrivateQueries } from "@shared/api/private-cache";
 
 test("a late response from owner A cannot populate cache after switching owners", async () => {
   const client = new QueryClient({

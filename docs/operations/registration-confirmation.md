@@ -17,9 +17,9 @@ API — http://127.0.0.1:3001, просмотр Swagger — http://127.0.0.1:300
 
 Использовать свой синтетический email. Все POST — JSON, Origin `http://127.0.0.1:3000`, CSRF из GET `/api/v1/auth/csrf`, один cookie context. PowerShell-клиент/сессии: [инструкция](sessions.md). Код, cookie, пароли и письмо не выводить в диагностике и не коммитить.
 
-1. POST `/api/v1/auth/register` с `{displayName,email,password}` → **202 `{registrationId,expiresAt}`**. Это заявка, не User. GET session без прежней owner-cookie → 401. Если браузер уже был авторизован, старт новой заявки не повышает её права и не выдаёт новую Session.
+1. POST `/api/v1/auth/register` с `{userName,email,password}` → **202 `{registrationId,expiresAt}`**. Это заявка, не User. GET session без прежней owner-cookie → 401. Если браузер уже был авторизован, старт новой заявки не повышает её права и не выдаёт новую Session.
 2. Найти своё письмо в `.local-mail/`: `purpose=registration`, `to` — ваш тестовый email. Имя файла — UUID выдачи, не email и не registrationId. Код — строка шести цифр, включая ведущие нули. Папка игнорируется Git, никому её не передавать.
-3. POST `/api/v1/auth/register/confirm` с `{registrationId,code}` → **201 `{user:{id,email,displayName}}`** и HttpOnly session-cookie. GET session → 200. После смены cookie заново получить CSRF перед мутациями.
+3. POST `/api/v1/auth/register/confirm` с `{registrationId,code}` → **201 `{user:{id,email,userName}}`** и HttpOnly session-cookie. GET session → 200. После смены cookie заново получить CSRF перед мутациями.
 4. Повтор confirm → 400 REGISTRATION_CODE_INVALID, без второго пользователя/сессии. Потеря успешного ответа: обычный вход с выбранным паролем; не обещать повторный 201.
 5. Resend — POST `/register/resend` с `{registrationId}` → 202 с прежним ID и новым expiresAt. Старый код недействителен. Не передавать expiresAt обратно: неизвестные поля отклоняются 422.
 

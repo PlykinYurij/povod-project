@@ -22,7 +22,7 @@ export function validEmail(value: string): boolean {
   return value.length <= 254 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
 }
 
-export function validDisplayName(value: string): boolean {
+export function validUserName(value: string): boolean {
   const name = value.trim();
   return (
     name.length > 0 &&

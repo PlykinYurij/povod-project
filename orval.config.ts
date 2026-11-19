@@ -2,11 +2,11 @@ import { defineConfig } from "orval";
 
 const output = {
   mode: "single" as const,
-  schemas: "./packages/api-client/src/generated/models",
+  schemas: "./apps/web/src/shared/api/generated/models",
   override: {
     query: { version: 5 as const },
     mutator: {
-      path: "./packages/api-client/src/transport.ts",
+      path: "./apps/web/src/shared/api/transport.ts",
       name: "apiFetch",
     },
     fetch: { includeHttpResponseReturnType: false },
@@ -18,7 +18,7 @@ export default defineConfig({
     output: {
       ...output,
       client: "fetch",
-      target: "./packages/api-client/src/generated/http.ts",
+      target: "./apps/web/src/shared/api/generated/http.ts",
     },
   },
   query: {
@@ -27,7 +27,7 @@ export default defineConfig({
       ...output,
       client: "react-query",
       httpClient: "fetch",
-      target: "./packages/api-client/src/generated/query.ts",
+      target: "./apps/web/src/shared/api/generated/query.ts",
     },
   },
 });

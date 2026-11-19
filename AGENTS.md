@@ -1,6 +1,6 @@
 # Работа над «Поводом»
 
-- Frontend quality зафиксирована ниже. Рабочая web-задача добавляет @povod/api-client: root typecheck/build проверяют три workspace, npm test включает artifact/startup и web unit tests. Проверки/версии и статус зависят от фактического финального pin, см. [web QA](docs/qa/e1-04b-web-report.md); итоговый pin next-intl 4.15.1 явно разрешён владельцем D-33 для local/checks/commit/push, без production.
+- В монорепозитории два workspace: apps/web и apps/api. Orval-клиент принадлежит frontend и расположен в apps/web/src/shared/api; root typecheck/build проверяют оба приложения. npm test включает artifact/startup и frontend unit/component tests. [Текущее web-ревью](docs/qa/identity-code-review-report.md). Pin next-intl 4.15.1 разрешён владельцем D-33 для local/checks/commit/push, без production.
 
 - Для задач backend читай [apps/api/AGENTS.md](apps/api/AGENTS.md). Рекомендации по стеку и валидации: [backend-conventions](docs/architecture/backend-conventions.md); стек и правила согласованы D-27, версии и параметры проверяются перед реализацией.
 

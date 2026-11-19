@@ -1,15 +1,13 @@
-"use client";
-
 import Link from "next/link";
-import { useTranslations } from "next-intl";
-import { RegistrationForm } from "../../features/register";
-import { IdentityShell } from "../../widgets/identity-shell";
-import { Title } from "../../shared/ui";
-import { loginHref } from "../../shared/config/auth-navigation";
-import styles from "../../shared/ui/identity-form/form.module.css";
+import { getTranslations } from "next-intl/server";
+import { RegistrationForm } from "@features/register";
+import { IdentityShell } from "@widgets/identity-shell";
+import { Title } from "@shared/ui";
+import { loginHref } from "@shared/config/auth-navigation";
+import styles from "@shared/ui/identity-form/form.module.css";
 
-export function RegisterPage({ returnTo }: { returnTo: string }) {
-  const t = useTranslations("Identity");
+export async function RegisterPage({ returnTo }: { returnTo: string }) {
+  const t = await getTranslations("Identity");
   return (
     <IdentityShell>
       <Title order={1}>{t("registrationTitle")}</Title>

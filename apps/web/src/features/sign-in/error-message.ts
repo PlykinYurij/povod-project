@@ -1,4 +1,4 @@
-import { ApiRequestError } from "@povod/api-client";
+import { ApiRequestError } from "@shared/api";
 
 export function signInErrorKey(
   error: unknown,

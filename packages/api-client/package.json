@@ -1,8 +1,0 @@
-{
-  "name": "@povod/api-client",
-  "version": "0.0.0",
-  "private": true,
-  "exports": { ".": "./src/index.ts", "./server": "./src/server.ts" },
-  "scripts": { "typecheck": "tsc --noEmit", "build": "tsc --noEmit" },
-  "peerDependencies": { "@tanstack/react-query": "5.108.0", "react": "19.3.1" }
-}
