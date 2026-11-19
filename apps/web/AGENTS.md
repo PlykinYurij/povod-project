@@ -1,5 +1,7 @@
 # Web: инструкции агенту
 
+- D-34: переключатели темы/языка компактны, с aria-label. Identity-формы noValidate, ошибки ввода только под полем; общие сетевые ошибки отдельно. Новый пароль с постоянным живым списком правил и повторным вводом, без пробелов; login не применяет новые правила к старому паролю. Имя displayName требуется при регистрации; в ответе nullable для старых аккаунтов. [Review QA](../../docs/qa/identity-review-report.md).
+
 - Продолжение identity: [signup/code/reset](../../docs/product/e1-04-identity-web.md), [локальная приёмка](../../docs/operations/web-identity.md), [QA](../../docs/qa/e1-04-identity-web-report.md). Auth-композиции — entities/identity; общие стили — shared/ui/identity-form/form.module.css.
 
 - Первая web identity-часть: [карточка](../../docs/product/e1-04b-web.md), [QA](../../docs/qa/e1-04b-web-report.md). Generated API client — packages/api-client; client/server entry разделены. Общие CSS tokens — shared/ui/identity-tokens.module.css. Next-intl 4.15.1 с известным риском picomatch явно разрешена D-33 для local/checks/commit/push; production не разрешён. Не подменять это разрешение утверждением чистого audit.

@@ -5,6 +5,26 @@ import {
 } from "../../../packages/api-client/src/transport";
 
 afterEach(() => vi.unstubAllGlobals());
+test("invalid display name payload cannot reach the greeting", async () => {
+  vi.stubGlobal(
+    "fetch",
+    vi
+      .fn()
+      .mockResolvedValue(
+        Response.json({
+          user: {
+            id: "synthetic",
+            email: "owner@example.test",
+            displayName: { unexpected: true },
+          },
+        }),
+      ),
+  );
+  await expect(apiFetch("/api/v1/auth/session")).rejects.toMatchObject({
+    status: 503,
+    code: "SERVICE_UNAVAILABLE",
+  });
+});
 test.each([
   {},
   { registrationId: "not-a-uuid", expiresAt: "2030-01-01T00:00:00.000Z" },

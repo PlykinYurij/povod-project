@@ -6,6 +6,8 @@
   --identity-border: #d6dfd7;
   --identity-brand: #315f4b;
   --identity-on-brand: #fffefb;
+  --identity-error: #b42318;
+  --identity-success: #267247;
   --identity-wash: #e8efe7;
   --identity-focus: #b47939;
   --identity-space: 8px;
@@ -30,6 +32,8 @@
   --identity-border: #425348;
   --identity-brand: #b0d6b7;
   --identity-on-brand: #141e1a;
+  --identity-error: #ffaaa3;
+  --identity-success: #b0d6b7;
   --identity-wash: #293c30;
   --identity-focus: #edc38f;
 }

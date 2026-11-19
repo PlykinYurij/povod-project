@@ -84,6 +84,15 @@ async function owner() {
   };
   return { browser, email, user: body.user, response };
 }
+
+test("existing unnamed owners can log in with an existing password containing spaces", async () => {
+  const email = newEmail(), legacyPassword = " Synthetic1!password ";
+  await db.user.create({ data: { email, passwordHash: await hashPassword(legacyPassword) } });
+  const browser = new Browser();
+  const response = await browser.post("login", {email,password:legacyPassword});
+  expect(response.status).toBe(200);
+  expect((await response.json() as {user:{displayName:string|null}}).user.displayName).toBeNull();
+});
 function freeze(now: number) {
   vi.spyOn(app.get(AuthClock), "now").mockImplementation(() => new Date(now));
 }

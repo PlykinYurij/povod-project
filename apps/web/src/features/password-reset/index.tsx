@@ -11,7 +11,7 @@ import {
 import { Alert, Button, Text, TextInput } from "../../shared/ui";
 import {
   EmailCodeInput,
-  NewPasswordInput,
+  NewPasswordFields,
   IdentityError,
 } from "../../entities/identity";
 import {
@@ -21,6 +21,8 @@ import {
 import {
   validEmailCode,
   validNewPassword,
+  validEmail,
+  passwordsMatch,
 } from "../../shared/lib/identity-validation";
 import { useFormAction } from "../../shared/lib/use-form-action";
 import { clearPrivateQueries } from "../../shared/api/private-cache";
@@ -59,11 +61,14 @@ function ResetStart({ onAccepted }: { onAccepted: (email: string) => void }) {
     auth = useTranslations("Auth");
   const mutation = useRequestPasswordReset({ mutation: { gcTime: 0 } });
   const action = useFormAction();
+  const [invalidEmail, setInvalidEmail] = useState(false);
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const email = String(new FormData(event.currentTarget).get("email") ?? "")
       .trim()
       .toLowerCase();
+    setInvalidEmail(!validEmail(email));
+    if (!validEmail(email)) return;
     await action.run(
       async () => {
         try {
@@ -76,7 +81,12 @@ function ResetStart({ onAccepted }: { onAccepted: (email: string) => void }) {
     );
   }
   return (
-    <form onSubmit={submit} className={styles.form} aria-busy={action.busy}>
+    <form
+      noValidate
+      onSubmit={submit}
+      className={styles.form}
+      aria-busy={action.busy}
+    >
       <Text>{t("resetIntro")}</Text>
       <IdentityError error={action.error} remaining={action.remaining} />
       <TextInput
@@ -88,7 +98,7 @@ function ResetStart({ onAccepted }: { onAccepted: (email: string) => void }) {
         required
         disabled={action.busy}
         error={
-          hasFieldError(action.error, "email")
+          invalidEmail || hasFieldError(action.error, "email")
             ? auth("emailInvalid")
             : undefined
         }
@@ -124,6 +134,7 @@ function ResetCode({
     [resent, setResent] = useState(false);
   const [invalidCode, setInvalidCode] = useState(false),
     [invalidPassword, setInvalidPassword] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
   const formRef = useRef<HTMLFormElement>(null),
     heading = useRef<HTMLParagraphElement>(null);
   useEffect(() => {
@@ -134,9 +145,16 @@ function ResetCode({
     const values = new FormData(event.currentTarget);
     const code = String(values.get("code") ?? ""),
       newPassword = String(values.get("newPassword") ?? "");
+    const confirmation = String(values.get("passwordConfirmation") ?? "");
+    setSubmitted(true);
     setInvalidCode(!validEmailCode(code));
     setInvalidPassword(!validNewPassword(newPassword));
-    if (!validEmailCode(code) || !validNewPassword(newPassword)) return;
+    if (
+      !validEmailCode(code) ||
+      !validNewPassword(newPassword) ||
+      !passwordsMatch(newPassword, confirmation)
+    )
+      return;
     setConfirming(true);
     setResent(false);
     await action.run(
@@ -185,6 +203,7 @@ function ResetCode({
   }
   return (
     <form
+      noValidate
       ref={formRef}
       onSubmit={submit}
       className={styles.form}
@@ -206,7 +225,8 @@ function ResetCode({
           !!action.error && identityErrorKey(action.error) === "invalidCode"
         }
       />
-      <NewPasswordInput
+      <NewPasswordFields
+        submitted={submitted}
         name="newPassword"
         disabled={action.busy}
         error={invalidPassword || hasFieldError(action.error, "newPassword")}

@@ -1,5 +1,7 @@
 # API: инструкции агенту
 
+- D-34: register требует displayName (trim, 1–80, без управляющих символов, не уникальный логин), pending → User только при confirm. User/pending nullable для старых записей; login/session/confirm включают displayName. Новые пароли не содержат пробелов; старый login совместим. OpenAPI 0.5.0 → Orval; миграция display_name добавляющая. [Review QA](../../docs/qa/identity-review-report.md).
+
 - E1-04c: POST `/api/v1/auth/password-reset/request` и `/confirm`, D-31. Код HMAC с отдельным RESET_CODE_SECRET (local fallback эфемерен), PG счётчики/одноразовость, User lock общий с login; смена hash/отзыв всех Session/usedAt атомарны. [Локальный inbox и границы](../../docs/operations/password-reset.md). Файловый транспорт только вне production; SMTP/worker ещё нет. Новые StrongPassword DTO-поля проверяются общим декоратором, не второй копией regex.
 
 - E1-04d/D-30/32: start 202 pending без User/Session; confirm 201 атомарно создаёт User+Session/удаляет pending. Advisory transaction lock по email, PG mail limits отдельны от reset, HMAC REGISTRATION_CODE_SECRET, local fallback эфемерен. [Контракт/запуск/retention](../../docs/operations/registration-confirmation.md). Resend не продлевает 24 часа; sweep 60 секунд по 500 expired. Старые User с null emailVerifiedAt не объявлять проверенными, Q-22 до публичного выпуска.

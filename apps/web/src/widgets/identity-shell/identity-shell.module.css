@@ -23,6 +23,26 @@
   min-height: 44px;
   padding: var(--identity-space-xs);
 }
+.themeToggle {
+  width: var(--identity-control-height);
+  height: var(--identity-control-height);
+  color: var(--identity-ink);
+  background: var(--identity-surface);
+  border-color: var(--identity-border);
+}
+.themeToggle [data-theme-icon="sun"] {
+  display: none;
+}
+:global([data-mantine-color-scheme="dark"])
+  .themeToggle
+  [data-theme-icon="moon"] {
+  display: none;
+}
+:global([data-mantine-color-scheme="dark"])
+  .themeToggle
+  [data-theme-icon="sun"] {
+  display: initial;
+}
 .shell {
   max-width: 1160px;
   min-height: 680px;

@@ -226,3 +226,9 @@ Types, web build, format и 28 unit успешны. Browser переходы (в
 По прямому поручению владельца после навигационных исправлений продолжена feat/web-sign-in. Регистрация с email-кодом/resend/автовходом и reset по коду/новому паролю/обычному login реализованы через готовые Orval hooks. Новых зависимостей, backend endpoints или миграций нет. Два flow в памяти страницы, без секретов в URL/storage, ошибки и неопределённый confirm не выданы за успех.
 
 [Карточка](product/e1-04-identity-web.md), [QA](qa/e1-04-identity-web-report.md), [приёмка](operations/web-identity.md). Реальный браузерный прогон с собственным API, test-БД и отдельным inbox прошёл: User только после кода, resend, оба пути, отзыв старых сеансов, обычный вход новым паролем. RU/EN, 360 px, обе темы, исправлены dark contrast и hydration aria-pressed. UI fixtures 422/429/503 помечены отдельно. Ролевые checkbox реализации отмечены; принятие владельцем/main остаются открытыми. Production не проверялся/не разрешён.
+
+## 19.11.2026 · Review D-34: формы и имя владельца
+
+На feat/web-sign-in выполнены шесть замечаний: иконки темы, язык без видимой подписи, ошибки ввода под полями без native tooltip, шесть живых правил нового пароля без пробелов, повтор пароля в signup/reset, обязательное displayName при регистрации. Имя переносится pending → User при confirm, возвращается в login/session и используется для обращения; старые записи остаются nullable. Миграция 20261119010000_identity_display_name применена в dev/test без удаления данных. OpenAPI 0.5.0 и Orval обновлены; новых зависимостей нет.
+
+[Решение D-34](product/decisions.md), [QA](qa/identity-review-report.md), [локальная приёмка](operations/web-identity.md). Реальные 55 HTTP/PG тестов и browser/API/test inbox прошли; проверены 0 native invalid events, оба языка/темы/360 px/Tab и имя после reset. Владелец ещё не принял результат; production не менялся.

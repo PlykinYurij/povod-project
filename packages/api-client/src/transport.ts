@@ -127,7 +127,9 @@ export async function apiFetch<T>(
     (!isObject(body) ||
       !isObject(body.user) ||
       typeof body.user.id !== "string" ||
-      typeof body.user.email !== "string")
+      typeof body.user.email !== "string" ||
+      (body.user.displayName !== null &&
+        typeof body.user.displayName !== "string"))
   )
     throw new ApiRequestError(503, "SERVICE_UNAVAILABLE");
   if (

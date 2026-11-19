@@ -42,7 +42,8 @@
     "description": "Sign-in and sign-out are available. Creating invitations will follow in the next stage.",
     "expired": "Your session has ended. Sign in again.",
     "error": "We could not check your session. Please try again.",
-    "signIn": "Go to sign in"
+    "signIn": "Go to sign in",
+    "greeting": "Hello, {name}!"
   },
   "Home": {
     "eyebrow": "For your special occasions",
@@ -63,7 +64,7 @@
     "backToLogin": "Go to sign in",
     "navigation": "Sign-in and recovery",
     "newPassword": "New password",
-    "passwordRules": "8–128 printable ASCII characters: Latin letters, digits and symbols. Include an uppercase letter, a digit and a special character (a space does not count).",
+    "passwordRules": "8–128 characters: Latin letters, an uppercase letter, a digit and a special character. No spaces.",
     "code": "Email code",
     "codeFormat": "Enter six digits.",
     "registrationCode": "Enter the code sent to {email}. Your account is created only after confirmation.",
@@ -89,6 +90,20 @@
     "uncertain": "We could not confirm the result. The code may have been accepted. Try signing in with your chosen password; the request is not retried automatically.",
     "rate": "Too many requests. Try again in {seconds} sec.",
     "rateUnknown": "Too many requests. Please try again later.",
-    "codeRejected": "Check the code or request a new one."
+    "codeRejected": "Check the code or request a new one.",
+    "displayName": "Your name",
+    "nameInvalid": "Enter a name of 1–80 characters without line breaks.",
+    "confirmPassword": "Repeat password",
+    "passwordMismatch": "Passwords must match.",
+    "passwordInvalid": "Your password does not meet the rules below.",
+    "passwordRequirements": "Password requirements",
+    "rule_length": "8–128 characters",
+    "rule_latin": "Latin letters, digits and symbols only",
+    "rule_uppercase": "At least one uppercase letter",
+    "rule_digit": "At least one digit",
+    "rule_special": "At least one special character, such as ! @ #",
+    "rule_noSpaces": "No spaces",
+    "ruleMet": "met",
+    "ruleMissing": "not yet met"
   }
 }

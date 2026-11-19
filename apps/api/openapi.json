@@ -889,7 +889,7 @@
   "info": {
     "title": "Повод API",
     "description": "",
-    "version": "0.4.0",
+    "version": "0.5.0",
     "contact": {}
   },
   "tags": [],
@@ -971,6 +971,13 @@
       "RegisterDto": {
         "type": "object",
         "properties": {
+          "displayName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80,
+            "example": "Андрей",
+            "description": "Name for addressing the owner; trimmed, not unique. No control characters."
+          },
           "email": {
             "type": "string",
             "format": "email",
@@ -984,11 +991,12 @@
             "maxLength": 128,
             "writeOnly": true,
             "format": "password",
-            "pattern": "^(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9 ])[\\x20-\\x7E]{8,128}(?![\\s\\S])",
-            "description": "Printable ASCII only: A-Z/a-z, 0-9, punctuation and space. Requires an uppercase letter, digit and special character; space is not a special character. No trimming."
+            "pattern": "^(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9])[\\x21-\\x7E]{8,128}(?![\\s\\S])",
+            "description": "8–128 characters: Latin letters, digits and punctuation. Requires an uppercase letter, digit and special character. No spaces or other whitespace. No trimming. Existing-password login is unchanged."
           }
         },
         "required": [
+          "displayName",
           "email",
           "password"
         ]
@@ -1040,11 +1048,18 @@
           "email": {
             "type": "string",
             "format": "email"
+          },
+          "displayName": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 80,
+            "description": "May be null for an existing account"
           }
         },
         "required": [
           "id",
-          "email"
+          "email",
+          "displayName"
         ]
       },
       "RegisterResponseDto": {
@@ -1159,8 +1174,8 @@
             "maxLength": 128,
             "writeOnly": true,
             "format": "password",
-            "pattern": "^(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9 ])[\\x20-\\x7E]{8,128}(?![\\s\\S])",
-            "description": "Printable ASCII only: A-Z/a-z, 0-9, punctuation and space. Requires an uppercase letter, digit and special character; space is not a special character. No trimming."
+            "pattern": "^(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9])[\\x21-\\x7E]{8,128}(?![\\s\\S])",
+            "description": "8–128 characters: Latin letters, digits and punctuation. Requires an uppercase letter, digit and special character. No spaces or other whitespace. No trimming. Existing-password login is unchanged."
           }
         },
         "required": [

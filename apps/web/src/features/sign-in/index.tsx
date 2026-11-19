@@ -15,6 +15,8 @@ import { signInErrorKey } from "./error-message";
 import { useRetryAfter } from "../../shared/lib/use-retry-after";
 import styles from "../../shared/ui/identity-form/form.module.css";
 import { safeReturnTo } from "../../shared/config/auth-navigation";
+import { validEmail } from "../../shared/lib/identity-validation";
+import { hasInlineFieldErrors } from "../../shared/api/identity-errors";
 
 export function SignInForm({ returnTo }: { returnTo: string }) {
   const t = useTranslations("Auth");
@@ -24,6 +26,8 @@ export function SignInForm({ returnTo }: { returnTo: string }) {
   const [error, setError] = useState<unknown>();
   const [busy, setBusy] = useState(false);
   const [visible, setVisible] = useState(false);
+  const [invalidEmail, setInvalidEmail] = useState(false);
+  const [invalidPassword, setInvalidPassword] = useState(false);
   const active = useRef(true),
     submitting = useRef(false);
   useEffect(() => {
@@ -39,12 +43,16 @@ export function SignInForm({ returnTo }: { returnTo: string }) {
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (submitting.current || remaining > 0) return;
-    submitting.current = true;
     const values = new FormData(event.currentTarget);
     const email = String(values.get("email") ?? "")
       .trim()
       .toLowerCase();
     const password = String(values.get("password") ?? "");
+    setInvalidEmail(!validEmail(email));
+    setInvalidPassword(password.length < 1 || password.length > 128);
+    if (!validEmail(email) || password.length < 1 || password.length > 128)
+      return;
+    submitting.current = true;
     setError(undefined);
     setBusy(true);
     try {
@@ -75,12 +83,14 @@ export function SignInForm({ returnTo }: { returnTo: string }) {
       : t(signInErrorKey(error))
     : undefined;
   return (
-    <form onSubmit={submit} className={styles.form} aria-busy={busy}>
-      {message && (
-        <Alert color="red" role="alert" className={styles.error}>
-          {message}
-        </Alert>
-      )}
+    <form noValidate onSubmit={submit} className={styles.form} aria-busy={busy}>
+      {message &&
+        !(error instanceof ApiRequestError && error.status === 401) &&
+        !hasInlineFieldErrors(error, ["email", "password"]) && (
+          <Alert color="red" role="alert" className={styles.error}>
+            {message}
+          </Alert>
+        )}
       <TextInput
         label={t("email")}
         name="email"
@@ -90,7 +100,7 @@ export function SignInForm({ returnTo }: { returnTo: string }) {
         required
         disabled={busy}
         error={
-          fields.some((field) => field.path === "email")
+          invalidEmail || fields.some((field) => field.path === "email")
             ? t("emailInvalid")
             : undefined
         }
@@ -109,9 +119,12 @@ export function SignInForm({ returnTo }: { returnTo: string }) {
           "aria-label": t(visible ? "hide" : "show"),
         }}
         error={
-          fields.some((field) => field.path === "password")
-            ? t("passwordInvalid")
-            : undefined
+          error instanceof ApiRequestError && error.status === 401
+            ? t("invalid")
+            : invalidPassword ||
+                fields.some((field) => field.path === "password")
+              ? t("passwordInvalid")
+              : undefined
         }
       />
       <Button

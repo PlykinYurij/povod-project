@@ -3,7 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useComputedColorScheme, useMantineColorScheme } from "@mantine/core";
-import { Button } from "../../shared/ui";
+import { ActionIcon } from "../../shared/ui";
+import { ThemeIcon } from "../../shared/ui/theme-icon";
 import { useEffect, useState } from "react";
 import { LOCALE_COOKIE, parseLocale } from "../../shared/config/locale";
 import styles from "./identity-shell.module.css";
@@ -20,28 +21,28 @@ export function Preferences() {
   }, []);
   return (
     <div className={styles.controls}>
-      <label>
-        {t("language")}{" "}
-        <select
-          value={locale}
-          onChange={(event) => {
-            const value = parseLocale(event.target.value);
-            document.cookie = `${LOCALE_COOKIE}=${value}; Path=/; SameSite=Lax; Max-Age=31536000${location.protocol === "https:" ? "; Secure" : ""}`;
-            router.refresh();
-          }}
-        >
-          <option value="ru">RU</option>
-          <option value="en">EN</option>
-        </select>
-      </label>
-      <Button
+      <select
+        aria-label={t("language")}
+        value={locale}
+        onChange={(event) => {
+          const value = parseLocale(event.target.value);
+          document.cookie = `${LOCALE_COOKIE}=${value}; Path=/; SameSite=Lax; Max-Age=31536000${location.protocol === "https:" ? "; Secure" : ""}`;
+          router.refresh();
+        }}
+      >
+        <option value="ru">RU</option>
+        <option value="en">EN</option>
+      </select>
+      <ActionIcon
         variant="default"
         onClick={toggleColorScheme}
+        aria-label={t("theme")}
+        className={styles.themeToggle}
         // The saved browser theme is unknown during SSR. Keep hydration deterministic.
         aria-pressed={mounted && colorScheme === "dark"}
       >
-        {t("theme")}
-      </Button>
+        <ThemeIcon />
+      </ActionIcon>
     </div>
   );
 }

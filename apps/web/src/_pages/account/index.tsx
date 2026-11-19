@@ -69,6 +69,11 @@ export function AccountPage() {
     content = (
       <>
         <Group justify="space-between">
+          {session.data.user.displayName && (
+            <Text>
+              {t("greeting", { name: session.data.user.displayName })}
+            </Text>
+          )}
           <Text className={styles.email}>
             {t("signedIn", { email: session.data.user.email })}
           </Text>

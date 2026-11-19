@@ -9,3 +9,5 @@
 [E1-04d: backend регистрации с email-кодом](e1-04d-report.md), без проверки UI/SMTP/production.
 
 [Web signup/code/reset](e1-04-identity-web-report.md) — реальный browser/API/test-БД/inbox и отдельно UI fixtures; передано на Review.
+
+[D-34: review форм, имя и пароль](identity-review-report.md) — новая миграция, контракт 0.5.0, inline ошибки/подтверждение/живые правила/переключатели.

@@ -2,6 +2,8 @@
 
 База main `0026548`, backend identity принят владельцем. [Открыть автономный HTML](identity-flow.html), [снимки](previews/identity-register-desktop.png), [проверки](identity-review.md). Это предложение UX для E1-04/04b/04c/04d и оболочки кабинета, не готовое приложение. Родительская E0-02 не закрывается одним пакетом. Источники: FR-02–05/25, NFR-01/06/07 [ТЗ](../povod-mvp-spec-v0.1.md), D-02/26/28–32 [решений](../product/decisions.md), [OpenAPI 0.4.0](../../apps/api/openapi.json).
 
+Актуализация D-34: в действующем web добавлены обязательное имя, повтор нового пароля, шесть живых правил без пробелов, inline errors без native tooltip и компактные переключатели. HTML ниже — предыдущая итерация до D-34, не точный снимок актуальной формы; [фактические проверки](../qa/identity-review-report.md).
+
 ## Как смотреть
 
 Открыть HTML в Chrome/Edge из WebStorm или файловой системы, сервер и установка не нужны. Верхняя панель принадлежит ревью, не продукту: экран, состояние, размер, тема, язык. Все данные синтетические; формы показывают переходы без API. Любые шесть цифр позволяют пройти демонстрацию — это не проверка подлинности кода.
@@ -26,7 +28,7 @@
 
 | Экран | Поля запроса | Endpoint / ответ | Следующий шаг |
 | --- | --- | --- | --- |
-| Регистрация | email: нормализованный email ≤254; password: printable ASCII 8–128, A–Z/цифра/спецсимвол, без trim | POST `/api/v1/auth/register` → 202 registrationId/expiresAt, без User/session | Сохранить только ID/expiry в состоянии текущего flow, показать email-код |
+| Регистрация | displayName: обязательное имя 1–80, trim, без управляющих символов; email: нормализованный email ≤254; password: 8–128, A–Z/цифра/спецсимвол, без пробелов/trim; повтор пароля проверяет форма, не DTO | POST `/api/v1/auth/register` → 202 registrationId/expiresAt, без User/session | Сохранить только ID/expiry в состоянии текущего flow, показать email-код |
 | Код регистрации | registrationId из start; code: строка из 6 ASCII-цифр | POST `/register/confirm` под `/api/v1/auth` → 201 user + session-cookie | Обновить auth state; новый CSRF после смены Session; кабинет |
 | Resend регистрации | только registrationId | POST `/api/v1/auth/register/resend` → 202 тот же ID, новый expiresAt | Очистить поле кода, показать сообщение/фокус code; пароль повторно не отправлять |
 | Вход | email/password, пароль 1–128 без проверки нового состава | POST `/api/v1/auth/login` → 200 user + cookie | Обновить auth state/CSRF → кабинет |
@@ -43,9 +45,9 @@ Response expiresAt не передаётся обратно в confirm/resend: u
 
 | Условие | Экран/поведение |
 | --- | --- |
-| Пустой ввод | Пустые формы register/login/reset; обязательные label, видимый focus, native email/required checks, ограничения отдельно на сервере |
+| Пустой ввод | Пустые формы register/login/reset; обязательные label, видимый focus, единые inline email/required checks; noValidate отключает браузерные всплывающие сообщения, ограничения отдельно на сервере |
 | Запрос в работе | aria-busy, primary/input/resend disabled, сохранён контекст; скелетоны только для будущих данных кабинета |
-| 422 VALIDATION_FAILED | По fields.path связать текст с нужным полем; email/password/code/newPassword, не показывать raw server payload. В макете отдельный validation нового пароля, отдельно неверный код |
+| 422 VALIDATION_FAILED | По fields.path связать текст с нужным полем; displayName/email/password/code/newPassword, не показывать raw server payload. В макете отдельный validation нового пароля, отдельно неверный код |
 | 401 INVALID_CREDENTIALS | Одно сообщение для email/пароля, без указания, какой из них неверен |
 | 400 REGISTRATION_CODE_INVALID / RESET_CODE_INVALID | Неверный/истёкший/исчерпанный/повторный код: нейтральная ошибка, resend или возврат к login; не раскрывать подробность по ответу сервера |
 | Известное UI истечение | Макет expired. Реальное приложение использует expiresAt, но окончательное решение за сервером; не обещать клиенту оставшееся число попыток, которого API не возвращает |

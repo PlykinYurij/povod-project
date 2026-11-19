@@ -22,3 +22,15 @@ export function hasFieldError(error: unknown, path: string): boolean {
     error.fields.some((field) => field.path === path)
   );
 }
+
+export function hasInlineFieldErrors(
+  error: unknown,
+  paths: readonly string[],
+): boolean {
+  return (
+    error instanceof ApiRequestError &&
+    error.status === 422 &&
+    error.fields.length > 0 &&
+    error.fields.every((field) => paths.includes(field.path))
+  );
+}

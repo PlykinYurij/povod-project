@@ -65,7 +65,7 @@ const request = (
         ...csrf,
         ...(origin ? { Origin: origin } : {}),
       },
-      body: typeof body === "string" ? body : JSON.stringify(body),
+      body: typeof body === "string" ? body : JSON.stringify(typeof body === "object" && body !== null ? { displayName: "Тестовый владелец", ...body } : body),
     }),
   );
 
@@ -128,7 +128,8 @@ test("pending has no user or session; confirmation creates safe owner and hashed
   expect(response.headers.get("set-cookie")).toContain("povod-session=");
   const body = await json<RegisterResponseDto>(response);
   expect(Object.keys(body)).toEqual(["user"]);
-  expect(Object.keys(body.user).sort()).toEqual(["email", "id"]);
+  expect(Object.keys(body.user).sort()).toEqual(["displayName", "email", "id"]);
+  expect(body.user.displayName).toBe("Тестовый владелец");
   expect(body.user.email).toBe(address);
   const current = await fetch(`${url}/api/v1/auth/session`, { headers: { Cookie: response.headers.getSetCookie().map(c => c.split(";")[0]).join("; ") } });
   expect(current.status).toBe(200);
@@ -154,6 +155,8 @@ test("concurrent normalized starts replace pending; only latest id and credentia
 test("rejects unknown server fields and invalid email/password without reflecting secrets", async () => {
   const address = email();
   for (const invalid of [
+    " Aa1!abcd ",
+    "Aa1! abcd",
     "Aa1!abc",
     "lowercase1!",
     "UPPERCASE!",
@@ -188,7 +191,7 @@ test("rejects unknown server fields and invalid email/password without reflectin
 });
 
 test("accepts exactly 8/128 characters and does not trim valid passwords", async () => {
-  for (const valid of ["Aa1!abcd", `Aa1!${"x".repeat(124)}`, " Aa1!abcd "]) {
+  for (const valid of ["Aa1!abcd", `Aa1!${"x".repeat(124)}`]) {
     const address = email();
     expect((await complete(address, valid)).status).toBe(
       201,
@@ -229,7 +232,7 @@ test("exports usable OpenAPI registration request/response/errors without privat
   );
   expect(
     Object.keys(doc.components.schemas.RegisteredUserDto.properties).sort(),
-  ).toEqual(["email", "id"]);
+  ).toEqual(["displayName", "email", "id"]);
   expect(JSON.stringify(doc)).not.toContain("passwordHash");
   const health = await fetch(`${url}/health`);
   expect(await health.json()).toEqual({ status: "ok" });
@@ -324,7 +327,7 @@ test("missing database produces safe 503 without falsely creating an account", a
           "Content-Type": "application/json",
           Origin: "http://127.0.0.1:3000",
         },
-        body: JSON.stringify({ email: address, password }),
+        body: JSON.stringify({ displayName: "Тестовый владелец", email: address, password }),
       },
     );
     expect(response.status).toBe(503);
@@ -435,7 +438,7 @@ test("confirm and resend reject missing CSRF, extra fields and malformed code", 
 
 test("IP mail limit spans different registrations and ignores forged forwarded IP", async () => {
   for (let n = 0; n < 10; n++) expect((await request({ email: email(), password })).status).toBe(202);
-  const response = await fetch(`${url}/api/v1/auth/register`, { method: "POST", headers: { ...await csrfHeaders(url), Origin: "http://127.0.0.1:3000", "Content-Type": "application/json", "X-Forwarded-For": "192.0.2.123" }, body: JSON.stringify({ email: email(), password }) });
+  const response = await fetch(`${url}/api/v1/auth/register`, { method: "POST", headers: { ...await csrfHeaders(url), Origin: "http://127.0.0.1:3000", "Content-Type": "application/json", "X-Forwarded-For": "192.0.2.123" }, body: JSON.stringify({ displayName: "Тест", email: email(), password }) });
   expect(response.status).toBe(429);
   expect(Number(response.headers.get("retry-after"))).toBeGreaterThan(0);
 });
@@ -457,4 +460,34 @@ test("late obsolete delivery cannot activate an old request", async () => {
   expect((await action("confirm", { registrationId: stale.registrationId, code: oldCode })).status).toBe(400);
   const mail = await mailFor(latest.registrationId);
   expect((await action("confirm", { registrationId: latest.registrationId, code: mail.code })).status).toBe(201);
+});
+
+test("display name is required, trimmed, limited and preserved through resend and confirmation", async () => {
+  const address = email();
+  for (const displayName of [undefined, null, 123, "", "   ", "A".repeat(81), "Имя\nФамилия", "Имя\u2028Фамилия"]) {
+    const response = await request({ email: address, password, displayName });
+    expect(response.status).toBe(422);
+    expect((await json<ApiErrorDto>(response)).error.fields).toContainEqual({path:"displayName",code:"INVALID_VALUE"});
+  }
+  expect(await database.pendingRegistration.findUnique({where:{email:address}})).toBeNull();
+  const start = await request({ email: address, password, displayName: "  Андрей  " });
+  expect(start.status).toBe(202);
+  const {registrationId} = await json<{registrationId:string}>(start);
+  expect((await database.pendingRegistration.findUniqueOrThrow({where:{id:registrationId}})).displayName).toBe("Андрей");
+  expect((await action("resend", {registrationId})).status).toBe(202);
+  const response = await action("confirm", {registrationId,code:(await mailFor(registrationId)).code});
+  expect(response.status).toBe(201);
+  expect((await json<RegisterResponseDto>(response)).user.displayName).toBe("Андрей");
+  const cookies=response.headers.getSetCookie().map(c=>c.split(";")[0]).join("; ");
+  const session=await fetch(url+"/api/v1/auth/session",{headers:{Cookie:cookies}});
+  expect((await json<RegisterResponseDto>(session)).user.displayName).toBe("Андрей");
+});
+
+test("pending records created before the name migration can still confirm", async () => {
+  const address=email();
+  const {registrationId}=await json<{registrationId:string}>(await request({email:address,password}));
+  await database.pendingRegistration.update({where:{id:registrationId},data:{displayName:null}});
+  const response=await action("confirm",{registrationId,code:(await mailFor(registrationId)).code});
+  expect(response.status).toBe(201);
+  expect((await json<RegisterResponseDto>(response)).user.displayName).toBeNull();
 });

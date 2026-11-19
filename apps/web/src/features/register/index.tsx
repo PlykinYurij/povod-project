@@ -14,7 +14,7 @@ import {
 import { Alert, Button, Text, TextInput } from "../../shared/ui";
 import {
   EmailCodeInput,
-  NewPasswordInput,
+  NewPasswordFields,
   IdentityError,
 } from "../../entities/identity";
 import {
@@ -24,6 +24,9 @@ import {
 import {
   validNewPassword,
   validEmailCode,
+  validEmail,
+  validDisplayName,
+  passwordsMatch,
 } from "../../shared/lib/identity-validation";
 import { useFormAction } from "../../shared/lib/use-form-action";
 import { clearPrivateQueries } from "../../shared/api/private-cache";
@@ -55,6 +58,9 @@ function RegistrationStart({
   const mutation = useRegister({ mutation: { gcTime: 0 } });
   const action = useFormAction();
   const [invalidPassword, setInvalidPassword] = useState(false);
+  const [invalidEmail, setInvalidEmail] = useState(false);
+  const [invalidName, setInvalidName] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = event.currentTarget,
@@ -63,12 +69,25 @@ function RegistrationStart({
       .trim()
       .toLowerCase();
     const password = String(values.get("password") ?? "");
+    const displayName = String(values.get("displayName") ?? "").trim();
+    const confirmation = String(values.get("passwordConfirmation") ?? "");
+    setSubmitted(true);
+    setInvalidEmail(!validEmail(email));
+    setInvalidName(!validDisplayName(displayName));
     setInvalidPassword(!validNewPassword(password));
-    if (!validNewPassword(password)) return;
+    if (
+      !validNewPassword(password) ||
+      !validEmail(email) ||
+      !validDisplayName(displayName) ||
+      !passwordsMatch(password, confirmation)
+    )
+      return;
     await action.run(
       async () => {
         try {
-          return await mutation.mutateAsync({ data: { email, password } });
+          return await mutation.mutateAsync({
+            data: { email, password, displayName },
+          });
         } finally {
           mutation.reset();
         }
@@ -80,9 +99,27 @@ function RegistrationStart({
     );
   }
   return (
-    <form onSubmit={submit} className={styles.form} aria-busy={action.busy}>
+    <form
+      noValidate
+      onSubmit={submit}
+      className={styles.form}
+      aria-busy={action.busy}
+    >
       <Text>{t("registrationIntro")}</Text>
       <IdentityError error={action.error} remaining={action.remaining} />
+      <TextInput
+        label={t("displayName")}
+        name="displayName"
+        autoComplete="given-name"
+        maxLength={80}
+        required
+        disabled={action.busy}
+        error={
+          invalidName || hasFieldError(action.error, "displayName")
+            ? t("nameInvalid")
+            : undefined
+        }
+      />
       <TextInput
         label={auth("email")}
         name="email"
@@ -92,12 +129,15 @@ function RegistrationStart({
         required
         disabled={action.busy}
         error={
-          hasFieldError(action.error, "email")
-            ? auth("emailInvalid")
-            : undefined
+          action.error && identityErrorKey(action.error) === "emailUnavailable"
+            ? t("emailUnavailable")
+            : invalidEmail || hasFieldError(action.error, "email")
+              ? auth("emailInvalid")
+              : undefined
         }
       />
-      <NewPasswordInput
+      <NewPasswordFields
+        submitted={submitted}
         disabled={action.busy}
         error={invalidPassword || hasFieldError(action.error, "password")}
       />
@@ -197,6 +237,7 @@ function RegistrationCode({
   }
   return (
     <form
+      noValidate
       ref={formRef}
       onSubmit={submit}
       className={styles.form}

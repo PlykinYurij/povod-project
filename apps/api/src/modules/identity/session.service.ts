@@ -93,7 +93,7 @@ export class SessionService implements OnModuleInit {
         return created;
       });
       this.attach(response, token);
-      return { user: { id: user.id, email: user.email } };
+      return { user: { id: user.id, email: user.email, displayName: user.displayName } };
     } catch (error) {
       if (!(error instanceof ApiError && error.getStatus() === 401))
         await this.attempts
@@ -116,7 +116,7 @@ export class SessionService implements OnModuleInit {
     if (!updated[0]) throw new ApiError(401, "AUTH_REQUIRED", "Требуется вход");
     const session = await this.database.getClient().session.findFirst({
       where: { tokenHash: digest, revokedAt: null, expiresAt: { gt: now } },
-      select: { user: { select: { id: true, email: true } } },
+      select: { user: { select: { id: true, email: true, displayName: true } } },
     });
     if (!session) throw new ApiError(401, "AUTH_REQUIRED", "Требуется вход");
     return { user: session.user };

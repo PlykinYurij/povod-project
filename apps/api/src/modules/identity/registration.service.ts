@@ -77,7 +77,7 @@ export class RegistrationService implements OnModuleInit, OnModuleDestroy {
       const previous = await tx.pendingRegistration.findUnique({ where: { email: input.email } });
       while (previous && this.matches(previous, code)) code = randomInt(0, 1_000_000).toString().padStart(6, "0");
       const now = this.clock.now(), nonce = randomUUID();
-      const data = { id: randomUUID(), nonce, passwordHash, codeHash: this.digest(input.email, nonce, code), attempts: 0,
+      const data = { id: randomUUID(), nonce, displayName: input.displayName, passwordHash, codeHash: this.digest(input.email, nonce, code), attempts: 0,
         expiresAt: new Date(now.getTime() + 10 * 60_000), deleteAt: new Date(now.getTime() + 24 * 60 * 60_000), deliveredAt: null };
       return tx.pendingRegistration.upsert({ where: { email: input.email }, create: { email: input.email, ...data }, update: data });
     });
@@ -117,7 +117,7 @@ export class RegistrationService implements OnModuleInit, OnModuleDestroy {
         await tx.pendingRegistration.update({ where: { id: row.id }, data: { attempts: { increment: 1 } } });
         return null; // Commit attempt; throw after transaction.
       }
-      const user = await tx.user.create({ data: { email: row.email, passwordHash: row.passwordHash, emailVerifiedAt: now }, select: { id: true, email: true } });
+      const user = await tx.user.create({ data: { email: row.email, displayName: row.displayName, passwordHash: row.passwordHash, emailVerifiedAt: now }, select: { id: true, email: true, displayName: true } });
       const token = await this.sessions.create(tx, user.id, previousToken);
       await tx.pendingRegistration.delete({ where: { id: row.id } });
       return { user, token };
