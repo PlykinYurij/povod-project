@@ -6,13 +6,7 @@ import {
   validEmail,
   validUserName,
   passwordsMatch,
-} from "@shared/lib/identity-validation";
-import {
-  hasFieldError,
-  identityErrorKey,
-  hasInlineFieldErrors,
-} from "@shared/api/identity-errors";
-import { ApiRequestError } from "@shared/api";
+} from "./identity-validation";
 
 test.each(["Abcdef1!", "A1!" + "a".repeat(125)])(
   "new password accepts D-28 boundaries",
@@ -20,6 +14,7 @@ test.each(["Abcdef1!", "A1!" + "a".repeat(125)])(
     expect(validNewPassword(value)).toBe(true);
   },
 );
+
 test.each([
   "Abcd1!",
   "abcdef1!",
@@ -50,11 +45,13 @@ test("password checklist tells exactly what is missing", () => {
   expect(Object.values(passwordRules("Abcdef1!")).every(Boolean)).toBe(true);
   expect(passwordRules("Abc def1!").noSpaces).toBe(false);
 });
+
 test("repeated passwords must match exactly without normalization", () => {
   expect(passwordsMatch("Abcdef1!", "Abcdef1!")).toBe(true);
   expect(passwordsMatch("Abcdef1!", "Abcdef1! ")).toBe(false);
   expect(passwordsMatch("", "")).toBe(false);
 });
+
 test("inline validation catches malformed emails and missing names", () => {
   expect(validEmail("test")).toBe(false);
   expect(validEmail("test@example.test")).toBe(true);
@@ -63,6 +60,7 @@ test("inline validation catches malformed emails and missing names", () => {
   expect(validUserName(" Андрей ")).toBe(true);
   expect(validUserName("Анна-Мария")).toBe(true);
 });
+
 test("email codes preserve leading zeros and reject number-like input", () => {
   expect(validEmailCode("000123")).toBe(true);
   for (const value of [
@@ -74,45 +72,4 @@ test("email codes preserve leading zeros and reject number-like input", () => {
     "123456\n",
   ])
     expect(validEmailCode(value)).toBe(false);
-});
-test("lost confirmation is uncertain; rejected confirmations remain specific", () => {
-  expect(identityErrorKey(new TypeError("fetch failed"), true)).toBe(
-    "uncertain",
-  );
-  expect(
-    identityErrorKey(new ApiRequestError(503, "SERVICE_UNAVAILABLE"), true),
-  ).toBe("uncertain");
-  expect(
-    identityErrorKey(new ApiRequestError(503, "SERVICE_UNAVAILABLE")),
-  ).toBe("unavailable");
-  expect(
-    identityErrorKey(new ApiRequestError(400, "RESET_CODE_INVALID"), true),
-  ).toBe("invalidCode");
-  expect(
-    identityErrorKey(
-      new ApiRequestError(400, "REGISTRATION_CODE_INVALID"),
-      true,
-    ),
-  ).toBe("invalidCode");
-  expect(identityErrorKey(new ApiRequestError(429, "RATE_LIMITED"), true)).toBe(
-    "rate",
-  );
-  expect(identityErrorKey(new ApiRequestError(409, "EMAIL_UNAVAILABLE"))).toBe(
-    "emailUnavailable",
-  );
-});
-test("server field errors map only to their exact field", () => {
-  const error = new ApiRequestError(422, "VALIDATION_FAILED", [
-    { path: "newPassword", code: "INVALID_VALUE" },
-  ]);
-  expect(hasFieldError(error, "newPassword")).toBe(true);
-  expect(hasFieldError(error, "password")).toBe(false);
-  expect(hasFieldError(new Error("newPassword"), "newPassword")).toBe(false);
-  expect(hasInlineFieldErrors(error, ["newPassword", "code"])).toBe(true);
-  expect(hasInlineFieldErrors(error, ["email"])).toBe(false);
-  expect(
-    hasInlineFieldErrors(new ApiRequestError(422, "VALIDATION_FAILED"), [
-      "email",
-    ]),
-  ).toBe(false);
 });

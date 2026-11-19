@@ -21,7 +21,7 @@ export default defineConfig({
     // Build snapshots contain copies of tests; run only the source suites.
     include: [
       "scripts/artifact/**/*.test.ts",
-      "apps/web/tests/**/*.test.{ts,tsx}",
+      "apps/web/src/**/*.test.{ts,tsx}",
     ],
   },
 });

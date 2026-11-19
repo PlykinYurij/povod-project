@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { getQueryClient } from "@app/query-client";
+import { getQueryClient } from "./query-client";
 
 test("server rendering never shares a private QueryClient between requests", () => {
   const ownerA = getQueryClient();

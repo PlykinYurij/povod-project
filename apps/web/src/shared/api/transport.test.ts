@@ -1,5 +1,5 @@
 import { afterEach, expect, test, vi } from "vitest";
-import { apiFetch, ApiRequestError } from "@shared/api/transport";
+import { apiFetch, ApiRequestError } from "./transport";
 
 afterEach(() => vi.unstubAllGlobals());
 test("invalid display name payload cannot reach the greeting", async () => {

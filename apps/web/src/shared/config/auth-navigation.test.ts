@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { loginHref, safeReturnTo } from "@shared/config/auth-navigation";
+import { loginHref, safeReturnTo } from "./auth-navigation";
 
 test("private destination keeps its query and fragment through login", () => {
   const destination = "/account?tab=saved#details";

@@ -18,7 +18,7 @@
     "start:api": "npm run start --workspace=@povod/api",
     "typecheck": "npm run typecheck --workspaces",
     "build": "npm run build --workspaces",
-    "test": "vitest run scripts/artifact apps/web/tests",
+    "test": "vitest run",
     "artifact:create": "node scripts/artifact/create.mjs",
     "artifact:verify": "node scripts/artifact/verify.mjs",
     "db:migrate:dev": "node scripts/database.mjs migrate dev",
@@ -30,7 +30,7 @@
     "api:openapi": "node scripts/export-openapi.mjs",
     "api:generate": "orval --config orval.config.ts",
     "test:web": "vitest run --config apps/web/vitest.config.mts",
-    "format:web": "prettier --check \"apps/web/app/**/*.{ts,tsx,css}\" \"apps/web/src/**/*.{ts,tsx,css,json}\" \"apps/web/tests/**/*.{ts,tsx}\""
+    "format:web": "prettier --check \"apps/web/app/**/*.{ts,tsx,css}\" \"apps/web/src/**/*.{ts,tsx,css,json}\""
   },
   "devDependencies": {
     "@testing-library/react": "16.3.3",
