@@ -1,4 +1,21 @@
 {
+  "TemplateDemo": {
+    "title": "Quiet Garden · template demo",
+    "back": "Back to home",
+    "controls": "Demo settings",
+    "palette": "Palette",
+    "sage": "Sage",
+    "sand": "Warm sand",
+    "sample": "Invitation state",
+    "full": "Example with schedule and illustration",
+    "minimal": "Without schedule and photo",
+    "empty": "Incomplete content",
+    "mediaPending": "Photo still processing",
+    "apply": "Show",
+    "notice": "This first template demo uses fictional data. It does not create a project, publish a site or accept guest responses. The controls above let you review its states. Invitations remain in Russian.",
+    "next": "The editor and creating your own invitations come in a later stage.",
+    "account": "Go to your account"
+  },
   "Common": {
     "brand": "Повод",
     "language": "Interface language",
@@ -46,6 +63,7 @@
     "greeting": "Hello, {name}!"
   },
   "Home": {
+    "templateDemo": "View the Quiet Garden template",
     "eyebrow": "For your special occasions",
     "title": "Повод",
     "description": "Invitations that start a celebration.",

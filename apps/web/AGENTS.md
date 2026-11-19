@@ -1,5 +1,7 @@
 # Web: инструкции агенту
 
+- Первая шаблонная часть: [E2-01a](../../docs/product/e2-01a-garden-renderer.md), renderer entities/invitation, демо `/templates/quiet-garden`. Это не публикация/редактор. Не подключать providers кабинета к приглашению; GardenContent — view model, не утверждённый DTO/схема публикации. Q-03/04/16 не закрывать по демо.
+
 - D-34: переключатели темы/языка компактны, с aria-label. Identity-формы noValidate, ошибки ввода только под полем; общие сетевые ошибки отдельно. Новый пароль с постоянным живым списком правил и повторным вводом, без пробелов; login не применяет новые правила к старому паролю. Имя userName требуется при регистрации; в ответе nullable для старых аккаунтов. [Review QA](../../docs/qa/identity-review-report.md).
 
 - Продолжение identity: [signup/code/reset](../../docs/product/e1-04-identity-web.md), [локальная приёмка](../../docs/operations/web-identity.md), [QA](../../docs/qa/e1-04-identity-web-report.md). Auth-композиции — entities/identity; общие стили — shared/ui/identity-form/form.module.css.
