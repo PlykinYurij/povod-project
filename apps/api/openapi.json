@@ -901,6 +901,17 @@
                 "en"
               ]
             }
+          },
+          {
+            "name": "category",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maxLength": 64,
+              "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+              "example": "wedding",
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -923,9 +934,19 @@
                 }
               }
             }
+          },
+          "503": {
+            "description": "SERVICE_UNAVAILABLE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
           }
         },
-        "summary": "Public code-owned template catalog; no account or database required",
+        "summary": "Public catalog with categories and versioned prices; account not required",
         "tags": [
           "templates"
         ]
@@ -1424,7 +1445,7 @@
   "info": {
     "title": "Повод API",
     "description": "",
-    "version": "0.10.0",
+    "version": "0.11.0",
     "contact": {}
   },
   "tags": [],
@@ -1955,6 +1976,50 @@
           "content"
         ]
       },
+      "TemplateCategoryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "wedding",
+            "maxLength": 64
+          },
+          "title": {
+            "type": "string",
+            "example": "Свадьба",
+            "maxLength": 80
+          }
+        },
+        "required": [
+          "id",
+          "title"
+        ]
+      },
+      "TemplatePriceDto": {
+        "type": "object",
+        "properties": {
+          "amountMinor": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "RUB"
+            ]
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "amountMinor",
+          "currency",
+          "version"
+        ]
+      },
       "TemplatePaletteDto": {
         "type": "object",
         "properties": {
@@ -1992,6 +2057,24 @@
       "TemplateSummaryDto": {
         "type": "object",
         "properties": {
+          "templateId": {
+            "type": "string",
+            "example": "quiet-garden"
+          },
+          "categoryId": {
+            "type": "string",
+            "example": "wedding"
+          },
+          "price": {
+            "nullable": true,
+            "description": "NULL means price not configured, not a free offer",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TemplatePriceDto"
+              }
+            ]
+          },
           "templateVersionId": {
             "type": "string",
             "example": "wedding-garden-v1"
@@ -2038,6 +2121,9 @@
           }
         },
         "required": [
+          "templateId",
+          "categoryId",
+          "price",
           "templateVersionId",
           "title",
           "eventType",
@@ -2051,6 +2137,12 @@
       "TemplateCatalogDto": {
         "type": "object",
         "properties": {
+          "categories": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TemplateCategoryDto"
+            }
+          },
           "items": {
             "description": "Only implemented templates; no synthetic placeholders for future catalog entries",
             "type": "array",
@@ -2060,6 +2152,7 @@
           }
         },
         "required": [
+          "categories",
           "items"
         ]
       },

@@ -1,4 +1,5 @@
 import { isTemplateCatalog } from "./catalog-validation";
+import { isPublicCatalogPath } from "./catalog-path";
 
 export class ApiRequestError extends Error {
   constructor(
@@ -97,9 +98,7 @@ export async function apiFetch<T>(
   path: string,
   options: RequestInit = {},
 ): Promise<T> {
-  const publicCatalog = /^\/api\/v1\/templates(?:\?locale=(?:ru|en))?$/.test(
-    path,
-  );
+  const publicCatalog = isPublicCatalogPath(path);
   const projectMethods = allowedProjectMethods(path);
   const adminAccess = path === "/api/v1/admin/access";
   if (

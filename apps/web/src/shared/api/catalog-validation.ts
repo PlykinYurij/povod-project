@@ -10,14 +10,51 @@ function uniqueIds(values: { id: string }[]) {
   return new Set(values.map((value) => value.id)).size === values.length;
 }
 
+function isPrice(value: unknown): boolean {
+  return (
+    value === null ||
+    (object(value) &&
+      value.currency === "RUB" &&
+      typeof value.amountMinor === "number" &&
+      Number.isInteger(value.amountMinor) &&
+      value.amountMinor >= 0 &&
+      value.amountMinor <= 2147483647 &&
+      typeof value.version === "number" &&
+      Number.isSafeInteger(value.version) &&
+      value.version > 0)
+  );
+}
+
 /** Verify untrusted response/link fields before rendering public navigation or images. */
 export function isTemplateCatalog(value: unknown): value is TemplateCatalogDto {
-  if (!object(value) || !Array.isArray(value.items)) return false;
+  if (
+    !object(value) ||
+    !Array.isArray(value.items) ||
+    !Array.isArray(value.categories)
+  )
+    return false;
+  const categories = value.categories;
+  if (
+    !categories.every(
+      (category) =>
+        object(category) &&
+        identifier(category.id) &&
+        typeof category.title === "string" &&
+        category.title.trim().length > 0,
+    ) ||
+    !uniqueIds(categories)
+  )
+    return false;
+  const categoryIds = new Set(categories.map((category) => category.id));
   const items = value.items;
   const valid = items.every(
     (item) =>
       object(item) &&
       identifier(item.templateVersionId) &&
+      identifier(item.templateId) &&
+      identifier(item.categoryId) &&
+      categoryIds.has(item.categoryId) &&
+      isPrice(item.price) &&
       typeof item.title === "string" &&
       item.title.trim().length > 0 &&
       item.eventType === "wedding" &&

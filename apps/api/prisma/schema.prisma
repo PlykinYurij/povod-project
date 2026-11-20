@@ -43,6 +43,7 @@ model Project {
   ownerId String @map("owner_id") @db.Uuid
   owner User @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   templateVersionId String @map("template_version_id")
+  templateVersion TemplateVersion @relation(fields: [templateVersionId], references: [id], onDelete: Restrict)
   title String @db.VarChar(24)
   content Json @db.JsonB
   revision Int @default(1)
@@ -56,6 +57,47 @@ model Project {
   @@unique([ownerId, creationKeyHash])
   @@index([ownerId, deletedAt, firstPublishedAt])
   @@map("projects")
+}
+
+model TemplateCategory {
+  id String @id @db.VarChar(64)
+  titleRu String @map("title_ru") @db.VarChar(80)
+  titleEn String @map("title_en") @db.VarChar(80)
+  active Boolean @default(true)
+  templates Template[]
+
+  @@map("template_categories")
+}
+
+model Template {
+  id String @id @db.VarChar(64)
+  categoryId String @map("category_id") @db.VarChar(64)
+  category TemplateCategory @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  titleRu String @map("title_ru") @db.VarChar(80)
+  titleEn String @map("title_en") @db.VarChar(80)
+  active Boolean @default(true)
+  priceMinor Int? @map("price_minor")
+  currency String @default("RUB") @db.VarChar(3)
+  priceVersion Int @default(1) @map("price_version")
+  versions TemplateVersion[]
+
+  @@index([categoryId, active])
+  @@map("templates")
+}
+
+model TemplateVersion {
+  id String @id
+  templateId String @map("template_id") @db.VarChar(64)
+  template Template @relation(fields: [templateId], references: [id], onDelete: Restrict)
+  schemaVersion Int @map("schema_version")
+  rendererKey String @map("renderer_key")
+  defaultsVersion Int @map("defaults_version")
+  availableForNewProjects Boolean @default(false) @map("available_for_new_projects")
+  projects Project[]
+
+  @@unique([templateId, schemaVersion])
+  // SQL adds a partial unique index: at most one available version per template.
+  @@map("template_versions")
 }
 
 model Session {

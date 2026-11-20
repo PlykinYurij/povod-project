@@ -1,42 +1,98 @@
 import { Injectable } from "@nestjs/common";
+import { DatabaseService } from "../../database/database.service";
+import type { Prisma } from "../../database/generated/client";
+import { ApiError } from "../../http/api-error";
 import type {
   TemplateCatalogDto,
   TemplateCatalogQueryDto,
 } from "./template-catalog.dto";
-
-const titles = {
-  ru: { template: "Тихий сад", sage: "Шалфей", sand: "Тёплый песок" },
-  en: { template: "Quiet Garden", sage: "Sage", sand: "Warm sand" },
-};
+import { gardenMetadata, registeredTemplate } from "./template-definitions";
 
 @Injectable()
 export class TemplateCatalogService {
-  list(locale: TemplateCatalogQueryDto["locale"] = "ru"): TemplateCatalogDto {
-    const text = titles[locale];
-    // Code-owned metadata only. User projects, snapshots, keys and account data never enter this registry.
-    return {
-      items: [
-        {
-          templateVersionId: "wedding-garden-v1",
-          title: text.template,
-          eventType: "wedding",
-          schemaVersion: 1,
-          themes: [
-            { id: "sage", title: text.sage },
-            { id: "sand", title: text.sand },
-          ],
-          blocks: [
-            { id: "names", required: true },
-            { id: "event", required: true },
-            { id: "venue", required: true },
-            { id: "photo", required: false },
-            { id: "program", required: false },
-            { id: "rsvp", required: true },
-          ],
-          demoPath: "/templates/quiet-garden",
-          previewImagePath: "/templates/quiet-garden/garden.svg",
-        },
+  constructor(private readonly database: DatabaseService) {}
+
+  async list(query: TemplateCatalogQueryDto): Promise<TemplateCatalogDto> {
+    const locale = query.locale ?? "ru";
+    const db = this.database.getClient();
+    // One DB snapshot keeps categories, availability and price fields consistent.
+    const [categories, versions] = await db.$transaction(
+      [
+        db.templateCategory.findMany({
+          where: { active: true },
+          orderBy: { id: "asc" },
+        }),
+        db.templateVersion.findMany({
+          where: {
+            availableForNewProjects: true,
+            template: {
+              active: true,
+              category: { active: true },
+              ...(query.category ? { categoryId: query.category } : {}),
+            },
+          },
+          include: { template: true },
+          orderBy: [{ templateId: "asc" }, { id: "asc" }],
+        }),
       ],
+      { isolationLevel: "RepeatableRead" },
+    );
+    return {
+      categories: categories.map((category) => ({
+        id: category.id,
+        title: locale === "ru" ? category.titleRu : category.titleEn,
+      })),
+      items: versions.filter(registeredTemplate).map((version) => ({
+        templateVersionId: version.id,
+        templateId: version.templateId,
+        categoryId: version.template.categoryId,
+        title:
+          locale === "ru" ? version.template.titleRu : version.template.titleEn,
+        schemaVersion: version.schemaVersion,
+        price:
+          version.template.priceMinor === null
+            ? null
+            : {
+                amountMinor: version.template.priceMinor,
+                currency: "RUB",
+                version: version.template.priceVersion,
+              },
+        ...gardenMetadata(locale),
+      })),
     };
+  }
+
+  async assertAvailableForCreation(
+    tx: Prisma.TransactionClient,
+    id: string,
+  ): Promise<void> {
+    // Share locks protect the check through creation; an operator update waits for commit.
+    const versions = await tx.$queryRaw<
+      {
+        id: string;
+        templateId: string;
+        schemaVersion: number;
+        rendererKey: string;
+        defaultsVersion: number;
+        available: boolean;
+        templateActive: boolean;
+        categoryActive: boolean;
+      }[]
+    >`SELECT v.id, v.template_id AS "templateId", v.schema_version AS "schemaVersion",
+       v.renderer_key AS "rendererKey", v.defaults_version AS "defaultsVersion",
+       v.available_for_new_projects AS available, t.active AS "templateActive", c.active AS "categoryActive"
+       FROM template_versions v JOIN templates t ON t.id = v.template_id
+       JOIN template_categories c ON c.id = t.category_id WHERE v.id = ${id}
+       FOR SHARE OF c, t, v`;
+    const version = versions[0];
+    if (
+      !version ||
+      !version.available ||
+      !version.templateActive ||
+      !version.categoryActive ||
+      !registeredTemplate(version)
+    ) {
+      throw new ApiError(404, "TEMPLATE_NOT_FOUND", "Шаблон не найден");
+    }
   }
 }

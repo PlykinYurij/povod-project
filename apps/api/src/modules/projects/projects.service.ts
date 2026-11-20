@@ -4,6 +4,7 @@ import { DatabaseService } from "../../database/database.service";
 import type { Prisma } from "../../database/generated/client";
 import { ApiError } from "../../http/api-error";
 import { GardenTemplateService } from "../templates/garden/garden-template.service";
+import { TemplateCatalogService } from "../templates/template-catalog.service";
 import { validateGardenDraft } from "../templates/garden/validate-garden";
 import { CreateProjectDto, SaveProjectDraftDto } from "./project.dto";
 import { projectResponse, projectSummary } from "./project-mapping";
@@ -20,6 +21,7 @@ export class ProjectsService {
   constructor(
     private readonly database: DatabaseService,
     private readonly templates: GardenTemplateService,
+    private readonly catalog: TemplateCatalogService,
   ) {}
 
   async list(ownerId: string) {
@@ -62,6 +64,10 @@ export class ProjectsService {
             );
           return { project: projectResponse(previous), replay: true };
         }
+        await this.catalog.assertAvailableForCreation(
+          tx,
+          input.templateVersionId,
+        );
         const draft = this.templates.createDraft(
           input.templateVersionId,
           input.title,

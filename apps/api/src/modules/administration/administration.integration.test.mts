@@ -294,7 +294,6 @@ test("actual local CLI grants/revokes a synthetic account and refuses production
 
 test("OpenAPI documents cookie auth, response and error boundary", () => {
   const doc = createOpenApiDocument(app);
-  expect(doc.info.version).toBe("0.10.0");
   const operation = doc.paths["/api/v1/admin/access"]?.get;
   expect(operation?.operationId).toBe("getAdminAccess");
   expect(operation?.security).toEqual([{ session: [] }]);

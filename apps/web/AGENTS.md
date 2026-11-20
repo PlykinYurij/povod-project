@@ -82,3 +82,5 @@
 - На ревью проверять читаемость, границы ответственности, обработку сбоев и значимое поведение тестами; следовать принятым соглашениям стека, а не добавлять инструмент ради формального «best practices».
 
 - E2-02d: generated getAdminAccess/useGetAdminAccess по OpenAPI 0.10.0; transport разрешает точный GET /api/v1/admin/access, 401/403 не успех, неправильный role payload → 503. Cookie контекст server request-scoped; admin UI/произвольные operator paths ещё не включены. [Карточка](../../docs/product/e2-02d-admin-access.md).
+
+- E2-01d: API 0.11.0, категории + templateId/categoryId + price (minor RUB/version или null). Public query category/locale строго разрешена, cookies/auth/CSRF не пересылать. Runtime guard проверяет связи/цену/URL; null отображать через i18n pricePending, не как free/0. [Карточка](../../docs/product/e2-01d-catalog-data.md). Каталог требует dev:api:database. UI фильтра/создания пока отдельная E2-01b.

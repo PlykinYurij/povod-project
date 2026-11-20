@@ -7,7 +7,9 @@
 [Backlog v2](../../docs/product/backlog-v2.md)/[архитектура](../../docs/architecture/assisted-publication.md) заменяют старые будущие self-publish задачи ниже. E2-02 принят в main 3626e47. Код новых функций ещё не создавался.
 
 - [ ] V2-00: ADR хранения/владения и согласованный request contract по относящимся Q.
-- [ ] E2-01d: категории/шаблоны/версии/фиксированные цены, безопасная миграция Garden.
+- [x] E2-01d результат/проверки: категории/Template/TemplateVersion/FK, DB catalog/filter/nullable price/version, кодовый registry и сохранность Garden. [QA](../../docs/qa/e2-01d-catalog-data-report.md). Реальная цена не выдумана, Q-27 до запуска.
+- [ ] E2-01d: ревью владельца.
+- [ ] E2-01d: интеграция в main.
 - [x] E2-02d результат/проверки: USER/ADMIN, актуальный AdminGuard, GET admin/access, local grant/revoke, OpenAPI 0.10.0 → Orval. [Карточка/приёмка](../../docs/product/e2-02d-admin-access.md), [QA](../../docs/qa/e2-02d-admin-access-report.md).
 - [ ] E2-02d: ревью владельца.
 - [ ] E2-02d: интеграция в main.

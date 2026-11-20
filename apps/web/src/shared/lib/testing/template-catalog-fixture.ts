@@ -3,9 +3,13 @@ import type { TemplateCatalogDto } from "@shared/api/generated/models";
 /** Synthetic UI/transport fixture using generated DTOs; not a replacement for API HTTP tests. */
 export function templateCatalogFixture(): TemplateCatalogDto {
   return {
+    categories: [{ id: "wedding", title: "Свадьба" }],
     items: [
       {
         templateVersionId: "wedding-garden-v1",
+        templateId: "quiet-garden",
+        categoryId: "wedding",
+        price: null,
         title: "Тихий сад",
         eventType: "wedding",
         schemaVersion: 1,

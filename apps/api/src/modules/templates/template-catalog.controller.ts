@@ -24,15 +24,20 @@ export class TemplateCatalogController {
   @ApiOperation({
     operationId: "getTemplateCatalog",
     summary:
-      "Public code-owned template catalog; no account or database required",
+      "Public catalog with categories and versioned prices; account not required",
   })
   @ApiResponse({ status: 200, type: TemplateCatalogDto })
+  @ApiResponse({
+    status: 503,
+    type: ApiErrorDto,
+    description: "SERVICE_UNAVAILABLE",
+  })
   @ApiResponse({
     status: 422,
     type: ApiErrorDto,
     description: "VALIDATION_FAILED: invalid locale or unknown query field",
   })
-  list(@Query() query: TemplateCatalogQueryDto): TemplateCatalogDto {
-    return this.catalog.list(query.locale);
+  list(@Query() query: TemplateCatalogQueryDto): Promise<TemplateCatalogDto> {
+    return this.catalog.list(query);
   }
 }

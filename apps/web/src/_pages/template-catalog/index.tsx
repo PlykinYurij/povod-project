@@ -24,6 +24,13 @@ export async function TemplateCatalogPage() {
     palettes: t("palettes"),
     demo: t("demo"),
     loading: t("loading"),
+    pricePending: t("pricePending"),
   };
-  return <CatalogView state={await loadCatalog(locale)} labels={labels} />;
+  return (
+    <CatalogView
+      state={await loadCatalog(locale)}
+      labels={labels}
+      locale={locale}
+    />
+  );
 }

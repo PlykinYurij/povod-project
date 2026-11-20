@@ -21,3 +21,5 @@ Backend восстановления: [E1-04c — локальная почта,
 [Локальная приёмка web регистрации и восстановления](web-identity.md): формы, файловая почта, подтверждение и новый вход после reset.
 
 - [Локальные права администратора E2-02d](admin-access.md): grant/revoke существующего подтверждённого аккаунта, запрет remote/production; отдельный production bootstrap ещё предстоит.
+
+- [Каталог PostgreSQL E2-01d](template-catalog.md): anonymous GET/filter, обязательный dev DB и честный null-прайс.

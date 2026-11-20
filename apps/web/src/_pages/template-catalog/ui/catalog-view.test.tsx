@@ -8,6 +8,32 @@ import en from "@shared/i18n/en.json";
 import { CatalogView } from "./catalog-view";
 
 afterEach(cleanup);
+
+test("unconfigured price is never displayed as free", () => {
+  render(
+    <CatalogView
+      state={{ kind: "ready", ...templateCatalogFixture() }}
+      labels={en.TemplateCatalog}
+      locale="en"
+    />,
+  );
+  expect(screen.getByText(en.TemplateCatalog.pricePending)).toBeTruthy();
+  expect(screen.queryByText(/free/i)).toBeNull();
+});
+
+test("configured price uses integer minor units and the display locale", () => {
+  const fixture = templateCatalogFixture();
+  fixture.items[0].price = { amountMinor: 123456, currency: "RUB", version: 1 };
+  render(
+    <CatalogView
+      state={{ kind: "ready", ...fixture }}
+      labels={ru.TemplateCatalog}
+      locale="ru"
+    />,
+  );
+  expect(screen.getByText(/1\s?234,56\s?₽/)).toBeTruthy();
+  expect(screen.queryByText(ru.TemplateCatalog.pricePending)).toBeNull();
+});
 test("catalog renders API labels and a local demo link without pretending to create projects", () => {
   render(
     <CatalogView
@@ -27,7 +53,7 @@ test("catalog renders API labels and a local demo link without pretending to cre
 test("empty catalog has its own state", () => {
   render(
     <CatalogView
-      state={{ kind: "ready", items: [] }}
+      state={{ kind: "ready", items: [], categories: [] }}
       labels={ru.TemplateCatalog}
     />,
   );
