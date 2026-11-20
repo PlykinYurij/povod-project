@@ -23,3 +23,5 @@ Backend восстановления: [E1-04c — локальная почта,
 - [Локальные права администратора E2-02d](admin-access.md): grant/revoke существующего подтверждённого аккаунта, запрет remote/production; отдельный production bootstrap ещё предстоит.
 
 - [Каталог PostgreSQL E2-01d](template-catalog.md): anonymous GET/filter, обязательный dev DB и честный null-прайс.
+
+- [Общая заявка V2-02](service-requests.md): HTTP, секрет rate/local fallback, явные ограничения публичного запуска и очистки контактов.

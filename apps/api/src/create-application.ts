@@ -8,7 +8,10 @@ import { webOrigin } from "./http/web-origin";
 import { createValidationPipe } from "./http/validation-pipe";
 
 export async function createApplication(): Promise<INestApplication> {
-  const app = await NestFactory.create(AppModule, { logger: false });
+  const app = await NestFactory.create(AppModule, {
+    logger: false,
+    abortOnError: false,
+  });
   const origin = webOrigin();
   if (origin)
     app.enableCors({
@@ -27,7 +30,7 @@ export function createOpenApiDocument(app: INestApplication) {
     app,
     new DocumentBuilder()
       .setTitle("Повод API")
-      .setVersion("0.11.0")
+      .setVersion("0.12.0")
       .addCookieAuth(
         "__Host-povod-session",
         { type: "apiKey", in: "cookie" },

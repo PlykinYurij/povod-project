@@ -1,5 +1,6 @@
 import { isTemplateCatalog } from "./catalog-validation";
 import { isPublicCatalogPath } from "./catalog-path";
+import { isServiceRequestReceipt } from "./service-request-validation";
 
 export class ApiRequestError extends Error {
   constructor(
@@ -101,24 +102,32 @@ export async function apiFetch<T>(
   const publicCatalog = isPublicCatalogPath(path);
   const projectMethods = allowedProjectMethods(path);
   const adminAccess = path === "/api/v1/admin/access";
+  const publicRequest = path === "/api/v1/service-requests";
   if (
     (!path.startsWith("/api/v1/auth/") &&
       path !== "/health" &&
       !publicCatalog &&
       !projectMethods &&
-      !adminAccess) ||
+      !adminAccess &&
+      !publicRequest) ||
     path.includes("..") ||
     path.includes("\\")
   )
     throw new Error("Untrusted API path");
   const method = (options.method ?? "GET").toUpperCase();
+  if (publicRequest && method !== "POST")
+    throw new Error("Public service request only supports POST");
   if (adminAccess && method !== "GET")
     throw new Error("Admin access is read-only");
   if (projectMethods && !projectMethods.includes(method))
     throw new Error("Unsupported project method");
   const headers = new Headers(options.headers);
-  if (publicCatalog) {
-    if (options.method && options.method.toUpperCase() !== "GET")
+  if (publicCatalog || publicRequest) {
+    if (
+      publicCatalog &&
+      options.method &&
+      options.method.toUpperCase() !== "GET"
+    )
       throw new Error("Public catalog is read-only");
     headers.delete("Cookie");
     headers.delete("Authorization");
@@ -131,6 +140,7 @@ export async function apiFetch<T>(
   if (
     options.method &&
     !["GET", "HEAD"].includes(options.method.toUpperCase()) &&
+    !publicRequest &&
     !headers.has("X-CSRF-Token")
   ) {
     if (typeof window === "undefined")
@@ -143,11 +153,13 @@ export async function apiFetch<T>(
     ...options,
     headers,
     body: mutation && options.body === undefined ? "{}" : options.body,
-    credentials: publicCatalog ? "omit" : "include",
+    credentials: publicCatalog || publicRequest ? "omit" : "include",
     cache: "no-store",
   });
   const body = await readJson(response);
   if (!response.ok) throw responseError(response, body);
+  if (publicRequest && !isServiceRequestReceipt(body))
+    throw new ApiRequestError(503, "SERVICE_UNAVAILABLE");
   if (adminAccess && (!isObject(body) || body.role !== "ADMIN"))
     throw new ApiRequestError(503, "SERVICE_UNAVAILABLE");
   if (publicCatalog && !isTemplateCatalog(body))

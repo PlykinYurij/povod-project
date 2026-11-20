@@ -19,9 +19,12 @@ import {
   ApiResponse,
   ApiTags,
 } from "@nestjs/swagger";
-import { isUUID } from "class-validator";
 import type { Response } from "express";
 import { ApiError, ApiErrorDto } from "../../http/api-error";
+import {
+  readIdempotencyKey,
+  rejectUnknownQuery as rejectQuery,
+} from "../../http/request-contract";
 import { CsrfGuard } from "../identity/csrf.guard";
 import { RegistrationOriginGuard } from "../identity/registration-origin.guard";
 import { AuthenticatedRequest, SessionGuard } from "../identity/session.guard";
@@ -121,11 +124,11 @@ export class ProjectsController {
     @Res({ passthrough: true }) response: Response,
   ): Promise<ProjectDto> {
     rejectQuery(query);
-    if (typeof key !== "string" || !isUUID(key))
-      throw new ApiError(422, "VALIDATION_FAILED", "Передайте ключ повтора", [
-        { path: "idempotencyKey", code: "INVALID_VALUE" },
-      ]);
-    const result = await this.projects.create(ownerId(request), input, key);
+    const result = await this.projects.create(
+      ownerId(request),
+      input,
+      readIdempotencyKey(key),
+    );
     response.status(result.replay ? 200 : 201);
     return result.project;
   }
@@ -199,18 +202,4 @@ function ownerId(request: AuthenticatedRequest): string {
   if (!request.actor)
     throw new ApiError(401, "AUTH_REQUIRED", "Войдите в аккаунт");
   return request.actor.id;
-}
-
-function rejectQuery(query: Record<string, unknown>): void {
-  const fields = Object.keys(query).map((path) => ({
-    path,
-    code: "UNKNOWN_FIELD",
-  }));
-  if (fields.length)
-    throw new ApiError(
-      422,
-      "VALIDATION_FAILED",
-      "Неизвестные параметры",
-      fields,
-    );
 }

@@ -215,3 +215,11 @@ E5-02 — совместная проверка безопасности; E5-03/
 - [x] Backend реализован и проверен: [QA](../../docs/qa/e1-04d-report.md), 52 DB/HTTP, 8 unit; owner/main отдельно.
 - [ ] Владелец принял результат.
 - [ ] Проверен в main; SHA записан.
+
+## V2-02 · Общая заявка
+
+- [x] Результат/проверки: public POST, strict contacts/consent, anonymous receipt, shared origin/query/key helpers, PG idempotency/rate/cleanup, OpenAPI 0.12.0. [QA](../../docs/qa/v2-02-service-requests-report.md).
+- [ ] Ревью владельца.
+- [ ] Интеграция в main.
+
+Следующий этап V2-01: owner-заявка с projectId/revision, проект остаётся редактируемым D-43; private CSRF/ownership отдельно от anonymous пути.

@@ -1440,12 +1440,151 @@
           "administration"
         ]
       }
+    },
+    "/api/v1/service-requests": {
+      "post": {
+        "operationId": "createServiceRequest",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateServiceRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Original receipt replayed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceRequestReceiptDto"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "New request received",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceRequestReceiptDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "MALFORMED_JSON",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "CSRF_FAILED: origin rejected",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "IDEMPOTENCY_KEY_REUSED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "BODY_TOO_LARGE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "UNSUPPORTED_MEDIA_TYPE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "VALIDATION_FAILED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "RATE_LIMITED",
+            "headers": {
+              "Retry-After": {
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "SERVICE_UNAVAILABLE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Public assistance request; no session, no project, no publication",
+        "tags": [
+          "requests"
+        ]
+      }
     }
   },
   "info": {
     "title": "Повод API",
     "description": "",
-    "version": "0.11.0",
+    "version": "0.12.0",
     "contact": {}
   },
   "tags": [],
@@ -2323,6 +2462,75 @@
         },
         "required": [
           "role"
+        ]
+      },
+      "CreateServiceRequestDto": {
+        "type": "object",
+        "properties": {
+          "contactName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "phone": {
+            "type": "string",
+            "pattern": "^\\+[1-9]\\d{6,14}$",
+            "example": "+79991234567",
+            "description": "Normalized + and 7–15 digits; spaces/brackets/dashes accepted on input"
+          },
+          "contactChannel": {
+            "type": "string",
+            "enum": [
+              "TELEGRAM",
+              "MAX",
+              "VK"
+            ]
+          },
+          "contactValue": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "description": "Handle or profile link as plain text; no messenger account verification or automatic navigation"
+          },
+          "privacyConsent": {
+            "type": "boolean",
+            "enum": [
+              true
+            ],
+            "description": "Technical acceptance of contact-processing notice; legal launch review remains required"
+          }
+        },
+        "required": [
+          "contactName",
+          "phone",
+          "contactChannel",
+          "contactValue",
+          "privacyConsent"
+        ]
+      },
+      "ServiceRequestReceiptDto": {
+        "type": "object",
+        "properties": {
+          "requestId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "RECEIVED"
+            ],
+            "description": "Original receipt, not the current operator workflow status"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "requestId",
+          "status",
+          "createdAt"
         ]
       }
     }

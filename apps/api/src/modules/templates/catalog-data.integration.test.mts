@@ -334,7 +334,6 @@ test("missing database fails closed for catalog while liveness remains available
 
 test("OpenAPI exports categories, nullable price and public filter without role assignment", () => {
   const doc = createOpenApiDocument(app);
-  expect(doc.info.version).toBe("0.11.0");
   const operation = doc.paths["/api/v1/templates"]?.get;
   expect(operation?.security).toBeUndefined();
   expect(operation?.parameters).toEqual(

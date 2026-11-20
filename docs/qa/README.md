@@ -25,3 +25,5 @@
 - [Проверки серверных admin-прав E2-02d](e2-02d-admin-access-report.md): 147 HTTP/PG регрессий и 129 root, реальные local CLI прогоны на синтетических аккаунтах.
 
 - [Проверки каталога E2-01d](e2-01d-catalog-data-report.md): 163 HTTP/PG, 143 root, реальный SSR smoke без пользовательских серверов.
+
+- [Проверки общей заявки V2-02](v2-02-service-requests-report.md): 198 HTTP/PG, 150 root, две API инстанции/rollback/rate и конфигурационный отказ.
