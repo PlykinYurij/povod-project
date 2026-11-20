@@ -1,5 +1,7 @@
 # Начальный контракт первой вертикали
 
+**После D-38/39:** существующие identity/catalog/private draft endpoints 0.9.0 остаются фактическим контрактом. Проектируемые self-service publish/owner resume/offer ниже — история v1, заменённая [заявками/admin publish](assisted-publication.md). Не генерировать клиент и не реализовывать их по старому Markdown. Новые API пока не вошли в Swagger.
+
 Статус: реализованная часть отделена от проектируемых операций. Identity, read-only каталог и private draft API имеют OpenAPI 0.9.0; preview/media/publication/public пока проектируются. Источники: FR-01–14, NFR-07–10, D-02/03/09–13/36/37. Авторизация и базовые политики — [архитектура](first-scenario.md). JSON ниже — синтетические примеры.
 
 Identity описан в authentication.md. Read-only GET /api/v1/templates?locale=ru|en → 200 `{items:[{templateVersionId,title,eventType,schemaVersion,themes:[{id,title}],blocks:[{id,required}],demoPath,previewImagePath}]}`. Default RU, неизвестные query/некорректная locale → 422. No-store, без аккаунта/БД/Set-Cookie. Пока одна реализованная wedding-garden-v1, без фиктивных остальных карточек; пути demo/image относительные. Схемы контента E2-01 и приватные черновики E2-02 реализованы отдельно; наличие catalog descriptor/schemaVersion не означает готовой публикации E2-04.

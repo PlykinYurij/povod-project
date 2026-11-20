@@ -1,5 +1,7 @@
 # Проверка качества
 
+[План MVP v2](mvp-v2-test-plan.md): заявки/контакты/admin permissions, согласованная цена/revision, admin-assisted project, две административные сессии и миграция. Старые отчёты ниже доказывают только соответствующие исторические реализации; новых успешных admin/request тестов пока нет.
+
 [E2-02: приватные черновики](e2-02-private-drafts-report.md) — реальные HTTP/PG, owner/CSRF, quota/race, create replay, revision/conflict/rollback; UI редактора ещё нет. Схема E2-01 принята в main f220170.
 
 [E2-01b: read-only каталог](e2-01b-catalog-report.md) — реальные API/Orval/SSR, локализованные metadata, HTTP без БД и симуляции empty/error/loading отдельно. E2-01a/D-36 принят в main de0cae2.
