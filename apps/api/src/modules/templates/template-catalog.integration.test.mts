@@ -104,3 +104,32 @@ test("OpenAPI describes the public operation and typed nested metadata", () => {
   expect(document.components?.schemas).toHaveProperty("TemplateCatalogDto");
   expect(document.components?.schemas).toHaveProperty("TemplateSummaryDto");
 });
+
+test("OpenAPI exports the actual garden DTO constraints without adding a write endpoint", () => {
+  const document = createOpenApiDocument(app);
+  const schemas = document.components?.schemas;
+  expect(document.info.version).toBe("0.8.0");
+  expect(schemas?.GardenDraftDto).toMatchObject({
+    required: expect.arrayContaining(["title", "templateVersionId", "content"]),
+    properties: { title: { type: "string", maxLength: 24 } },
+  });
+  expect(schemas?.GardenNamesDto).toMatchObject({
+    properties: { first: { maxLength: 20 }, second: { maxLength: 20 } },
+  });
+  expect(schemas?.GardenVenueDto).toMatchObject({
+    required: expect.arrayContaining(["name", "address", "routeUrl"]),
+    properties: {
+      name: { maxLength: 80 },
+      address: { maxLength: 150 },
+      routeUrl: { maxLength: 200, nullable: true },
+    },
+  });
+  expect(schemas?.GardenContentDto).toMatchObject({
+    properties: {
+      program: { maxItems: 12, nullable: true },
+      heroMediaId: { format: "uuid", nullable: true },
+    },
+  });
+  expect(document.paths["/api/v1/projects"]).toBeUndefined();
+  expect(document.paths["/api/v1/templates"]?.post).toBeUndefined();
+});

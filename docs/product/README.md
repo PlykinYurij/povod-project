@@ -1,5 +1,7 @@
 # Продуктовые документы «Повода»
 
+20.11.2026: каталог принят в main f9882f3; Q-03 закрыт D-37. [Схема контента E2-01](e2-01-content-schema.md) и [QA](../qa/e2-01-content-schema-report.md) подготовлены для Review. Следующий шаг после принятия — приватный draft API E2-02. Исторические сводки ниже не отражают текущую готовность; актуальные результаты — [статус](../preparation-status.md) и [backlog](backlog.md).
+
 E1-04d backend подготовлен к ревью: [регистрация с кодом](../operations/registration-confirmation.md), [QA](../qa/e1-04d-report.md). Открыт Q-22 для legacy-аккаунтов до публичного выпуска.
 
 Backend восстановления по коду подготовлен к ревью: [E1-04c](e1-04c.md), [проверки](../qa/e1-04c-report.md), [локальный запуск](../operations/password-reset.md). Это не готовая web-форма и не production mail.

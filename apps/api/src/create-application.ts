@@ -1,11 +1,11 @@
 import "reflect-metadata";
-import { INestApplication, ValidationPipe } from "@nestjs/common";
+import { INestApplication } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import { AppModule } from "./app.module";
-import { ApiError } from "./http/api-error";
 import { ApiExceptionFilter } from "./http/api-exception.filter";
 import { webOrigin } from "./http/web-origin";
+import { createValidationPipe } from "./http/validation-pipe";
 
 export async function createApplication(): Promise<INestApplication> {
   const app = await NestFactory.create(AppModule, { logger: false });
@@ -19,26 +19,7 @@ export async function createApplication(): Promise<INestApplication> {
       credentials: true,
     });
   app.useGlobalFilters(new ApiExceptionFilter());
-  app.useGlobalPipes(
-    new ValidationPipe({
-      transform: true,
-      whitelist: true,
-      forbidNonWhitelisted: true,
-      validationError: { target: false, value: false },
-      exceptionFactory: (errors) =>
-        new ApiError(
-          422,
-          "VALIDATION_FAILED",
-          "Проверьте поля",
-          errors.map((error) => ({
-            path: error.property,
-            code: error.constraints?.whitelistValidation
-              ? "UNKNOWN_FIELD"
-              : "INVALID_VALUE",
-          })),
-        ),
-    }),
-  );
+  app.useGlobalPipes(createValidationPipe());
   return app;
 }
 export function createOpenApiDocument(app: INestApplication) {
@@ -46,7 +27,7 @@ export function createOpenApiDocument(app: INestApplication) {
     app,
     new DocumentBuilder()
       .setTitle("Повод API")
-      .setVersion("0.7.0")
+      .setVersion("0.8.0")
       .addCookieAuth(
         "__Host-povod-session",
         { type: "apiKey", in: "cookie" },
