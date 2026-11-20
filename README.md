@@ -1,5 +1,7 @@
 # Повод
 
+Актуально 20.11.2026: identity, каталог/демо и схема контента уже в main; [E2-02: private draft API](docs/product/e2-02-private-drafts.md) подготовлен к ревью. [Локальный запуск и проверка](docs/operations/private-drafts.md), [QA](docs/qa/e2-02-private-drafts-report.md). Редактора/загрузки фото/публикации пока нет; исторические строки ниже о неготовом web identity больше не актуальны.
+
 Web login/account: [запуск и приёмка](docs/operations/web-sign-in.md), [QA и границы](docs/qa/e1-04b-web-report.md). Next-intl 4.15.1 разрешена владельцем для разработки/проверок и публикации ветки; production отдельно.
 
 Backend E1-04d: [регистрация теперь требует email-код](docs/operations/registration-confirmation.md). Start 202 без сессии → confirm 201 с автовходом. Web-формы и production-транспорт ещё не реализованы; инструкции ниже о старом немедленном register — история прежних этапов.

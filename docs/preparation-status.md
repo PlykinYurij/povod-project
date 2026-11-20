@@ -1,5 +1,7 @@
 # Состояние подготовки «Повода»
 
+Актуальный этап: схема E2-01 принята в main f220170; E2-02 private draft API передаётся на Review, см. последний раздел. Редактор/медиа/публикация ещё не реализованы.
+
 ## E1-04b · Backend сессий, Review · 17 ноября
 
 Регистрация принята владельцем, main обновлён до `9c0cc4c`; ветка `feat/identity-sessions`. D-29 закрывает idle 7 дней/absolute 30 дней и register/login лимиты. Реализованы PostgreSQL Session с hash токена, атомарный register+Session, login/session/logout, SessionGuard, signed CSRF bootstrap/Origin/CORS, нейтральный login и PostgreSQL counter неверных попыток. Контракт OpenAPI 0.2.0 обновлён.
@@ -275,4 +277,14 @@ Types, web build, format и 28 unit успешны. Browser переходы (в
 
 На той же feat/garden-content-schema реализованы конкретные DTO/runtime validation, проверка неполного draft и отдельная полнота, безопасные вложенные dot paths, OpenAPI 0.8.0 → Orval → readonly renderer contract. Новых endpoints/продуктовых экранов/миграций/зависимостей нет. Сохранение с owner/revision/квотой — следующая E2-02; первая реальная публикация по-прежнему требует RSVP. Q-04/08/16/19 открыты.
 
-Проверено: typecheck/build обоих workspace, 121 root (111 web), 113 API/PG (49 новых garden + 9 catalog/OpenAPI + 55 identity), format, воспроизводимость генерации. [QA и ограничения](qa/e2-01-content-schema-report.md). Дополнительный browser helper завис до Chrome и остановлен вместе со своим сервером; browser/E2E не отмечен успешным. Продуктовый код UI/стили не менялись, существующие SSR/component-тесты прошли. Результат передаётся на Review; принятие владельцем/main не отмечены автоматически.
+Проверено: typecheck/build обоих workspace, 121 root (111 web), 113 API/PG (49 новых garden + 9 catalog/OpenAPI + 55 identity), format, воспроизводимость генерации. [QA и ограничения](qa/e2-01-content-schema-report.md). Дополнительный browser helper завис до Chrome и остановлен вместе со своим сервером; browser/E2E не отмечен успешным. Продуктовый код UI/стили не менялись, существующие SSR/component-тесты прошли. На момент передачи результат был Review; последующее принятие отмечено ниже.
+
+## 20.11.2026 · Схема принята; E2-02 приватные черновики для Review
+
+Рабочая папка была чистой. Origin HEAD проверен через ls-remote --symref (main), выполнены switch main/pull --ff-only: f220170dad1ad179db72baa2214e4111ede049b2, PR #24 содержит 654f2f4. Создана feat/private-project-drafts от обновлённого main. Предыдущая E2-01 принята; новой E2-02 это принятие не присваивается.
+
+Реализованы [create/list/get/save приватного черновика E2-02](product/e2-02-private-drafts.md): Session/CSRF/owner, no-store, пятидрафтовая квота под owner row lock, create UUID key/replay, revision+1/conflict и блокировка save после firstPublishedAt. Новая Project-модель/девятая SQL-миграция, общий DatabaseModule с одним клиентом для identity/projects. Copy RU-пресета копируется в новый проект, все 14 текстов сохраняются как данные. OpenAPI 0.9.0 → Orval HTTP/hooks/types; web transport разрешает только точные новые project paths/methods и не делает слепых повторов.
+
+Проверки: typecheck/build обоих workspace; 126 root (116 web + 10 artifact/startup), 136 API/PG (23 новых project + 113 регрессий); web/API format. Миграция применена и повторно проверена в раздельных dev/test, без reset и pending migrations. OpenAPI/Orval повторно сгенерированы воспроизводимо. [QA](qa/e2-02-private-drafts-report.md), [локальный запуск и приёмка](operations/private-drafts.md). Пройден owner API путь create → get/list → save → повтор create/конфликт старого save; отдельные PostgreSQL гонки двух вкладок/последнего места, изоляция двух владельцев и rollback после insert.
+
+Новых UI-экранов/макетов/зависимостей/CI нет. Browser E2E и полный build kit не запускались в этом этапе, за успешные не выданы. Фото пока MEDIA_NOT_FOUND; загрузка/media ownership появятся E2-03. Preview/редактор/RSVP/публикация/expiry/purge не реализованы. Q-04/08/16/19 сохраняются; create key без автоматического TTL, очистка зависит от Q-11/19. Следующий шаг после ревью/merge — связка выбора шаблона с созданием/редактором E2-01b/E2-02b; эту следующую реализацию сейчас не начинали. Commit/push ветки не означают owner acceptance/main merge.

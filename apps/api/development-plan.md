@@ -1,6 +1,6 @@
 # План backend
 
-20.11.2026: read-only каталог принят в main f9882f3 (PR #23). [Схема E2-01](../../docs/product/e2-01-content-schema.md) с пределами D-37 подготовлена к Review на feat/garden-content-schema: OpenAPI 0.8.0, runtime draft/completeness, вложенные field paths. Q-03 закрыт; создание/сохранение с owner/revision/квотой — следующий E2-02. [QA схемы](../../docs/qa/e2-01-content-schema-report.md).
+20.11.2026: схема E2-01 принята в main f220170 (PR #24). [E2-02](../../docs/product/e2-02-private-drafts.md) реализован для Review на feat/private-project-drafts: private create/list/get/save, квота пять draft, revision/idempotency/owner/CSRF, миграция и OpenAPI 0.9.0 → Orval. [QA](../../docs/qa/e2-02-private-drafts-report.md). Следующие editor/preview/media не реализованы.
 
 Актуализация D-30–32: backend сессий/reset принят ранее; E1-04d backend регистрации с email-кодом подготовлен к Review, 52 DB/HTTP и 8 unit успешны. Q-21 закрыт; legacy-маркер и политика — Q-22 до публичного запуска. UI/production mail отдельно.
 
@@ -57,7 +57,7 @@ Backend реализован в `feat/identity-sessions`, [карточка](../
 
 Вход: E1-04b, схема E2-01, Q-03. FR-05/06/08: частичное сохранение, пять draft, ожидаемая ревизия, owner-фильтрация. P-01/03/18: интеграционно проверить две вкладки/двух владельцев/гонку квоты; устаревший запрос не перезаписывает новый. Передать web OpenAPI и примеры ошибок.
 
-- [ ] API-результат реализован и проверен; доказательства записаны.
+- [x] E2-02: API-результат реализован и проверен; [доказательства](../../docs/qa/e2-02-private-drafts-report.md).
 - [ ] Владелец принял API-результат.
 - [ ] API-результат проверен в main; SHA записан.
 

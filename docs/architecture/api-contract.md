@@ -1,8 +1,8 @@
 # Начальный контракт первой вертикали
 
-Статус: предложение для проектирования, не реализованный API/OpenAPI. Источники: FR-01–14, NFR-07–10, D-02/03/09–13. Авторизация и базовые политики — [архитектура](first-scenario.md). JSON ниже — синтетические примеры.
+Статус: реализованная часть отделена от проектируемых операций. Identity, read-only каталог и private draft API имеют OpenAPI 0.9.0; preview/media/publication/public пока проектируются. Источники: FR-01–14, NFR-07–10, D-02/03/09–13/36/37. Авторизация и базовые политики — [архитектура](first-scenario.md). JSON ниже — синтетические примеры.
 
-Исключения по фактической реализации: identity описан в authentication.md; read-only каталог реализован в OpenAPI 0.7.0. GET /api/v1/templates?locale=ru|en → 200 `{items:[{templateVersionId,title,eventType,schemaVersion,themes:[{id,title}],blocks:[{id,required}],demoPath,previewImagePath}]}`. Default RU, неизвестные query/некорректная locale → 422. No-store, без аккаунта/БД/Set-Cookie. Пока возвращается одна реализованная wedding-garden-v1, без фиктивных остальных карточек. Пути demo/image относительные, описание/схема контента и пользовательские данные не включены. Этот descriptor/schemaVersion не объявляет выполненными валидацию/публикацию E2-01/04. Остальные project/public endpoints ниже по-прежнему проектируемые.
+Identity описан в authentication.md. Read-only GET /api/v1/templates?locale=ru|en → 200 `{items:[{templateVersionId,title,eventType,schemaVersion,themes:[{id,title}],blocks:[{id,required}],demoPath,previewImagePath}]}`. Default RU, неизвестные query/некорректная locale → 422. No-store, без аккаунта/БД/Set-Cookie. Пока одна реализованная wedding-garden-v1, без фиктивных остальных карточек; пути demo/image относительные. Схемы контента E2-01 и приватные черновики E2-02 реализованы отдельно; наличие catalog descriptor/schemaVersion не означает готовой публикации E2-04.
 
 ## Контент и ревизия
 
@@ -31,7 +31,7 @@
 
 Контракт E2-01: OpenAPI 0.8.0 содержит GardenDraftDto/GardenContentDto и вложенные схемы через ApiExtraModels; Orval генерирует web-типы, которые потребляет renderer. Это модели для следующих draft use cases, не новый публичный write endpoint. validateGardenDraft принимает целую структуру с пустыми строками/null, не JSON Merge Patch (partial updates с revision — E2-02). validateGardenComplete добавляет полноту, но не публикационные права/форму RSVP/готовность фото. Nullable-поля обязаны присутствовать. heroMediaId — UUID либо null, только ссылка; принадлежность/ready проверит media use case. Служебные значения не преобразуются неявно, строки владельца не обрезаются; whitespace-only обязательное значение не считается полным. Вложенные ошибки возвращаются dot paths, неизвестные поля — UNKNOWN_FIELD, прочие неверные значения — INVALID_VALUE, незаполненные при проверке полноты — REQUIRED.
 
-Ответ проекта включает `id, templateVersionId, title, revision, content, firstPublishedAt, capabilities, media[], publication`. capabilities — серверные подсказки `canEdit/canPublish/canResume`, не замена серверной авторизации. После firstPublishedAt canEditDraft=false, canCorrectTexts=true; точный whitelist ниже. Поля периода/receipt не присылаются клиентом как доверенные значения.
+Реализованный E2-02 ProjectDto включает `id, templateVersionId, title, revision, content, firstPublishedAt, createdAt, updatedAt, canEditDraft`; список items без content. ownerId/email/creationKeyHash/creationPayloadHash не отдаются. canEditDraft — подсказка, не замена owner/revision/server checks; после firstPublishedAt=false. Расширения `capabilities, media[], publication` и canPublish/canResume/canCorrectTexts появятся со своими use cases, сейчас не выдаются как работающие. Поля периода/receipt не присылаются клиентом как доверенные значения.
 
 ## Запросы
 
@@ -40,8 +40,9 @@
 | Метод и путь | Запрос → результат | Ошибки сверх общих |
 | --- | --- | --- |
 | GET `/templates` | Версии, title, schemaVersion, themes, blocks, безопасное демо → 200 | 503 |
+| GET `/projects` | Реализован E2-02: `{items:ProjectSummaryDto[]}` текущего владельца, без content; query не предусмотрен | 401/422/503 |
 | GET `/publication-offers` | Доступные бесплатные предложения `{id,version,price:0,durationSeconds,limits}` → 200 | 503; отсутствие предложения не разрешает публикацию |
-| POST `/projects` | Idempotency-Key; `{templateVersionId,title}` → 201 проект с revision=1 и частичным content | 404 TEMPLATE_NOT_FOUND, 409 DRAFT_LIMIT_REACHED, 422 VALIDATION_FAILED |
+| POST `/projects` | Реализован E2-02: Idempotency-Key UUID; `{templateVersionId,title}` → 201 ProjectDto/revision=1 с незаполненными полями и копией RU-пресета; повтор → 200 текущий проект | 404 TEMPLATE_NOT_FOUND/PROJECT_NOT_FOUND, 409 DRAFT_LIMIT_REACHED/IDEMPOTENCY_KEY_REUSED, 422 VALIDATION_FAILED |
 | GET `/projects/{id}` | Состояние проекта и актуальная ревизия → 200 | 404 также для чужого проекта |
 | PATCH `/projects/{id}/draft` | `{expectedRevision,title,content}`; полная замена только чернового payload → 200 с новой revision | 409 REVISION_CONFLICT/CONTENT_LOCKED, 422 |
 | GET `/projects/{id}/preview?revision=N` | 200 `{templateVersionId,revision,content,media,validation:{publishable,errors},rsvp:{formVersionId,fields}}` | 409 REVISION_CONFLICT; неполные поля — 200 с errors, не ложный publishable |
@@ -52,6 +53,8 @@
 | GET `/public/invitations/{publicId}` | 200 `{templateVersionId,content,media,metadata,rsvp:{formVersionId,fields}}` без ownerId/title/email/черновика | 404 INVITATION_UNAVAILABLE для всех причин недоступности; 503 при сбое |
 
 PATCH сохраняет currentRevision+1 только при совпадении expectedRevision. При потере ответа клиент читает GET: если payload уже сохранён, не посылает слепое перезаписывание; иначе предлагает сверку. Replay-гарантия публикации ниже сильнее, чем семантика PATCH.
+
+E2-02: POST/GET/list/PATCH реализованы, preview/media/publish ещё нет. Все project query-параметры запрещены; unknown body — 422. Создание и save блокируют owner row, затем project, в транзакции. Пять draft считаются по firstPublishedAt=null/deletedAt=null; опубликованный проект, включая паузу, не возвращается в draft-квоту. Повтор create scoped owner + create + UUID, SHA-256 key/body сохранены с проектом и уникальны по owner/key. Тот же исходный payload возвращает текущую revision без сброса правок; другое тело — 409, deleted — 404. TTL не назначен: до purge Q-11/19, автоматической очистки ключей нет. До E2-03 ненулевой heroMediaId → 422 с field code MEDIA_NOT_FOUND. NUL/непарные surrogates, не представимые JSONB, отклоняются с dot path без нормализации.
 
 Авторизация/CSRF: 401 AUTH_REQUIRED, 403 CSRF_FAILED. Общие: 429 RATE_LIMITED (Retry-After), 503 SERVICE_UNAVAILABLE, 422 VALIDATION_FAILED. Чужой ресурс — нейтральный 404, не подсказка о владельце. Ошибка:
 

@@ -1,0 +1,16 @@
+{
+  "invitationLabel": "Свадебное приглашение",
+  "namesConnector": "&",
+  "introduction": "Приглашаем разделить с нами день,\nс которого начинается наша семья.",
+  "detailsTitle": "День, который нас объединит",
+  "whenLabel": "Когда",
+  "whereLabel": "Где",
+  "startTimeLabel": "Начало в",
+  "timeZoneLabel": "Часовой пояс",
+  "routeLabel": "Открыть маршрут",
+  "programEyebrow": "Всё самое важное",
+  "programTitle": "Этот день вместе",
+  "rsvpEyebrow": "Будем рады встрече",
+  "rsvpTitle": "Вы с нами?",
+  "footerText": "Самые тёплые моменты — вместе."
+}
