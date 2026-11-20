@@ -22,7 +22,7 @@ export async function HomePage() {
         </div>
         <p className={styles.notice}>{t("notice")}</p>
         <p className={styles.hint}>
-          <Link href="/templates/quiet-garden">{t("templateDemo")}</Link>
+          <Link href="/templates">{t("templateDemo")}</Link>
         </p>
       </section>
       <footer className={styles.footer}>{t("footer")}</footer>

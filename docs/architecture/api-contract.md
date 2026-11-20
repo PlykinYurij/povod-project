@@ -2,6 +2,8 @@
 
 Статус: предложение для проектирования, не реализованный API/OpenAPI. Источники: FR-01–14, NFR-07–10, D-02/03/09–13. Авторизация и базовые политики — [архитектура](first-scenario.md). JSON ниже — синтетические примеры.
 
+Исключения по фактической реализации: identity описан в authentication.md; read-only каталог реализован в OpenAPI 0.7.0. GET /api/v1/templates?locale=ru|en → 200 `{items:[{templateVersionId,title,eventType,schemaVersion,themes:[{id,title}],blocks:[{id,required}],demoPath,previewImagePath}]}`. Default RU, неизвестные query/некорректная locale → 422. No-store, без аккаунта/БД/Set-Cookie. Пока возвращается одна реализованная wedding-garden-v1, без фиктивных остальных карточек. Пути demo/image относительные, описание/схема контента и пользовательские данные не включены. Этот descriptor/schemaVersion не объявляет выполненными валидацию/публикацию E2-01/04. Остальные project/public endpoints ниже по-прежнему проектируемые.
+
 ## Контент и ревизия
 
 ```json

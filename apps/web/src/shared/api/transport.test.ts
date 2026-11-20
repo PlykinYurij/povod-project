@@ -2,6 +2,40 @@ import { afterEach, expect, test, vi } from "vitest";
 import { apiFetch, ApiRequestError } from "./transport";
 
 afterEach(() => vi.unstubAllGlobals());
+
+test("public catalog never forwards account credentials or bootstraps CSRF", async () => {
+  vi.stubGlobal("window", {});
+  const fetch = vi.fn().mockResolvedValue(Response.json({ items: [] }));
+  vi.stubGlobal("fetch", fetch);
+  await apiFetch("/api/v1/templates?locale=ru", {
+    headers: {
+      Cookie: "secret",
+      Authorization: "Bearer secret",
+      "X-CSRF-Token": "secret",
+    },
+  });
+  expect(fetch).toHaveBeenCalledTimes(1);
+  const options = fetch.mock.calls[0][1];
+  expect(options.credentials).toBe("omit");
+  for (const header of ["Cookie", "Authorization", "X-CSRF-Token"])
+    expect(options.headers.has(header)).toBe(false);
+});
+test("catalog allowlist does not enable unknown API routes or catalog mutations", async () => {
+  const fetch = vi.fn();
+  vi.stubGlobal("fetch", fetch);
+  for (const path of [
+    "/api/v1/projects",
+    "/api/v1/templates?locale=ru&ownerId=private",
+    "/api/v1/templates?locale=de",
+    "/api/v1/templates/../auth/session",
+  ]) {
+    await expect(apiFetch(path)).rejects.toThrow("Untrusted API path");
+  }
+  await expect(
+    apiFetch("/api/v1/templates", { method: "POST" }),
+  ).rejects.toThrow("read-only");
+  expect(fetch).not.toHaveBeenCalled();
+});
 test("invalid display name payload cannot reach the greeting", async () => {
   vi.stubGlobal(
     "fetch",

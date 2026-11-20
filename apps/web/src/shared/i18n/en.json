@@ -1,7 +1,25 @@
 {
+  "TemplateCatalog": {
+    "navigation": "Navigation",
+    "home": "Back to home",
+    "account": "Your account",
+    "eyebrow": "For your special day",
+    "title": "Invitation templates",
+    "intro": "Find a style that feels right and preview your invitation.",
+    "errorTitle": "Could not load templates",
+    "errorDescription": "Please try again in a moment.",
+    "retry": "Try again",
+    "emptyTitle": "Templates are coming soon",
+    "emptyDescription": "Check back later to choose your invitation style.",
+    "wedding": "Wedding invitation",
+    "description": "Warm paper, botanical lines and room for your own story.",
+    "palettes": "Palettes:",
+    "demo": "View demo",
+    "loading": "Loading templates…"
+  },
   "TemplateDemo": {
     "title": "Quiet Garden · template demo",
-    "back": "Back to home",
+    "back": "Back to templates",
     "controls": "Demo settings",
     "palette": "Palette",
     "sage": "Sage",
@@ -63,7 +81,7 @@
     "greeting": "Hello, {name}!"
   },
   "Home": {
-    "templateDemo": "View the Quiet Garden template",
+    "templateDemo": "Browse templates",
     "eyebrow": "For your special occasions",
     "title": "Повод",
     "description": "Invitations that start a celebration.",

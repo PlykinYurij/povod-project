@@ -1,5 +1,7 @@
 # API: инструкции агенту
 
+- Каталог (read-only часть E2-01b): публичный GET /api/v1/templates, optional locale ru/en, без БД/session/Set-Cookie; strict query DTO. Метаданные только code-owned, без пользовательских объектов/ключей. OpenAPI 0.7.0 → Orval, [карточка](../../docs/product/e2-01b-catalog.md). HTTP-тест рядом с модулем включён в test:database; для него нужен предварительный API build, сам endpoint БД не потребляет. Не выдавать каталог за готовую схему/создание проекта.
+
 - D-34/35: register требует userName (trim, 1–80, без управляющих символов, не уникальный логин), pending → User только при confirm. User/pending nullable для старых записей; login/session/confirm включают userName. Новые пароли не содержат пробелов; старый login совместим. OpenAPI 0.6.0 → Orval в apps/web/src/shared/api. Миграция 20261119020000_identity_user_name переименовывает прежние колонки display_name без потери значений; уже применённые миграции не переписывать. [Review QA](../../docs/qa/identity-code-review-report.md).
 
 - E1-04c: POST `/api/v1/auth/password-reset/request` и `/confirm`, D-31. Код HMAC с отдельным RESET_CODE_SECRET (local fallback эфемерен), PG счётчики/одноразовость, User lock общий с login; смена hash/отзыв всех Session/usedAt атомарны. [Локальный inbox и границы](../../docs/operations/password-reset.md). Файловый транспорт только вне production; SMTP/worker ещё нет. Новые StrongPassword DTO-поля проверяются общим декоратором, не второй копией regex.

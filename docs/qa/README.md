@@ -1,5 +1,7 @@
 # Проверка качества
 
+[E2-01b: read-only каталог](e2-01b-catalog-report.md) — реальные API/Orval/SSR, локализованные metadata, HTTP без БД и симуляции empty/error/loading отдельно. E2-01a/D-36 принят в main de0cae2.
+
 [E2-01a: первый рендерер «Тихий сад»](e2-01a-report.md) — SSR/палитры/пустые данные/медиа/360 px; demo без API/публикации. Identity принят в main eb9bc34 по сообщению владельца.
 
 [Матрица критичных проверок](test-plan.md) разделяет каркас T, продукт P и RSVP R. Каркас проверен: [T-01–06](e1-01-report.md); [CI E1-02](e1-02-report.md) имеет положительный и негативный hosted-прогоны. Основная продуктовая вертикаль P/R ещё не завершена; identity имеет отдельные отчёты ниже. Unit/component scripts уже есть, постоянного browser E2E script пока нет. Основание: [критерии](../product/acceptance-criteria.md). Выпускные доказательства — [операции](../operations/release-plan.md).

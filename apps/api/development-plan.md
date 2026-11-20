@@ -1,5 +1,7 @@
 # План backend
 
+20.11.2026: read-only часть E2-01b — [публичный каталог](../../docs/product/e2-01b-catalog.md), metadata без БД/аккаунта, Swagger 0.7.0 и настоящий HTTP-набор рядом с модулем. Реализовано на feat/template-catalog, Review; это не draft API или общая схема контента. [QA](../../docs/qa/e2-01b-catalog-report.md).
+
 Актуализация D-30–32: backend сессий/reset принят ранее; E1-04d backend регистрации с email-кодом подготовлен к Review, 52 DB/HTTP и 8 unit успешны. Q-21 закрыт; legacy-маркер и политика — Q-22 до публичного запуска. UI/production mail отдельно.
 
 Читать [корневой AGENTS](../../AGENTS.md), [локальный AGENTS](AGENTS.md), [backend-conventions](../../docs/architecture/backend-conventions.md), [общий порядок](../../docs/agent-workflow.md), [backlog](../../docs/product/backlog.md), [API](../../docs/architecture/api-contract.md), [identity](../../docs/architecture/authentication.md), [адреса](../../docs/architecture/publication-addresses.md), [QA](../../docs/qa/test-plan.md). Backend-правила D-27 уже интегрированы в main; план их не заменяет и не переопределяет.

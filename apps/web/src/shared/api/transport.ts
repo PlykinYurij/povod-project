@@ -1,3 +1,5 @@
+import { isTemplateCatalog } from "./catalog-validation";
+
 export class ApiRequestError extends Error {
   constructor(
     readonly status: number,
@@ -85,13 +87,25 @@ export async function apiFetch<T>(
   path: string,
   options: RequestInit = {},
 ): Promise<T> {
+  const publicCatalog = /^\/api\/v1\/templates(?:\?locale=(?:ru|en))?$/.test(
+    path,
+  );
   if (
-    (!path.startsWith("/api/v1/auth/") && path !== "/health") ||
+    (!path.startsWith("/api/v1/auth/") &&
+      path !== "/health" &&
+      !publicCatalog) ||
     path.includes("..") ||
     path.includes("\\")
   )
     throw new Error("Untrusted API path");
   const headers = new Headers(options.headers);
+  if (publicCatalog) {
+    if (options.method && options.method.toUpperCase() !== "GET")
+      throw new Error("Public catalog is read-only");
+    headers.delete("Cookie");
+    headers.delete("Authorization");
+    headers.delete("X-CSRF-Token");
+  }
   const mutation =
     !!options.method && !["GET", "HEAD"].includes(options.method.toUpperCase());
   if (mutation && !headers.has("Content-Type"))
@@ -111,11 +125,13 @@ export async function apiFetch<T>(
     ...options,
     headers,
     body: mutation && options.body === undefined ? "{}" : options.body,
-    credentials: "include",
+    credentials: publicCatalog ? "omit" : "include",
     cache: "no-store",
   });
   const body = await readJson(response);
   if (!response.ok) throw responseError(response, body);
+  if (publicCatalog && !isTemplateCatalog(body))
+    throw new ApiRequestError(503, "SERVICE_UNAVAILABLE");
   if (response.status !== 204 && body === undefined)
     throw new ApiRequestError(503, "SERVICE_UNAVAILABLE");
   if (
