@@ -82,6 +82,7 @@
   margin: var(--garden-space-xs) 0;
 }
 .hero .introduction {
+  white-space: pre-line;
   color: var(--garden-muted);
   font-size: clamp(1rem, 2vw, 1.1rem);
   margin-top: var(--garden-space-lg);

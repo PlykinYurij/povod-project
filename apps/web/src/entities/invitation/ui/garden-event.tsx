@@ -1,4 +1,5 @@
 import type { GardenContent } from "../model/garden-content";
+import { getGardenTranslations } from "@shared/i18n/garden";
 import {
   presentGardenDate,
   presentGardenTime,
@@ -10,47 +11,59 @@ import styles from "./garden-invitation.module.css";
 export function GardenEvent({
   event,
   venue,
+  copy,
+  locale,
   idPrefix,
-}: Pick<GardenContent, "event" | "venue"> & { idPrefix: string }) {
-  const date = presentGardenDate(event.localDate);
+}: Pick<GardenContent, "event" | "venue" | "copy" | "locale"> & {
+  idPrefix: string;
+}) {
+  const t = getGardenTranslations(locale);
+  const date = presentGardenDate(event.localDate, locale);
   const time = presentGardenTime(event.localTime);
   const zone = presentGardenTimeZone(event.timeZone);
   const route = safeGardenRoute(venue.routeUrl);
   return (
     <section className={styles.details} aria-labelledby={`${idPrefix}-details`}>
       <h2 id={`${idPrefix}-details`} className={styles.sectionTitle}>
-        День, который нас объединит
+        {copy.detailsTitle}
       </h2>
       <div className={styles.detailGrid}>
         <div>
-          <p className={styles.kicker}>Когда</p>
+          <p className={styles.kicker}>{copy.whenLabel}</p>
           <p className={styles.detailTitle}>
             {date ? (
               <time dateTime={event.localDate}>{date}</time>
             ) : (
-              "Дата ещё не указана"
+              t("missingDate")
             )}
           </p>
           <p>
             {time ? (
               <>
-                Начало в <time dateTime={event.localTime}>{time}</time>
+                {copy.startTimeLabel}{" "}
+                <time dateTime={event.localTime}>{time}</time>
               </>
             ) : (
-              "Время ещё не указано"
+              t("missingTime")
             )}
           </p>
           <p className={styles.small}>
-            {zone ? `Часовой пояс: ${zone}` : "Часовой пояс ещё не указан"}
+            {zone ? (
+              <>
+                {copy.timeZoneLabel}: {zone}
+              </>
+            ) : (
+              t("missingTimeZone")
+            )}
           </p>
         </div>
         <div>
-          <p className={styles.kicker}>Где</p>
+          <p className={styles.kicker}>{copy.whereLabel}</p>
           <p className={styles.detailTitle}>
-            {venue.name.trim() || "Название места ещё не указано"}
+            {venue.name.trim() || t("missingVenueName")}
           </p>
           <p className={styles.address}>
-            {venue.address.trim() || "Адрес ещё не указан"}
+            {venue.address.trim() || t("missingVenueAddress")}
           </p>
           {route && (
             <a
@@ -59,8 +72,8 @@ export function GardenEvent({
               target="_blank"
               rel="noopener noreferrer"
             >
-              Открыть маршрут
-              <span className={styles.srOnly}> (в новой вкладке)</span>
+              {copy.routeLabel}
+              <span className={styles.srOnly}>{t("newTab")}</span>
             </a>
           )}
         </div>

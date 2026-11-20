@@ -4,10 +4,13 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { renderToStaticMarkup } from "react-dom/server";
 import type { GardenContent, GardenMedia } from "../model/garden-content";
 import { GardenInvitation } from "./garden-invitation";
+import { getGardenCopyPreset } from "@shared/i18n/garden";
 
 afterEach(cleanup);
 afterEach(() => vi.restoreAllMocks());
 const content: GardenContent = {
+  locale: "ru",
+  copy: getGardenCopyPreset("ru"),
   themeId: "sage",
   names: { first: "Анна", second: "Михаил" },
   event: {
@@ -158,4 +161,63 @@ test("a cached image loaded before hydration does not stay in loading state", ()
   );
   expect(screen.getByRole("img")).toBeTruthy();
   expect(screen.queryByRole("status")).toBeNull();
+});
+
+test("all template copy comes from owner content, including section labels and footer", () => {
+  const copy = {
+    invitationLabel: "Our celebration",
+    namesConnector: "+",
+    introduction: "Your words, kept literally: {guest}\nA second line.",
+    detailsTitle: "Join us here",
+    whenLabel: "The date",
+    whereLabel: "The place",
+    startTimeLabel: "Doors open at",
+    timeZoneLabel: "Our local time",
+    routeLabel: "Find our venue",
+    programEyebrow: "A few plans",
+    programTitle: "The schedule",
+    rsvpEyebrow: "Tell us your plans",
+    rsvpTitle: "Can you make it?",
+    footerText: "With love, from both of us",
+  };
+  const html = renderToStaticMarkup(
+    <GardenInvitation content={{ ...content, copy }} rsvp={<p>RSVP slot</p>} />,
+  );
+  for (const text of Object.values(copy)) expect(html).toContain(text);
+  expect(html).not.toContain("Свадебное приглашение");
+  expect(html).not.toContain("Самые тёплые моменты");
+});
+
+test("owner copy is escaped and intentional empty text is not replaced by a preset", () => {
+  const copy = {
+    ...content.copy,
+    introduction: "",
+    footerText: "",
+    detailsTitle: '<script>alert("copy")</script>',
+  };
+  render(<GardenInvitation content={{ ...content, copy }} />);
+  expect(document.querySelector("script")).toBeNull();
+  expect(screen.getByRole("heading", { name: copy.detailsTitle })).toBeTruthy();
+  expect(screen.queryByText(content.copy.footerText)).toBeNull();
+  expect(screen.queryByText(content.copy.introduction)).toBeNull();
+});
+
+test("invitation locale controls only system copy and formatting, not owner content", () => {
+  render(
+    <GardenInvitation
+      content={{
+        ...content,
+        locale: "en",
+        copy: {
+          ...getGardenCopyPreset("en"),
+          introduction: "Мой собственный текст",
+        },
+        names: { first: "", second: "" },
+      }}
+    />,
+  );
+  expect(screen.getByRole("article").lang).toBe("en");
+  expect(screen.getByText("First name")).toBeTruthy();
+  expect(screen.getByText("June 12, 2027")).toBeTruthy();
+  expect(screen.getByText("Мой собственный текст")).toBeTruthy();
 });

@@ -1,17 +1,21 @@
 import type { GardenContent } from "../model/garden-content";
+import { getGardenTranslations } from "@shared/i18n/garden";
 import { presentGardenTime } from "../lib/presentation";
 import styles from "./garden-invitation.module.css";
 
 export function GardenProgram({
   program,
+  copy,
+  locale,
   idPrefix,
-}: Pick<GardenContent, "program"> & { idPrefix: string }) {
+}: Pick<GardenContent, "program" | "copy" | "locale"> & { idPrefix: string }) {
+  const t = getGardenTranslations(locale);
   if (!program?.length) return null;
   return (
     <section className={styles.section} aria-labelledby={`${idPrefix}-program`}>
-      <p className={styles.kicker}>Всё самое важное</p>
+      <p className={styles.kicker}>{copy.programEyebrow}</p>
       <h2 id={`${idPrefix}-program`} className={styles.sectionTitle}>
-        Этот день вместе
+        {copy.programTitle}
       </h2>
       <ol className={styles.program}>
         {program.map((item, index) => {
@@ -21,11 +25,9 @@ export function GardenProgram({
               {time ? (
                 <time dateTime={item.time}>{time}</time>
               ) : (
-                <span>Время уточняется</span>
+                <span>{t("missingProgramTime")}</span>
               )}
-              <span>
-                {item.text.trim() || "Название пункта ещё не указано"}
-              </span>
+              <span>{item.text.trim() || t("missingProgramText")}</span>
             </li>
           );
         })}

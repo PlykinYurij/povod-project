@@ -1,5 +1,12 @@
+import type { Locale } from "@shared/config/locale";
+import type { getGardenCopyPreset } from "@shared/i18n/garden";
+
+export type GardenCopy = Readonly<ReturnType<typeof getGardenCopyPreset>>;
+
 /** Renderer input, not an API DTO or the final publication validation schema. */
 export interface GardenContent {
+  readonly locale: Locale;
+  readonly copy: GardenCopy;
   readonly themeId: "sage" | "sand";
   readonly names: { readonly first: string; readonly second: string };
   readonly event: {

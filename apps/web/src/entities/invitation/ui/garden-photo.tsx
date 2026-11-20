@@ -1,4 +1,6 @@
 import type { GardenMedia } from "../model/garden-content";
+import type { Locale } from "@shared/config/locale";
+import { getGardenTranslations } from "@shared/i18n/garden";
 import { safeGardenImage } from "../lib/presentation";
 import { GardenImage } from "./garden-image";
 import styles from "./garden-invitation.module.css";
@@ -6,10 +8,13 @@ import styles from "./garden-invitation.module.css";
 export function GardenPhoto({
   mediaId,
   media,
+  locale,
 }: {
   mediaId: string | null;
   media?: GardenMedia;
+  locale: Locale;
 }) {
+  const t = getGardenTranslations(locale);
   if (!mediaId) return null;
   const src = media?.id === mediaId ? safeGardenImage(media.src) : null;
   if (
@@ -22,7 +27,7 @@ export function GardenPhoto({
   ) {
     return (
       <div className={styles.photoPending} role="status">
-        Выбранное фото пока недоступно. Оно появится после подготовки.
+        {t("photoPending")}
       </div>
     );
   }
@@ -34,6 +39,7 @@ export function GardenPhoto({
         alt={media.alt}
         width={media.width}
         height={media.height}
+        locale={locale}
       />
     </div>
   );

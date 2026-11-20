@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { GardenInvitation } from "@entities/invitation";
+import { getGardenTranslations } from "@shared/i18n/garden";
 import { gardenDemoMedia, selectGardenDemo } from "./model/demo-content";
 import styles from "./demo.module.css";
 
@@ -13,6 +14,7 @@ export async function GardenDemoPage({
 }) {
   const t = await getTranslations("TemplateDemo");
   const content = selectGardenDemo(palette, sample);
+  const invitation = getGardenTranslations(content.locale);
   const selectedSample =
     typeof sample === "string" &&
     ["minimal", "empty", "media-pending"].includes(sample)
@@ -54,7 +56,7 @@ export async function GardenDemoPage({
         <GardenInvitation
           content={content}
           media={gardenDemoMedia}
-          rsvp={<p>В демонстрации ответы гостей не принимаются.</p>}
+          rsvp={<p>{invitation("demoResponseNotice")}</p>}
         />
       </div>
       <footer className={styles.footer}>

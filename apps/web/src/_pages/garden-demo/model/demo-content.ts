@@ -1,6 +1,9 @@
 import type { GardenContent, GardenMedia } from "@entities/invitation";
+import { getGardenCopyPreset } from "@shared/i18n/garden";
 
 export const gardenDemoContent: GardenContent = {
+  locale: "ru",
+  copy: getGardenCopyPreset("ru"),
   themeId: "sage",
   names: { first: "Анна", second: "Михаил" },
   event: {

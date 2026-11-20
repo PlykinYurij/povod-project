@@ -1,5 +1,7 @@
 "use client";
 import { useState } from "react";
+import type { Locale } from "@shared/config/locale";
+import { getGardenTranslations } from "@shared/i18n/garden";
 import styles from "./garden-invitation.module.css";
 
 /** Only the image lifecycle is interactive; the invitation itself stays on the server. */
@@ -8,12 +10,15 @@ export function GardenImage({
   alt,
   width,
   height,
+  locale,
 }: {
   src: string;
   alt: string;
   width: number;
   height: number;
+  locale: Locale;
 }) {
+  const t = getGardenTranslations(locale);
   const [state, setState] = useState<"loading" | "loaded" | "failed">(
     "loading",
   );
@@ -26,14 +31,14 @@ export function GardenImage({
   if (state === "failed")
     return (
       <div className={styles.photoPending} role="alert">
-        Не удалось загрузить фото. Обновите страницу, чтобы попробовать ещё раз.
+        {t("photoFailed")}
       </div>
     );
   return (
     <div className={styles.imageContainer}>
       {state === "loading" && (
         <p className={styles.imageStatus} role="status">
-          Фото загружается…
+          {t("photoLoading")}
         </p>
       )}
       <img

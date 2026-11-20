@@ -1,11 +1,6 @@
-const dateFormat = new Intl.DateTimeFormat("ru-RU", {
-  day: "numeric",
-  month: "long",
-  year: "numeric",
-  timeZone: "UTC",
-});
+import type { Locale } from "@shared/config/locale";
 
-export function presentGardenDate(value: string) {
+export function presentGardenDate(value: string, locale: Locale = "ru") {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
   const date = new Date(`${value}T00:00:00Z`);
   if (
@@ -14,7 +9,12 @@ export function presentGardenDate(value: string) {
   )
     return null;
   // Display the owner's calendar date, never the browser/server time zone.
-  return dateFormat.format(date);
+  return new Intl.DateTimeFormat(locale, {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(date);
 }
 
 export function presentGardenTime(value: string) {
