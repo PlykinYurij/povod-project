@@ -130,7 +130,7 @@ export class GardenContentDto {
   heroMediaId!: string | null;
 }
 
-/** Whole-content input for future draft use cases, not an implemented HTTP route. */
+/** Whole-content validation contract; HTTP create/save DTOs select their own fields. */
 export class GardenDraftDto {
   @ApiProperty({ enum: ["wedding-garden-v1"] })
   @IsIn(["wedding-garden-v1"])

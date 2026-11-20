@@ -1,5 +1,5 @@
 import { Module } from "@nestjs/common";
-import { DatabaseService } from "../../database/database.service";
+import { DatabaseModule } from "../../database/database.module";
 import { RegistrationController } from "./registration.controller";
 import { RegistrationService } from "./registration.service";
 import { RegistrationOriginGuard } from "./registration-origin.guard";
@@ -22,13 +22,17 @@ import {
 
 @Module({
   imports: [
+    DatabaseModule,
     ThrottlerModule.forRootAsync({
       useFactory: () => [{ ttl: 15 * 60 * 1000, limit: registrationLimit() }],
     }),
   ],
-  controllers: [RegistrationController, SessionController, PasswordResetController],
+  controllers: [
+    RegistrationController,
+    SessionController,
+    PasswordResetController,
+  ],
   providers: [
-    DatabaseService,
     RegistrationService,
     RegistrationOriginGuard,
     RegistrationRateGuard,
@@ -42,6 +46,12 @@ import {
     ResetMailService,
     ResetRateService,
   ],
-  exports: [SessionGuard, SessionService],
+  exports: [
+    SessionGuard,
+    SessionService,
+    CsrfGuard,
+    CsrfService,
+    RegistrationOriginGuard,
+  ],
 })
 export class IdentityModule {}

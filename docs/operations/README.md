@@ -5,6 +5,7 @@
 - [Windows, локальный каркас и разделение сред](local-development.md).
 - [Локальные PostgreSQL dev/test: запуск, изоляция, сохранность](local-postgres.md).
 - [Prisma: генерация, миграции, synthetic seed и тестовая БД в CI](database-migrations.md).
+- [Приватные черновики: девятая миграция, запуск и приёмка API](private-drafts.md).
 - [Backend регистрации: локальный запуск, Swagger и приёмка](registration.md).
 - [Cookie-сессии: автовход, login/logout, CSRF и ручная проверка](sessions.md).
 - [CI Windows/Linux и обязательные проверки main](ci.md), [фактический отчёт](../qa/e1-02-report.md).

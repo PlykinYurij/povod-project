@@ -24,7 +24,7 @@ test("catalog allowlist does not enable unknown API routes or catalog mutations"
   const fetch = vi.fn();
   vi.stubGlobal("fetch", fetch);
   for (const path of [
-    "/api/v1/projects",
+    "/api/v1/projects/not-an-id/publish",
     "/api/v1/templates?locale=ru&ownerId=private",
     "/api/v1/templates?locale=de",
     "/api/v1/templates/../auth/session",

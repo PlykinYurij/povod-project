@@ -13,8 +13,8 @@ export async function createApplication(): Promise<INestApplication> {
   if (origin)
     app.enableCors({
       origin,
-      methods: ["GET", "POST", "OPTIONS"],
-      allowedHeaders: ["Content-Type", "X-CSRF-Token"],
+      methods: ["GET", "POST", "PATCH", "OPTIONS"],
+      allowedHeaders: ["Content-Type", "X-CSRF-Token", "Idempotency-Key"],
       exposedHeaders: ["Retry-After"],
       credentials: true,
     });
@@ -27,7 +27,7 @@ export function createOpenApiDocument(app: INestApplication) {
     app,
     new DocumentBuilder()
       .setTitle("Повод API")
-      .setVersion("0.8.0")
+      .setVersion("0.9.0")
       .addCookieAuth(
         "__Host-povod-session",
         { type: "apiKey", in: "cookie" },

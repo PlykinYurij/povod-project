@@ -5,6 +5,7 @@ export default defineConfig({
     include: [
       "apps/api/tests/**/*.integration.test.mts",
       "apps/api/src/modules/templates/**/*.integration.test.mts",
+      "apps/api/src/modules/projects/**/*.integration.test.mts",
     ],
     fileParallelism: false,
   },

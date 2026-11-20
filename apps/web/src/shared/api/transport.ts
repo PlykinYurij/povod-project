@@ -82,6 +82,16 @@ async function browserCsrf(): Promise<string> {
   }
 }
 
+function allowedProjectMethods(path: string): readonly string[] | undefined {
+  if (path === "/api/v1/projects") return ["GET", "POST"];
+  const resource =
+    /^\/api\/v1\/projects\/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}(\/draft)?$/i.exec(
+      path,
+    );
+  if (!resource) return undefined;
+  return resource[1] ? ["PATCH"] : ["GET"];
+}
+
 /** Orval fetch mutator. Only fixed API paths can receive credentials. */
 export async function apiFetch<T>(
   path: string,
@@ -90,14 +100,19 @@ export async function apiFetch<T>(
   const publicCatalog = /^\/api\/v1\/templates(?:\?locale=(?:ru|en))?$/.test(
     path,
   );
+  const projectMethods = allowedProjectMethods(path);
   if (
     (!path.startsWith("/api/v1/auth/") &&
       path !== "/health" &&
-      !publicCatalog) ||
+      !publicCatalog &&
+      !projectMethods) ||
     path.includes("..") ||
     path.includes("\\")
   )
     throw new Error("Untrusted API path");
+  const method = (options.method ?? "GET").toUpperCase();
+  if (projectMethods && !projectMethods.includes(method))
+    throw new Error("Unsupported project method");
   const headers = new Headers(options.headers);
   if (publicCatalog) {
     if (options.method && options.method.toUpperCase() !== "GET")
