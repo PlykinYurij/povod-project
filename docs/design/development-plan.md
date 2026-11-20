@@ -1,5 +1,7 @@
 # План макетов
 
+19.11.2026: identity UI с ревью принят в main eb9bc34. В E2-01a подготовлена [первая реализация «Тихого сада»](quiet-garden.md), desktop/mobile снимки и состояния; новое оформление пока Review, parent E0-02 и вопросы Q-03/04 не закрываются.
+
 Актуализация 18.11.2026: D-30 — регистрация email/пароль → код из письма → автоматический вход. UI identity ещё не реализован. Экран кода, resend, истечение, неверный код, ошибка отправки и смена email включаются в пакет identity; параметры приняты D-32, Q-21 закрыт. Зависимость — исправленный backend [E1-04d](../product/e1-04d.md), а не старый немедленный register. D-31: восстановление тоже по коду, не ссылке; обычный login без кода.
 
 Исполнитель работает в отдельном checkout с cwd `docs/design`. Читать [локальные инструкции](AGENTS.md), [порядок ревью](../agent-workflow.md), [существующие макеты](README.md), [FR/NFR и критерии](../product/acceptance-criteria.md), [решения](../product/decisions.md), [вопросы](../product/open-questions.md), [API](../architecture/api-contract.md), [web-правила](../architecture/web-conventions.md).

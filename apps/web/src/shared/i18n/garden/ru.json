@@ -1,0 +1,34 @@
+{
+  "copy": {
+    "invitationLabel": "Свадебное приглашение",
+    "namesConnector": "&",
+    "introduction": "Приглашаем разделить с нами день,\nс которого начинается наша семья.",
+    "detailsTitle": "День, который нас объединит",
+    "whenLabel": "Когда",
+    "whereLabel": "Где",
+    "startTimeLabel": "Начало в",
+    "timeZoneLabel": "Часовой пояс",
+    "routeLabel": "Открыть маршрут",
+    "programEyebrow": "Всё самое важное",
+    "programTitle": "Этот день вместе",
+    "rsvpEyebrow": "Будем рады встрече",
+    "rsvpTitle": "Вы с нами?",
+    "footerText": "Самые тёплые моменты — вместе."
+  },
+  "system": {
+    "firstNamePlaceholder": "Первое имя",
+    "secondNamePlaceholder": "Второе имя",
+    "missingDate": "Дата ещё не указана",
+    "missingTime": "Время ещё не указано",
+    "missingTimeZone": "Часовой пояс ещё не указан",
+    "missingVenueName": "Название места ещё не указано",
+    "missingVenueAddress": "Адрес ещё не указан",
+    "newTab": " (в новой вкладке)",
+    "missingProgramTime": "Время уточняется",
+    "missingProgramText": "Название пункта ещё не указано",
+    "photoPending": "Выбранное фото пока недоступно. Оно появится после подготовки.",
+    "photoLoading": "Фото загружается…",
+    "photoFailed": "Не удалось загрузить фото. Обновите страницу, чтобы попробовать ещё раз.",
+    "demoResponseNotice": "В демонстрации ответы гостей не принимаются."
+  }
+}

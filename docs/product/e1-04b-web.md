@@ -1,5 +1,7 @@
 # E1-04b · Первая web-часть identity
 
+Web login/logout/навигация приняты владельцем вместе с signup/reset в main eb9bc34 (PR #21, код до 5590ea9). Ниже история выполнения; resource owner check будущих проектов остаётся E2-02.
+
 Ветка `feat/web-sign-in` от main `d19e115`, после принятого дизайн-пакета E0-02. Один PR в рамках существующего E1-04b, не закрытие всего identity. FR-03/NFR-01/06/07/14; [макеты](../design/identity-flow.md), [backend](../architecture/authentication.md), [ролевой план](../../apps/web/development-plan.md).
 
 Продолжение по новому поручению владельца: [signup/code и reset на той же ветке](e1-04-identity-web.md). Описание ниже — границы первоначальной login-части, не актуальное утверждение отсутствия этих форм.

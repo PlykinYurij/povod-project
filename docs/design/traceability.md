@@ -7,6 +7,8 @@
 | Выбор «Тихий сад» | templateVersionId → Project.templateVersionId → snapshot.templateVersionId | FR-01/05, D-09: версия выбрана один раз, не меняется |
 | Название проекта | title → Project.title, owner-only | Предложение A-01; не попадает в публичный DTO/заголовок приглашения автоматически |
 | Имена | content.names.first/second → Draft JSON → Snapshot JSON | FR-06/11, D-03: заполнены перед публикацией |
+| Все тексты оформления | content.copy → Draft JSON → Snapshot JSON (проектируемые пути D-36) | FR-06/12: вступление, заголовки секций, подписи/кнопки, подвал редактируются; пользовательский текст не переводится автоматически и не интерпретируется как HTML/ICU |
+| Язык приглашения | content.locale, независимо от локали кабинета | D-36: русский — язык пресета, не запрет другого языка; locale нужен служебным сообщениям, форматированию и lang |
 | Дата, время, пояс | content.event.localDate/localTime/timeZone → JSON | FR-06, D-13: формат корректен, дата не управляет сроком |
 | Название места, адрес | content.venue.name/address → JSON | D-03/14: оба обязательны, принято владельцем |
 | Маршрут | content.venue.routeUrl → JSON | FR-06, NFR-08: опциональный HTTPS URL, без скриптов |
