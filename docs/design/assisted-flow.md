@@ -1,5 +1,7 @@
 # UX MVP v2 · Клиент, заявка, оператор
 
+**D-42/43:** заявка не отключает редактор; после published все поля read-only, после admin unpublish редактор снова доступен. Admin видит текущую revision, конфликт публикации требует обновления preview. Общий заказ готовит admin, без требования клиентского аккаунта. [Допущения](../product/implementation-assumptions.md).
+
 Проектирование для ревью, не готовые экраны. [Подтверждённый продукт](../product/mvp-v2.md), [разбор референса](priglashay-reference.md), [API/права](../architecture/assisted-publication.md). Старый HTML self-publish не использовать как текущий flow. Общие Mantine/theme/i18n и оригинальные renderer сохраняются.
 
 ## Клиентский путь
