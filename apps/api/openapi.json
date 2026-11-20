@@ -884,12 +884,58 @@
           "auth"
         ]
       }
+    },
+    "/api/v1/templates": {
+      "get": {
+        "operationId": "getTemplateCatalog",
+        "parameters": [
+          {
+            "name": "locale",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "ru",
+              "type": "string",
+              "enum": [
+                "ru",
+                "en"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TemplateCatalogDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "VALIDATION_FAILED: invalid locale or unknown query field",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Public code-owned template catalog; no account or database required",
+        "tags": [
+          "templates"
+        ]
+      }
     }
   },
   "info": {
     "title": "Повод API",
     "description": "",
-    "version": "0.6.0",
+    "version": "0.7.0",
     "contact": {}
   },
   "tags": [],
@@ -1182,6 +1228,114 @@
           "email",
           "code",
           "newPassword"
+        ]
+      },
+      "TemplatePaletteDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "sage"
+          },
+          "title": {
+            "type": "string",
+            "example": "Шалфей"
+          }
+        },
+        "required": [
+          "id",
+          "title"
+        ]
+      },
+      "TemplateBlockDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "program"
+          },
+          "required": {
+            "type": "boolean",
+            "description": "Whether the content block is mandatory"
+          }
+        },
+        "required": [
+          "id",
+          "required"
+        ]
+      },
+      "TemplateSummaryDto": {
+        "type": "object",
+        "properties": {
+          "templateVersionId": {
+            "type": "string",
+            "example": "wedding-garden-v1"
+          },
+          "title": {
+            "type": "string",
+            "example": "Тихий сад"
+          },
+          "eventType": {
+            "type": "string",
+            "enum": [
+              "wedding"
+            ],
+            "example": "wedding"
+          },
+          "schemaVersion": {
+            "type": "number",
+            "example": 1,
+            "minimum": 1,
+            "description": "Content version identifier; not a publication-readiness promise"
+          },
+          "themes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TemplatePaletteDto"
+            }
+          },
+          "blocks": {
+            "description": "Fixed display order, not drag-and-drop",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TemplateBlockDto"
+            }
+          },
+          "demoPath": {
+            "type": "string",
+            "example": "/templates/quiet-garden",
+            "description": "Relative local demo page"
+          },
+          "previewImagePath": {
+            "type": "string",
+            "example": "/templates/quiet-garden/garden.svg",
+            "description": "Public code-owned illustration, not a private media object"
+          }
+        },
+        "required": [
+          "templateVersionId",
+          "title",
+          "eventType",
+          "schemaVersion",
+          "themes",
+          "blocks",
+          "demoPath",
+          "previewImagePath"
+        ]
+      },
+      "TemplateCatalogDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "description": "Only implemented templates; no synthetic placeholders for future catalog entries",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TemplateSummaryDto"
+            }
+          }
+        },
+        "required": [
+          "items"
         ]
       }
     }

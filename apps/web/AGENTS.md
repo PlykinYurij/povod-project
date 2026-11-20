@@ -1,5 +1,7 @@
 # Web: инструкции агенту
 
+- Read-only каталог E2-01b: /templates читает реальный public API через generated server method, без cookie/Authorization/CSRF. Страница различает loading/empty/unavailable; malformed response не становится пустым списком. Runtime guard разрешает только безопасные локальные demo/image пути. [Карточка](../../docs/product/e2-01b-catalog.md); создание draft пока отдельно. Служебная локаль каталога не переводит текст приглашения владельца.
+
 - Первая шаблонная часть: [E2-01a](../../docs/product/e2-01a-garden-renderer.md), renderer entities/invitation, демо `/templates/quiet-garden`. Это не публикация/редактор. Не подключать providers кабинета к приглашению; GardenContent — view model, не утверждённый DTO/схема публикации. Q-03/04/16 не закрывать по демо.
 
 - D-34: переключатели темы/языка компактны, с aria-label. Identity-формы noValidate, ошибки ввода только под полем; общие сетевые ошибки отдельно. Новый пароль с постоянным живым списком правил и повторным вводом, без пробелов; login не применяет новые правила к старому паролю. Имя userName требуется при регистрации; в ответе nullable для старых аккаунтов. [Review QA](../../docs/qa/identity-review-report.md).

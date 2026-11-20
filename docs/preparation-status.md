@@ -254,3 +254,11 @@ Types, web build, format и 28 unit успешны. Browser переходы (в
 Владелец уточнил, что может менять любой контентный текст шаблона. Исправлено прежнее ошибочное исключение «фиксированных» вступлений/подписей. На текущей review-ветке feat/quiet-garden-renderer добавлены content.copy и независимый content.locale, начальные RU/EN-пресеты и отдельные служебные i18n-строки. Рендерер не переводит сохранённый текст и не подставляет пресет вместо намеренно пустого значения. Модель пока frontend/view-only, API/БД и форма редактора не добавлены.
 
 [D-36](product/decisions.md), [QA review](qa/e2-01a-report.md). Уточнены AGENTS, FR-25, business rules, проектируемый API и traceability. Пределы полей/точная анкета по-прежнему открыты; опубликованные изменения не приняты автоматически.
+
+## 20.11.2026 · E2-01a принят; read-only часть E2-01b
+
+По сообщению владельца о merge проверен origin HEAD/main, выполнены switch/pull --ff-only. Main de0cae226760db9ba43fdc5d19117eb66a2c8506 содержит f3f3a14 и принятую визуальную часть E2-01a/D-36. Создана feat/template-catalog от обновлённой базы. Незакоммиченных пользовательских правок перед началом не было.
+
+Реализована [read-only часть E2-01b](product/e2-01b-catalog.md): public GET templates без DB/account, OpenAPI 0.7.0/Orval, SSR-каталог и путь главная → каталог → демо → каталог. Code-owned registry содержит одну готовую демо-версию; остальные три MVP не выданы за реализованные. Публичные запросы не передают Cookie/Authorization/CSRF. Loading/empty/error/retry различаются, href/media пути проверяются в runtime.
+
+Проверки: 121 root (111 web), 63 API/PG, types/build обоих workspace; generation воспроизводима, форматирование проверено. Реальный браузер прошёл с собственными Next/API без DB и без остановки процессов владельца; прокси отдельно моделировал empty/503/некорректный payload/задержку. [QA](qa/e2-01b-catalog-report.md), [дизайн](design/template-catalog.md). Новая часть Review, owner/main не отмечены. Shared content schema, draft API/создание проекта, Q-03/04/08 и публикация не закрыты.

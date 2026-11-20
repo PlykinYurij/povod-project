@@ -23,7 +23,7 @@ export async function GardenDemoPage({
   return (
     <main className={styles.page}>
       <header className={styles.toolbar}>
-        <Link href="/" className={styles.back}>
+        <Link href="/templates" className={styles.back}>
           {t("back")}
         </Link>
         <p className={styles.title}>{t("title")}</p>
