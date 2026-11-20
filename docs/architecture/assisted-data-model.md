@@ -1,6 +1,6 @@
 # Модель данных MVP v2 и типизированные шаблоны
 
-20.11.2026. **Предложение**, не применённые миграции. [Продукт](../product/mvp-v2.md), [система и API](assisted-publication.md). Фактическая БД до изменений — [Prisma](../../apps/api/prisma/schema.prisma) и E2-02: users/session/reset/pending/limits/projects; таблиц requests/templates/publications/roles ещё нет.
+20.11.2026. D-40 выбирает JSONB со строгой версионированной схемой; D-41 разрешает гостевую общую заявку и уточняет admin экран. Таблицы/миграции ниже пока **проектируются**. [Продукт](../product/mvp-v2.md), [система и API](assisted-publication.md), [эволюция схем](template-schema-evolution.md). Фактическая БД до изменений — [Prisma](../../apps/api/prisma/schema.prisma) и E2-02; requests/templates/publications/roles ещё нет.
 
 ## Типизация и хранение — разные уровни
 
@@ -27,7 +27,7 @@ type EditorModel =
 
 Метаданные формы/renderer ссылаются на зарегистрированные в коде ключи. Если admin создаёт карточку с неизвестным renderer/schema version, её нельзя показывать как готовый к заказу шаблон. Новая анимация и новое семейство формы требуют разработки/проверок; это отдельная работа от быстрого заполнения проекта оператором.
 
-Официальная документация: [JSONB и индексы PostgreSQL 17](https://www.postgresql.org/docs/17/datatype-json.html), [ограничения/FK/CHECK](https://www.postgresql.org/docs/17/ddl-constraints.html), проверено 20.11.2026. Выбор хранения Q-23 остаётся открытым; отсутствие SQL-колонок не означает отсутствие типов в приложении.
+Официальная документация: [JSONB и индексы PostgreSQL 17](https://www.postgresql.org/docs/17/datatype-json.html), [ограничения/FK/CHECK](https://www.postgresql.org/docs/17/ddl-constraints.html), проверено 20.11.2026. Q-23 закрыт: выбран JSONB. SQL-сравнение ниже сохранено как обоснование, не альтернативная задача миграции.
 
 ## Независимая от хранения предметная модель
 
@@ -46,7 +46,7 @@ erDiagram
   service_requests ||--o{ publication_versions : publication_basis
 ```
 
-Nullable customer/owner — **вариант для Q-24/25**, не решение о гостевых заказах. Связь request/project уточняется: заявка на публикацию содержит projectId сразу, общая заявка получает его после подготовки. Несколько последовательных обращений на проект возможны; число одновременно открытых — Q-28. Таблица versions/snapshots не означает, что повторная публикация автоматически разрешена/бесплатна.
+Гостевая общая заявка разрешена D-41: customerUserId может отсутствовать. Владение созданным admin проектом и передача кабинета/ответов — ещё Q-25. Заявка на публикацию содержит projectId сразу, общая получает его после подготовки. Число одновременно открытых заявок — Q-28. Наличие snapshots не означает новую бесплатную публикацию или автоматические 90 дней после снятия.
 
 | Предлагаемая сущность | Ключевые поля | Назначение / открытое |
 | --- | --- | --- |
@@ -55,21 +55,21 @@ Nullable customer/owner — **вариант для Q-24/25**, не решени
 | Template | id, slug unique, categoryId FK, title, description, previewAsset, priceMinor, currency, priceVersion, active | Фиксированная цена шаблона; целые минимальные денежные единицы, не JS float. Фактические суммы Q-27 |
 | TemplateVersion | id, templateId FK, schemaVersion, rendererKey, defaultsVersion, status | Неизменяемый контракт формы/рендера. Код не исполняется из строки БД |
 | Project | id, customerUserId?, createdByUserId, templateVersionId FK, revision, title, editable state, timestamps, source request linkage | Данные, владельца и creator не смешивать. Текущие ownerId/revision/key hashes сохранять/переименовывать только отдельной совместимой миграцией |
-| ServiceRequest | id, kind, projectId?, customerUserId?, contactName, phone, contactChannel, contactValue, status, assigneeId?, requestVersion, submittedRevision?, price snapshot?, createdAt/updatedAt | Самостоятельно заполненный проект или помощь с нуля; контакты не публичны. Nullable/обязательность по kind, Q-24/25/27/28 |
+| ServiceRequest | id, kind, projectId?, customerUserId?, contactName, phone, contactChannel, contactValue, status, assigneeId?, requestVersion, submittedRevision?, price snapshot?, createdAt/updatedAt | Самостоятельно заполненный проект или помощь с нуля; контакты не публичны. Общая заявка без регистрации D-41; nullable/обязательность по kind, Q-25/27/28 |
 | RequestEvent | id, requestId FK, actorId?, action, from/to state, createdAt, безопасные details | Аудит оператора, а не копия телефонных переписок/секретов/полного body |
 | PublicationVersion | id, projectId FK, requestId FK, sourceRevision, templateVersionId, snapshot, publishedBy, createdAt | Конкретная одобренная версия, независимо от дальнейшего editable payload |
 | PublicationAddress | id, projectId FK unique, normalizedSlug unique, state, createdAt | Назначает admin; собственный hostname клиента и reuse адресов пока Q-31/20 |
 | PublicationPeriod | id, project/publication linkage, granted duration, start/remaining/pause fields | Отдельно от статуса заявки; политика платного срока Q-26/29 |
 
-MediaAsset, RSVP form/response и jobs остаются последующими сущностями из прежнего плана. User role, category/table names, JSON/SQL subtype и nullable-связи здесь не финальная Prisma schema.
+MediaAsset, RSVP form/response и jobs остаются последующими сущностями из прежнего плана. JSONB выбран D-40; точные новые role/category/request/nullable-связи здесь ещё не применённая Prisma schema.
 
-## Вариант A · JSONB для контента
+## Выбранный вариант · JSONB для контента
 
 Projects сохраняют конкретный payload версии; TemplateVersion выбирает валидатор и renderer. Категории, цены, права, заявки, связи, периоды и адреса — реляционные таблицы. Добавление оформления не требует отдельной таблицы контента, но требует DTO/renderer/tests. Поисковые индексы JSONB добавляются только при запросе, которому они нужны.
 
-Рекомендация ведущего — этот вариант: он использует уже готовую типизированную схему и подходит большому каталогу оригинальных оформлений. Это **не принятие владельцем**; после Q-23 фиксируется ADR.
+Выбран владельцем D-40. Используем конкретный контракт версии для формы/валидатора/рендера; миграция ключей JSON при переносе существующих проектов выполняется явно по [политике](template-schema-evolution.md). Массового преобразования этой задачей не выполнялось.
 
-## Вариант B · SQL-таблицы содержимого по семейству шаблона
+## Историческое сравнение · SQL subtype не выбран
 
 ```mermaid
 erDiagram
@@ -80,7 +80,7 @@ erDiagram
 
 garden_project_content содержит projectId PK/FK, имена, дату/время/пояс, место/адрес, поля copy и выбранное медиа; повторяющаяся программа — дочерние rows. birthday_project_content имеет собственные поля. Строка — контент **одного проекта**, а не общий Garden для всех пользователей. У необязательных полей явные nullable/блок flags; ограничения draft/full всё равно различаются, нельзя сделать обязательное для publish поле NOT NULL так, чтобы пустой draft стал несохраняемым.
 
-Плюсы: прикладные SQL-типы/ограничения для полей, обычные запросы по ним. Цена: миграции/Prisma models/маппинг на каждое новое семейство и его эволюцию; контроль соответствия project.templateVersion выбранной content-таблице и отсутствия двух несовместимых payload. Одного FK projectId для этой согласованности недостаточно — нужна явная стратегия в ADR/транзакциях/constraints. Точные колонки не создавать до Q-23.
+Плюсы сравнивавшегося варианта: прикладные SQL-типы/ограничения и обычные запросы по полям. Цена: миграции/Prisma models/маппинг на каждое семейство и эволюцию, контроль соответствия version/content subtype. Одного FK projectId для этой согласованности недостаточно. Вариант не выбран D-40, таблицы subtype не планировать как обязательную миграцию.
 
 Не рекомендуются произвольная таблица key/value на каждое поле, один any DTO для всех шаблонов, SQL-таблица с именем из пользовательского ввода или автогенерация DDL администратором.
 

@@ -1,6 +1,6 @@
 # Backend: предложение стека и правил
 
-Продукт обновлён D-38/39: [заявки/admin publish](assisted-publication.md), [модель/варианты хранения](assisted-data-model.md). Стек D-27 и правила runtime validation сохраняются. Admin/requests и schema changes пока проектируются; существующая OpenAPI 0.9.0 не содержит этих операций. Не переносить старый self-publish/owner resume в реализацию; значимые Q-23/25/28 закрыть до зависимых миграций.
+Продукт обновлён D-38/39: [заявки/admin publish](assisted-publication.md), [модель/варианты хранения](assisted-data-model.md). Стек D-27 и правила runtime validation сохраняются. Admin/requests и schema changes пока проектируются; существующая OpenAPI 0.9.0 не содержит этих операций. Не переносить старый self-publish/owner resume в реализацию; JSONB выбран D-40, [изменения полей версионируются](template-schema-evolution.md); Q-25/28 закрыть до зависимой реализации. Общая заявка без регистрации и admin publish/unpublish подтверждены D-41.
 
 Статус: стек и правила согласованы владельцем, D-27, 11 ноября 2026. Ничего не установлено; точные версии и параметры ещё проверяются. pg-boss остаётся кандидатом реализации согласованной PostgreSQL-очереди. Корневые правила действуют, [apps/api/AGENTS.md](../../apps/api/AGENTS.md) — краткая инструкция агентам. [API](api-contract.md), [identity](authentication.md), [QA](../qa/test-plan.md) задают существующие контракты и проверки.
 
