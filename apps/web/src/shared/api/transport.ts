@@ -101,16 +101,20 @@ export async function apiFetch<T>(
     path,
   );
   const projectMethods = allowedProjectMethods(path);
+  const adminAccess = path === "/api/v1/admin/access";
   if (
     (!path.startsWith("/api/v1/auth/") &&
       path !== "/health" &&
       !publicCatalog &&
-      !projectMethods) ||
+      !projectMethods &&
+      !adminAccess) ||
     path.includes("..") ||
     path.includes("\\")
   )
     throw new Error("Untrusted API path");
   const method = (options.method ?? "GET").toUpperCase();
+  if (adminAccess && method !== "GET")
+    throw new Error("Admin access is read-only");
   if (projectMethods && !projectMethods.includes(method))
     throw new Error("Unsupported project method");
   const headers = new Headers(options.headers);
@@ -145,6 +149,8 @@ export async function apiFetch<T>(
   });
   const body = await readJson(response);
   if (!response.ok) throw responseError(response, body);
+  if (adminAccess && (!isObject(body) || body.role !== "ADMIN"))
+    throw new ApiRequestError(503, "SERVICE_UNAVAILABLE");
   if (publicCatalog && !isTemplateCatalog(body))
     throw new ApiRequestError(503, "SERVICE_UNAVAILABLE");
   if (response.status !== 204 && body === undefined)

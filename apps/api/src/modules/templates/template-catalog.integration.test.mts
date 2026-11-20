@@ -108,7 +108,6 @@ test("OpenAPI describes the public operation and typed nested metadata", () => {
 test("OpenAPI exports the actual garden DTO constraints without adding a write endpoint", () => {
   const document = createOpenApiDocument(app);
   const schemas = document.components?.schemas;
-  expect(document.info.version).toBe("0.9.0");
   expect(schemas?.GardenDraftDto).toMatchObject({
     required: expect.arrayContaining(["title", "templateVersionId", "content"]),
     properties: { title: { type: "string", maxLength: 24 } },

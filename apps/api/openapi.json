@@ -1362,12 +1362,69 @@
           "projects"
         ]
       }
+    },
+    "/api/v1/admin/access": {
+      "get": {
+        "operationId": "getAdminAccess",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminAccessDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "AUTH_REQUIRED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ADMIN_REQUIRED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "SERVICE_UNAVAILABLE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Verify access before opening private operator screens",
+        "tags": [
+          "administration"
+        ]
+      }
     }
   },
   "info": {
     "title": "Повод API",
     "description": "",
-    "version": "0.9.0",
+    "version": "0.10.0",
     "contact": {}
   },
   "tags": [],
@@ -2158,6 +2215,21 @@
           "title",
           "content",
           "expectedRevision"
+        ]
+      },
+      "AdminAccessDto": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "type": "string",
+            "enum": [
+              "ADMIN"
+            ],
+            "description": "Current server-verified role"
+          }
+        },
+        "required": [
+          "role"
         ]
       }
     }

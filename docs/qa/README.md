@@ -21,3 +21,5 @@
 [D-34: review форм, имя и пароль](identity-review-report.md) — новая миграция, контракт 0.5.0, inline ошибки/подтверждение/живые правила/переключатели.
 
 [D-35: code review frontend](identity-code-review-report.md) — userName/контракт 0.6.0, FSD-алиасы, React Hook Form, серверные переводы, API-клиент в shared/api и DOM-тесты.
+
+- [Проверки серверных admin-прав E2-02d](e2-02d-admin-access-report.md): 147 HTTP/PG регрессий и 129 root, реальные local CLI прогоны на синтетических аккаунтах.

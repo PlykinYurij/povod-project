@@ -8,7 +8,9 @@
 
 - [ ] V2-00: ADR хранения/владения и согласованный request contract по относящимся Q.
 - [ ] E2-01d: категории/шаблоны/версии/фиксированные цены, безопасная миграция Garden.
-- [ ] E2-02d: admin role/guards/закрытая выдача прав, клиент не повышает роль.
+- [x] E2-02d результат/проверки: USER/ADMIN, актуальный AdminGuard, GET admin/access, local grant/revoke, OpenAPI 0.10.0 → Orval. [Карточка/приёмка](../../docs/product/e2-02d-admin-access.md), [QA](../../docs/qa/e2-02d-admin-access-report.md).
+- [ ] E2-02d: ревью владельца.
+- [ ] E2-02d: интеграция в main.
 - [ ] V2-01/02: заявки с проектом и без, отдельные проверяемые PR.
 - [ ] V2-03/04: operator API и создание проекта по заявке, owner policy Q-25.
 - [ ] E2-03/E3-01/E2-04: медиа/RSVP/admin-only publish по отдельным PR.

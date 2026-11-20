@@ -18,11 +18,17 @@ model DatabaseProbe {
   @@map("database_probe")
 }
 
+enum UserRole {
+  USER
+  ADMIN
+}
+
 model User {
   id String @id @default(uuid()) @db.Uuid
   email String @unique @db.VarChar(254)
   userName String? @map("user_name") @db.VarChar(80)
   passwordHash String @map("password_hash")
+  role UserRole @default(USER)
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
   sessions Session[]
   emailVerifiedAt DateTime? @map("email_verified_at") @db.Timestamptz(3)
