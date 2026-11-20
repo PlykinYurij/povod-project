@@ -1,5 +1,11 @@
 import { Controller, Get, Header, Query } from "@nestjs/common";
-import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
+import {
+  ApiExtraModels,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from "@nestjs/swagger";
+import { GardenDraftDto } from "./garden/garden-content.dto";
 import { ApiErrorDto } from "../../http/api-error";
 import {
   TemplateCatalogDto,
@@ -8,6 +14,7 @@ import {
 import { TemplateCatalogService } from "./template-catalog.service";
 
 @ApiTags("templates")
+@ApiExtraModels(GardenDraftDto)
 @Controller("api/v1/templates")
 export class TemplateCatalogController {
   constructor(private readonly catalog: TemplateCatalogService) {}

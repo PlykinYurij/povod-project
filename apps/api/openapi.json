@@ -935,7 +935,7 @@
   "info": {
     "title": "Повод API",
     "description": "",
-    "version": "0.7.0",
+    "version": "0.8.0",
     "contact": {}
   },
   "tags": [],
@@ -1228,6 +1228,242 @@
           "email",
           "code",
           "newPassword"
+        ]
+      },
+      "GardenCopyDto": {
+        "type": "object",
+        "properties": {
+          "invitationLabel": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "namesConnector": {
+            "type": "string",
+            "maxLength": 16
+          },
+          "introduction": {
+            "type": "string",
+            "maxLength": 4000
+          },
+          "detailsTitle": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "whenLabel": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "whereLabel": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "startTimeLabel": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "timeZoneLabel": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "routeLabel": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "programEyebrow": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "programTitle": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "rsvpEyebrow": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "rsvpTitle": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "footerText": {
+            "type": "string",
+            "maxLength": 1000
+          }
+        },
+        "required": [
+          "invitationLabel",
+          "namesConnector",
+          "introduction",
+          "detailsTitle",
+          "whenLabel",
+          "whereLabel",
+          "startTimeLabel",
+          "timeZoneLabel",
+          "routeLabel",
+          "programEyebrow",
+          "programTitle",
+          "rsvpEyebrow",
+          "rsvpTitle",
+          "footerText"
+        ]
+      },
+      "GardenNamesDto": {
+        "type": "object",
+        "properties": {
+          "first": {
+            "type": "string",
+            "maxLength": 20
+          },
+          "second": {
+            "type": "string",
+            "maxLength": 20
+          }
+        },
+        "required": [
+          "first",
+          "second"
+        ]
+      },
+      "GardenEventDto": {
+        "type": "object",
+        "properties": {
+          "localDate": {
+            "type": "string",
+            "maxLength": 10
+          },
+          "localTime": {
+            "type": "string",
+            "maxLength": 5
+          },
+          "timeZone": {
+            "type": "string",
+            "description": "Named IANA time zone, or empty in a draft"
+          }
+        },
+        "required": [
+          "localDate",
+          "localTime",
+          "timeZone"
+        ]
+      },
+      "GardenVenueDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "address": {
+            "type": "string",
+            "maxLength": 150
+          },
+          "routeUrl": {
+            "type": "string",
+            "maxLength": 200,
+            "nullable": true,
+            "description": "HTTPS without credentials; empty draft value allowed"
+          }
+        },
+        "required": [
+          "name",
+          "address",
+          "routeUrl"
+        ]
+      },
+      "GardenProgramItemDto": {
+        "type": "object",
+        "properties": {
+          "time": {
+            "type": "string",
+            "maxLength": 5
+          },
+          "text": {
+            "type": "string",
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "time",
+          "text"
+        ]
+      },
+      "GardenContentDto": {
+        "type": "object",
+        "properties": {
+          "locale": {
+            "type": "string",
+            "enum": [
+              "ru",
+              "en"
+            ]
+          },
+          "themeId": {
+            "type": "string",
+            "enum": [
+              "sage",
+              "sand"
+            ]
+          },
+          "copy": {
+            "$ref": "#/components/schemas/GardenCopyDto"
+          },
+          "names": {
+            "$ref": "#/components/schemas/GardenNamesDto"
+          },
+          "event": {
+            "$ref": "#/components/schemas/GardenEventDto"
+          },
+          "venue": {
+            "$ref": "#/components/schemas/GardenVenueDto"
+          },
+          "program": {
+            "nullable": true,
+            "maxItems": 12,
+            "description": "null disables the block; an empty draft array is allowed",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GardenProgramItemDto"
+            }
+          },
+          "heroMediaId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "description": "Reference only; readiness/ownership require a later media use case"
+          }
+        },
+        "required": [
+          "locale",
+          "themeId",
+          "copy",
+          "names",
+          "event",
+          "venue",
+          "program",
+          "heroMediaId"
+        ]
+      },
+      "GardenDraftDto": {
+        "type": "object",
+        "properties": {
+          "templateVersionId": {
+            "type": "string",
+            "enum": [
+              "wedding-garden-v1"
+            ]
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 24
+          },
+          "content": {
+            "$ref": "#/components/schemas/GardenContentDto"
+          }
+        },
+        "required": [
+          "templateVersionId",
+          "title",
+          "content"
         ]
       },
       "TemplatePaletteDto": {

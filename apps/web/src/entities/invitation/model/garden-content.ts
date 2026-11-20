@@ -1,28 +1,13 @@
-import type { Locale } from "@shared/config/locale";
-import type { getGardenCopyPreset } from "@shared/i18n/garden";
+import type { GardenContentDto, GardenCopyDto } from "@shared/api/server";
 
-export type GardenCopy = Readonly<ReturnType<typeof getGardenCopyPreset>>;
+type ImmutableContent<T> = T extends object
+  ? { readonly [Key in keyof T]: ImmutableContent<T[Key]> }
+  : T;
 
-/** Renderer input, not an API DTO or the final publication validation schema. */
-export interface GardenContent {
-  readonly locale: Locale;
-  readonly copy: GardenCopy;
-  readonly themeId: "sage" | "sand";
-  readonly names: { readonly first: string; readonly second: string };
-  readonly event: {
-    readonly localDate: string;
-    readonly localTime: string;
-    readonly timeZone: string;
-  };
-  readonly venue: {
-    readonly name: string;
-    readonly address: string;
-    readonly routeUrl: string | null;
-  };
-  readonly program:
-    readonly { readonly time: string; readonly text: string }[] | null;
-  readonly heroMediaId: string | null;
-}
+export type GardenCopy = Readonly<GardenCopyDto>;
+
+/** Read-only renderer view of the generated contract; runtime validation belongs to Nest. */
+export type GardenContent = ImmutableContent<GardenContentDto>;
 
 /** A resolved display asset; the renderer never fetches private keys or raw uploads. */
 export interface GardenMedia {

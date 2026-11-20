@@ -1,6 +1,6 @@
 # План backend
 
-20.11.2026: read-only часть E2-01b — [публичный каталог](../../docs/product/e2-01b-catalog.md), metadata без БД/аккаунта, Swagger 0.7.0 и настоящий HTTP-набор рядом с модулем. Реализовано на feat/template-catalog, Review; это не draft API или общая схема контента. [QA](../../docs/qa/e2-01b-catalog-report.md).
+20.11.2026: read-only каталог принят в main f9882f3 (PR #23). [Схема E2-01](../../docs/product/e2-01-content-schema.md) с пределами D-37 подготовлена к Review на feat/garden-content-schema: OpenAPI 0.8.0, runtime draft/completeness, вложенные field paths. Q-03 закрыт; создание/сохранение с owner/revision/квотой — следующий E2-02. [QA схемы](../../docs/qa/e2-01-content-schema-report.md).
 
 Актуализация D-30–32: backend сессий/reset принят ранее; E1-04d backend регистрации с email-кодом подготовлен к Review, 52 DB/HTTP и 8 unit успешны. Q-21 закрыт; legacy-маркер и политика — Q-22 до публичного запуска. UI/production mail отдельно.
 
