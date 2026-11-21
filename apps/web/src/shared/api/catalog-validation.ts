@@ -1,4 +1,4 @@
-import type { TemplateCatalogDto } from "./generated/models";
+import type { TemplateCatalogDto, TemplatePriceDto } from "./generated/models";
 
 function object(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
@@ -10,7 +10,9 @@ function uniqueIds(values: { id: string }[]) {
   return new Set(values.map((value) => value.id)).size === values.length;
 }
 
-function isPrice(value: unknown): boolean {
+export function isTemplatePrice(
+  value: unknown,
+): value is TemplatePriceDto | null {
   return (
     value === null ||
     (object(value) &&
@@ -54,7 +56,7 @@ export function isTemplateCatalog(value: unknown): value is TemplateCatalogDto {
       identifier(item.templateId) &&
       identifier(item.categoryId) &&
       categoryIds.has(item.categoryId) &&
-      isPrice(item.price) &&
+      isTemplatePrice(item.price) &&
       typeof item.title === "string" &&
       item.title.trim().length > 0 &&
       item.eventType === "wedding" &&

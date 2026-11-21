@@ -11,7 +11,7 @@ import {
 } from "@nestjs/common";
 import { ApiHeader, ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import type { Request, Response } from "express";
-import { ApiError, ApiErrorDto } from "../../http/api-error";
+import { ApiErrorDto } from "../../http/api-error";
 import { JsonOriginGuard } from "../../http/json-origin.guard";
 import {
   readIdempotencyKey,
@@ -22,6 +22,7 @@ import {
   ServiceRequestReceiptDto,
 } from "./service-request.dto";
 import { ServiceRequestsService } from "./service-requests.service";
+import { submissionResponse } from "./request-submission";
 
 @ApiTags("requests")
 @Controller("api/v1/service-requests")
@@ -105,11 +106,6 @@ export class ServiceRequestsController {
       readIdempotencyKey(key),
       request.ip ?? request.socket.remoteAddress ?? "unknown",
     );
-    if (result.kind === "rate-limited") {
-      response.setHeader("Retry-After", result.retryAfterSeconds);
-      throw new ApiError(429, "RATE_LIMITED", "Повторите запрос позже");
-    }
-    response.status(result.replay ? 200 : 201);
-    return result.receipt;
+    return submissionResponse(result, response);
   }
 }

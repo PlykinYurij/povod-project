@@ -26,3 +26,5 @@ E2-02d (ветка, ещё не main): users.role USER/ADMIN и server AdminGuar
 - [Реализованный каталог E2-01d и схема новых таблиц](catalog-data.md): фактическая схема ветки, кодовый registry, FK, locks и ненастроенный прайс; не смешивать с историческим snapshot main.
 
 - [Реализованная общая заявка V2-02](service-requests.md): транзакция, idempotency/rate, data/identity границы; контакты отдельно от Project JSONB и 90 дней.
+
+- [Owner-заявка V2-01](publication-requests.md): общий owner access, сохранение во время ожидания, price snapshot/текущий прайс и границы private API.

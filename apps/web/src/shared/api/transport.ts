@@ -1,6 +1,7 @@
 import { isTemplateCatalog } from "./catalog-validation";
 import { isPublicCatalogPath } from "./catalog-path";
 import { isServiceRequestReceipt } from "./service-request-validation";
+import { isProjectPublicationRequest } from "./publication-request-validation";
 
 export class ApiRequestError extends Error {
   constructor(
@@ -87,11 +88,11 @@ async function browserCsrf(): Promise<string> {
 function allowedProjectMethods(path: string): readonly string[] | undefined {
   if (path === "/api/v1/projects") return ["GET", "POST"];
   const resource =
-    /^\/api\/v1\/projects\/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}(\/draft)?$/i.exec(
+    /^\/api\/v1\/projects\/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}(\/draft|\/publication-request)?$/i.exec(
       path,
     );
   if (!resource) return undefined;
-  return resource[1] ? ["PATCH"] : ["GET"];
+  return resource[1]?.toLowerCase() === "/draft" ? ["PATCH"] : ["GET"];
 }
 
 /** Orval fetch mutator. Only fixed API paths can receive credentials. */
@@ -103,18 +104,22 @@ export async function apiFetch<T>(
   const projectMethods = allowedProjectMethods(path);
   const adminAccess = path === "/api/v1/admin/access";
   const publicRequest = path === "/api/v1/service-requests";
+  const privateRequest = path === "/api/v1/publication-requests";
   if (
     (!path.startsWith("/api/v1/auth/") &&
       path !== "/health" &&
       !publicCatalog &&
       !projectMethods &&
       !adminAccess &&
-      !publicRequest) ||
+      !publicRequest &&
+      !privateRequest) ||
     path.includes("..") ||
     path.includes("\\")
   )
     throw new Error("Untrusted API path");
   const method = (options.method ?? "GET").toUpperCase();
+  if (privateRequest && method !== "POST")
+    throw new Error("Publication request only supports POST");
   if (publicRequest && method !== "POST")
     throw new Error("Public service request only supports POST");
   if (adminAccess && method !== "GET")
@@ -158,7 +163,12 @@ export async function apiFetch<T>(
   });
   const body = await readJson(response);
   if (!response.ok) throw responseError(response, body);
-  if (publicRequest && !isServiceRequestReceipt(body))
+  if ((publicRequest || privateRequest) && !isServiceRequestReceipt(body))
+    throw new ApiRequestError(503, "SERVICE_UNAVAILABLE");
+  if (
+    path.toLowerCase().endsWith("/publication-request") &&
+    !isProjectPublicationRequest(body)
+  )
     throw new ApiRequestError(503, "SERVICE_UNAVAILABLE");
   if (adminAccess && (!isObject(body) || body.role !== "ADMIN"))
     throw new ApiRequestError(503, "SERVICE_UNAVAILABLE");

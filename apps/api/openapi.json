@@ -1579,12 +1579,261 @@
           "requests"
         ]
       }
+    },
+    "/api/v1/publication-requests": {
+      "post": {
+        "operationId": "createPublicationRequest",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePublicationRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Original receipt replay",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceRequestReceiptDto"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceRequestReceiptDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "MALFORMED_JSON",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "AUTH_REQUIRED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "CSRF_FAILED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "PROJECT_NOT_FOUND",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "IDEMPOTENCY_KEY_REUSED / REQUEST_ALREADY_OPEN / REVISION_CONFLICT / PRICE_CHANGED / CONTENT_LOCKED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "BODY_TOO_LARGE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "UNSUPPORTED_MEDIA_TYPE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "VALIDATION_FAILED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "RATE_LIMITED",
+            "headers": {
+              "Retry-After": {
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "SERVICE_UNAVAILABLE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Owner submits project to operator review without locking the draft",
+        "tags": [
+          "requests"
+        ]
+      }
+    },
+    "/api/v1/projects/{id}/publication-request": {
+      "get": {
+        "operationId": "getProjectPublicationRequest",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectPublicationRequestDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "AUTH_REQUIRED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "PROJECT_NOT_FOUND",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "VALIDATION_FAILED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "SERVICE_UNAVAILABLE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Owner's current open request metadata; no contact details",
+        "tags": [
+          "requests"
+        ]
+      }
     }
   },
   "info": {
     "title": "Повод API",
     "description": "",
-    "version": "0.12.0",
+    "version": "0.13.0",
     "contact": {}
   },
   "tags": [],
@@ -2531,6 +2780,154 @@
           "requestId",
           "status",
           "createdAt"
+        ]
+      },
+      "CreatePublicationRequestDto": {
+        "type": "object",
+        "properties": {
+          "contactName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "phone": {
+            "type": "string",
+            "pattern": "^\\+[1-9]\\d{6,14}$",
+            "example": "+79991234567",
+            "description": "Normalized + and 7–15 digits; spaces/brackets/dashes accepted on input"
+          },
+          "contactChannel": {
+            "type": "string",
+            "enum": [
+              "TELEGRAM",
+              "MAX",
+              "VK"
+            ]
+          },
+          "contactValue": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "description": "Handle or profile link as plain text; no messenger account verification or automatic navigation"
+          },
+          "privacyConsent": {
+            "type": "boolean",
+            "enum": [
+              true
+            ],
+            "description": "Technical acceptance of contact-processing notice; legal launch review remains required"
+          },
+          "projectId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "expectedRevision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "expectedPriceVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647,
+            "nullable": true
+          }
+        },
+        "required": [
+          "contactName",
+          "phone",
+          "contactChannel",
+          "contactValue",
+          "privacyConsent",
+          "projectId",
+          "expectedRevision",
+          "expectedPriceVersion"
+        ]
+      },
+      "ActivePublicationRequestDto": {
+        "type": "object",
+        "properties": {
+          "requestId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "ASSISTANCE",
+              "PUBLICATION"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "NEW",
+              "IN_PROGRESS"
+            ]
+          },
+          "requestVersion": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "submittedRevision": {
+            "type": "integer",
+            "minimum": 1,
+            "nullable": true
+          },
+          "currentProjectRevision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "price": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TemplatePriceDto"
+              }
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "requestId",
+          "kind",
+          "status",
+          "requestVersion",
+          "submittedRevision",
+          "currentProjectRevision",
+          "price",
+          "createdAt"
+        ]
+      },
+      "ProjectPublicationRequestDto": {
+        "type": "object",
+        "properties": {
+          "currentPrice": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TemplatePriceDto"
+              }
+            ]
+          },
+          "request": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ActivePublicationRequestDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "currentPrice",
+          "request"
         ]
       }
     }

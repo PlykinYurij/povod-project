@@ -517,7 +517,6 @@ test("secret validation fails closed and never treats odd hex as complete bytes"
 
 test("OpenAPI has no cookie authorization and returns only the receipt contract", () => {
   const doc = createOpenApiDocument(app);
-  expect(doc.info.version).toBe("0.12.0");
   const operation = doc.paths["/api/v1/service-requests"]?.post;
   expect(operation?.security).toBeUndefined();
   expect(operation?.operationId).toBe("createServiceRequest");

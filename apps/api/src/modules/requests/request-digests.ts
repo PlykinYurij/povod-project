@@ -2,6 +2,18 @@ import { createHash, createHmac, randomBytes } from "node:crypto";
 
 const localSecret = randomBytes(32);
 
+export function requestPayloadHash(parts: readonly unknown[]): string {
+  return createHash("sha256").update(JSON.stringify(parts)).digest("hex");
+}
+
+export function publicationKeyHash(actorId: string, key: string): string {
+  return requestPayloadHash([
+    "publication",
+    actorId.toLowerCase(),
+    key.toLowerCase(),
+  ]);
+}
+
 export function assistanceKeyHash(key: string): string {
   return createHash("sha256")
     .update(JSON.stringify(["assistance", key.toLowerCase()]))

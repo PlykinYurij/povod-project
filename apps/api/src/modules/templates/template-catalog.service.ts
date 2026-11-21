@@ -5,8 +5,10 @@ import { ApiError } from "../../http/api-error";
 import type {
   TemplateCatalogDto,
   TemplateCatalogQueryDto,
+  TemplatePriceDto,
 } from "./template-catalog.dto";
 import { gardenMetadata, registeredTemplate } from "./template-definitions";
+import { templatePrice } from "./template-price";
 
 @Injectable()
 export class TemplateCatalogService {
@@ -49,14 +51,7 @@ export class TemplateCatalogService {
         title:
           locale === "ru" ? version.template.titleRu : version.template.titleEn,
         schemaVersion: version.schemaVersion,
-        price:
-          version.template.priceMinor === null
-            ? null
-            : {
-                amountMinor: version.template.priceMinor,
-                currency: "RUB",
-                version: version.template.priceVersion,
-              },
+        price: templatePrice(version.template),
         ...gardenMetadata(locale),
       })),
     };
@@ -94,5 +89,54 @@ export class TemplateCatalogService {
     ) {
       throw new ApiError(404, "TEMPLATE_NOT_FOUND", "Шаблон не найден");
     }
+  }
+
+  async lockProjectPrice(
+    tx: Prisma.TransactionClient,
+    id: string,
+  ): Promise<TemplatePriceDto | null> {
+    // Retired designs remain usable by existing projects. The quote needs a stable price, not catalog visibility.
+    const rows = await tx.$queryRaw<
+      {
+        id: string;
+        templateId: string;
+        schemaVersion: number;
+        rendererKey: string;
+        defaultsVersion: number;
+        priceMinor: number | null;
+        priceVersion: number;
+        currency: string;
+      }[]
+    >`SELECT v.id, v.template_id AS "templateId", v.schema_version AS "schemaVersion",
+      v.renderer_key AS "rendererKey", v.defaults_version AS "defaultsVersion",
+      t.price_minor AS "priceMinor", t.price_version AS "priceVersion", t.currency
+      FROM template_versions v JOIN templates t ON t.id = v.template_id
+      WHERE v.id = ${id} FOR SHARE OF t, v`;
+    const row = rows[0];
+    if (!row || !registeredTemplate(row) || row.currency !== "RUB") {
+      throw new ApiError(
+        503,
+        "SERVICE_UNAVAILABLE",
+        "Версия шаблона недоступна",
+      );
+    }
+    return templatePrice(row);
+  }
+
+  async projectPrice(
+    tx: Prisma.TransactionClient,
+    id: string,
+  ): Promise<TemplatePriceDto | null> {
+    const version = await tx.templateVersion.findUnique({
+      where: { id },
+      include: { template: true },
+    });
+    if (!version || !registeredTemplate(version))
+      throw new ApiError(
+        503,
+        "SERVICE_UNAVAILABLE",
+        "Версия шаблона недоступна",
+      );
+    return templatePrice(version.template);
   }
 }

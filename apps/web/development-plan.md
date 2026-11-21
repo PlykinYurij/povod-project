@@ -210,3 +210,5 @@ E5-02/02b — общая безопасность/производительно
 E2-01d contract integration выполнена в feat/template-catalog-data: DTO/guards/fixture, категории и локализованная nullable price в SSR. [QA](../../docs/qa/e2-01d-catalog-data-report.md). Это не закрывает E2-01b (UI фильтра/создания), review/main отдельно.
 
 V2-02 SDK/transport boundary проверены (150 root/140 web, API 0.12.0); это не закрывает контактную UI-форму V2-05. Правила/поля — [контракт](../../docs/product/v2-02-public-service-request.md), сохранять локальный ввод/key при сетевой ошибке, технический успех не публикация.
+
+V2-01 SDK/GET state готовы в проверенной цепочке (owner review/main отдельно). Ближайшая web задача E2-01b: каталог/фильтр → защищённый выбор/создание проекта с nonce/сохранением returnTo, затем E2-02b редактор. После заявки save разрешён; source/template/revision/price должны соответствовать реальному API. Нельзя вернуть self-publish кнопкой фронтенда.

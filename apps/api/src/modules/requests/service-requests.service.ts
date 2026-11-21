@@ -1,35 +1,15 @@
 import { Injectable } from "@nestjs/common";
-import { createHash } from "node:crypto";
 import { DatabaseService } from "../../database/database.service";
 import { ApiError } from "../../http/api-error";
-import type {
-  CreateServiceRequestDto,
-  ServiceRequestReceiptDto,
-} from "./service-request.dto";
+import type { CreateServiceRequestDto } from "./service-request.dto";
 import { RequestClock } from "./request-clock";
 import { RequestRateService } from "./request-rate.service";
-import { assistanceKeyHash } from "./request-digests";
-
-type SubmitResult =
-  | { kind: "accepted"; receipt: ServiceRequestReceiptDto; replay: boolean }
-  | { kind: "rate-limited"; retryAfterSeconds: number };
-const hash = (value: string) =>
-  createHash("sha256").update(value).digest("hex");
-
-function accepted(
-  row: { id: string; createdAt: Date },
-  replay: boolean,
-): SubmitResult {
-  return {
-    kind: "accepted",
-    replay,
-    receipt: {
-      requestId: row.id,
-      status: "RECEIVED",
-      createdAt: row.createdAt.toISOString(),
-    },
-  };
-}
+import { assistanceKeyHash, requestPayloadHash } from "./request-digests";
+import {
+  acceptedRequest,
+  limitedRequest,
+  type RequestSubmissionResult,
+} from "./request-submission";
 
 @Injectable()
 export class ServiceRequestsService {
@@ -43,17 +23,15 @@ export class ServiceRequestsService {
     input: CreateServiceRequestDto,
     key: string,
     ip: string,
-  ): Promise<SubmitResult> {
+  ): Promise<RequestSubmissionResult> {
     const keyHash = assistanceKeyHash(key);
-    const payloadHash = hash(
-      JSON.stringify([
-        input.contactName,
-        input.phone,
-        input.contactChannel,
-        input.contactValue,
-        input.privacyConsent,
-      ]),
-    );
+    const payloadHash = requestPayloadHash([
+      input.contactName,
+      input.phone,
+      input.contactChannel,
+      input.contactValue,
+      input.privacyConsent,
+    ]);
     return this.database.getClient().$transaction(
       async (tx) => {
         await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtextextended(${keyHash}, 3))`;
@@ -68,18 +46,11 @@ export class ServiceRequestsService {
               "Ключ уже использован для другого запроса",
             );
           }
-          return accepted(previous, true);
+          return acceptedRequest(previous, true);
         }
         const now = this.clock.now();
         const deniedUntil = await this.rate.reserve(tx, ip, input.phone, now);
-        if (deniedUntil)
-          return {
-            kind: "rate-limited",
-            retryAfterSeconds: Math.max(
-              1,
-              Math.ceil((deniedUntil.getTime() - now.getTime()) / 1000),
-            ),
-          };
+        if (deniedUntil) return limitedRequest(deniedUntil, now);
         const row = await tx.serviceRequest.create({
           data: {
             kind: "ASSISTANCE",
@@ -97,7 +68,7 @@ export class ServiceRequestsService {
             updatedAt: now,
           },
         });
-        return accepted(row, false);
+        return acceptedRequest(row, false);
       },
       { isolationLevel: "ReadCommitted" },
     );

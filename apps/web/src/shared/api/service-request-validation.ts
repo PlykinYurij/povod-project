@@ -1,5 +1,15 @@
 import type { ServiceRequestReceiptDto } from "./generated/models";
 
+export function isRequestTimestamp(value: unknown): value is string {
+  return (
+    typeof value === "string" &&
+    /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/.test(
+      value,
+    ) &&
+    Number.isFinite(Date.parse(value))
+  );
+}
+
 /** A public receipt must never accidentally expose a private ORM/contact payload. */
 export function isServiceRequestReceipt(
   value: unknown,
@@ -19,10 +29,6 @@ export function isServiceRequestReceipt(
       value.requestId,
     ) &&
     value.status === "RECEIVED" &&
-    typeof value.createdAt === "string" &&
-    /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/.test(
-      value.createdAt,
-    ) &&
-    Number.isFinite(Date.parse(value.createdAt))
+    isRequestTimestamp(value.createdAt)
   );
 }

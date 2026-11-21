@@ -223,3 +223,11 @@ E5-02 — совместная проверка безопасности; E5-03/
 - [ ] Интеграция в main.
 
 Следующий этап V2-01: owner-заявка с projectId/revision, проект остаётся редактируемым D-43; private CSRF/ownership отдельно от anonymous пути.
+
+## V2-01 · Owner-заявка с проектом
+
+- [x] Результат/проверки: Session/CSRF/owner + current revision/quote, snapshot, одна открытая заявка/nonce/rate, private metadata GET, сохранение после submit разрешено. [QA](../../docs/qa/v2-01-publication-requests-report.md).
+- [ ] Ревью владельца.
+- [ ] Интеграция в main.
+
+Далее frontend выбор/создание/редактор по имеющимся contracts; operator V2-03 и admin-assisted V2-04 остаются отдельными API задачами.

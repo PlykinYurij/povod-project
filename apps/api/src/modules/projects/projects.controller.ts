@@ -20,14 +20,18 @@ import {
   ApiTags,
 } from "@nestjs/swagger";
 import type { Response } from "express";
-import { ApiError, ApiErrorDto } from "../../http/api-error";
+import { ApiErrorDto } from "../../http/api-error";
 import {
   readIdempotencyKey,
   rejectUnknownQuery as rejectQuery,
 } from "../../http/request-contract";
 import { CsrfGuard } from "../identity/csrf.guard";
 import { RegistrationOriginGuard } from "../identity/registration-origin.guard";
-import { AuthenticatedRequest, SessionGuard } from "../identity/session.guard";
+import {
+  AuthenticatedRequest,
+  requireActor,
+  SessionGuard,
+} from "../identity/session.guard";
 import {
   CreateProjectDto,
   ProjectDto,
@@ -199,7 +203,5 @@ export class ProjectsController {
 }
 
 function ownerId(request: AuthenticatedRequest): string {
-  if (!request.actor)
-    throw new ApiError(401, "AUTH_REQUIRED", "Войдите в аккаунт");
-  return request.actor.id;
+  return requireActor(request).id;
 }
