@@ -1,6 +1,7 @@
 import type { ProjectPublicationRequestDto } from "./generated/models";
 import { isTemplatePrice } from "./catalog-validation";
 import { isRequestTimestamp } from "./service-request-validation";
+import { isProjectId } from "@shared/config/project-navigation";
 
 function object(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
@@ -14,9 +15,21 @@ export function isProjectPublicationRequest(
 ): value is ProjectPublicationRequestDto {
   if (
     !object(value) ||
-    Object.keys(value).length !== 2 ||
+    Object.keys(value).length !== 3 ||
     !("request" in value) ||
     !isTemplatePrice(value.currentPrice)
+  )
+    return false;
+  const closed = value.lastClosed;
+  if (
+    closed !== null &&
+    (!object(closed) ||
+      Object.keys(closed).length !== 3 ||
+      typeof closed.requestId !== "string" ||
+      !isProjectId(closed.requestId) ||
+      typeof closed.status !== "string" ||
+      !["REJECTED", "CANCELLED", "COMPLETED"].includes(closed.status) ||
+      !isRequestTimestamp(closed.updatedAt))
   )
     return false;
   if (value.request === null) return true;

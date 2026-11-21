@@ -1605,6 +1605,121 @@
         ]
       }
     },
+    "/api/v1/admin/requests/{id}/status": {
+      "patch": {
+        "operationId": "updateAdminRequestStatus",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAdminRequestStatusDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminRequestStatusDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "REQUEST_STATE_CONFLICT",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "administration"
+        ]
+      }
+    },
     "/api/v1/service-requests": {
       "post": {
         "operationId": "createServiceRequest",
@@ -1997,7 +2112,7 @@
   "info": {
     "title": "Повод API",
     "description": "",
-    "version": "0.14.0",
+    "version": "0.15.0",
     "contact": {}
   },
   "tags": [],
@@ -2995,6 +3110,10 @@
             "type": "string",
             "format": "date-time"
           },
+          "requestVersion": {
+            "type": "integer",
+            "minimum": 1
+          },
           "contactName": {
             "type": "string"
           },
@@ -3044,6 +3163,7 @@
           "userName",
           "hasAccount",
           "createdAt",
+          "requestVersion",
           "contactName",
           "phone",
           "contactChannel",
@@ -3051,6 +3171,55 @@
           "submittedRevision",
           "quotedPrice",
           "project"
+        ]
+      },
+      "UpdateAdminRequestStatusDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "IN_PROGRESS",
+              "REJECTED"
+            ]
+          },
+          "expectedVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483646
+          }
+        },
+        "required": [
+          "status",
+          "expectedVersion"
+        ]
+      },
+      "AdminRequestStatusDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "NEW",
+              "IN_PROGRESS",
+              "COMPLETED",
+              "REJECTED",
+              "CANCELLED"
+            ]
+          },
+          "requestVersion": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "requestVersion"
         ]
       },
       "CreateServiceRequestDto": {
@@ -3243,6 +3412,32 @@
           "createdAt"
         ]
       },
+      "ClosedPublicationRequestDto": {
+        "type": "object",
+        "properties": {
+          "requestId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "COMPLETED",
+              "REJECTED",
+              "CANCELLED"
+            ]
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "requestId",
+          "status",
+          "updatedAt"
+        ]
+      },
       "ProjectPublicationRequestDto": {
         "type": "object",
         "properties": {
@@ -3263,11 +3458,21 @@
                 "$ref": "#/components/schemas/ActivePublicationRequestDto"
               }
             ]
+          },
+          "lastClosed": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ClosedPublicationRequestDto"
+              }
+            ]
           }
         },
         "required": [
           "currentPrice",
-          "request"
+          "request",
+          "lastClosed"
         ]
       }
     }
