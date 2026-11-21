@@ -11,6 +11,7 @@ export {
   Loader,
   NativeSelect,
   Stack,
+  Table,
   Text,
   Textarea,
   TextInput,

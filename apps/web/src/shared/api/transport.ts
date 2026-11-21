@@ -2,6 +2,7 @@ import { isTemplateCatalog } from "./catalog-validation";
 import { isPublicCatalogPath } from "./catalog-path";
 import { isServiceRequestReceipt } from "./service-request-validation";
 import { isProjectPublicationRequest } from "./publication-request-validation";
+import { isAdminRequestPath } from "./admin-request-path";
 
 export class ApiRequestError extends Error {
   constructor(
@@ -103,6 +104,7 @@ export async function apiFetch<T>(
   const publicCatalog = isPublicCatalogPath(path);
   const projectMethods = allowedProjectMethods(path);
   const adminAccess = path === "/api/v1/admin/access";
+  const adminRequest = isAdminRequestPath(path);
   const publicRequest = path === "/api/v1/service-requests";
   const privateRequest = path === "/api/v1/publication-requests";
   if (
@@ -111,6 +113,7 @@ export async function apiFetch<T>(
       !publicCatalog &&
       !projectMethods &&
       !adminAccess &&
+      !adminRequest &&
       !publicRequest &&
       !privateRequest) ||
     path.includes("..") ||
@@ -122,7 +125,7 @@ export async function apiFetch<T>(
     throw new Error("Publication request only supports POST");
   if (publicRequest && method !== "POST")
     throw new Error("Public service request only supports POST");
-  if (adminAccess && method !== "GET")
+  if ((adminAccess || adminRequest) && method !== "GET")
     throw new Error("Admin access is read-only");
   if (projectMethods && !projectMethods.includes(method))
     throw new Error("Unsupported project method");

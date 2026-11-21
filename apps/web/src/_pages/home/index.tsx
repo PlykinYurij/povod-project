@@ -24,6 +24,9 @@ export async function HomePage() {
         <p className={styles.hint}>
           <Link href="/templates">{t("templateDemo")}</Link>
         </p>
+        <p className={styles.hint}>
+          <Link href="/request-help">{t("requestHelp")}</Link>
+        </p>
       </section>
       <footer className={styles.footer}>{t("footer")}</footer>
     </main>

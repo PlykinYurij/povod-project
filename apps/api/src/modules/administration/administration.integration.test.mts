@@ -1,6 +1,11 @@
 import { afterAll, beforeAll, expect, test, vi } from "vitest";
 import { createRequire } from "node:module";
 import { randomUUID } from "node:crypto";
+import type {
+  AdminRequestDetailDto,
+  AdminRequestPageDto,
+} from "./admin-requests.dto.js";
+import type { ProjectDto } from "../projects/project.dto.js";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import type { INestApplication } from "@nestjs/common";
@@ -21,6 +26,7 @@ const {
   SessionService,
 }: typeof import("../identity/session.service.js") = require("../../../dist/modules/identity/session.service.js");
 const ids: string[] = [];
+const requestIds: string[] = [];
 const pendingEmails: string[] = [];
 let app: INestApplication;
 let db: ReturnType<typeof createDatabaseClient>;
@@ -42,6 +48,7 @@ beforeAll(async () => {
 afterAll(async () => {
   await app?.close();
   if (db) {
+    await db.serviceRequest.deleteMany({ where: { id: { in: requestIds } } });
     await db.user.deleteMany({ where: { id: { in: ids } } });
     await db.pendingRegistration.deleteMany({
       where: { email: { in: pendingEmails } },
@@ -294,10 +301,151 @@ test("actual local CLI grants/revokes a synthetic account and refuses production
 
 test("OpenAPI documents cookie auth, response and error boundary", () => {
   const doc = createOpenApiDocument(app);
+  expect(doc.info.version).toBe("0.14.0");
+  expect(doc.paths["/api/v1/admin/requests"]?.get?.security).toEqual([
+    { session: [] },
+  ]);
+  expect(doc.paths["/api/v1/admin/requests/{id}"]?.get?.security).toEqual([
+    { session: [] },
+  ]);
   const operation = doc.paths["/api/v1/admin/access"]?.get;
   expect(operation?.operationId).toBe("getAdminAccess");
   expect(operation?.security).toEqual([{ session: [] }]);
   expect(Object.keys(operation?.responses ?? {})).toEqual(
     expect.arrayContaining(["200", "401", "403", "503"]),
   );
+});
+
+test("operator queue separates contact details, includes the saved draft and blocks non-admins", async () => {
+  const owner = await account();
+  const operator = await account();
+  await role(operator.id);
+  await db.user.update({
+    where: { id: owner.id },
+    data: { userName: "Synthetic owner" },
+  });
+  const created = await fetch(url + "/api/v1/projects", {
+    method: "POST",
+    headers: {
+      ...(await csrfHeaders(url, owner.cookie)),
+      Origin: TEST_ORIGIN,
+      "Content-Type": "application/json",
+      "Idempotency-Key": randomUUID(),
+    },
+    body: JSON.stringify({
+      title: "Synthetic draft",
+      templateVersionId: "wedding-garden-v1",
+    }),
+  });
+  expect(created.status).toBe(201);
+  const project = (await created.json()) as ProjectDto;
+  const id = randomUUID();
+  requestIds.push(id);
+  const digest = id.replaceAll("-", "").repeat(2);
+  await db.serviceRequest.create({
+    data: {
+      id,
+      kind: "PUBLICATION",
+      projectId: project.id,
+      customerUserId: owner.id,
+      contactName: "Private contact",
+      phone: "+15550001230",
+      contactChannel: "TELEGRAM",
+      contactValue: "private-contact-test",
+      submittedRevision: project.revision,
+      creationKeyHash: digest,
+      creationPayloadHash: digest,
+      consentVersion: "synthetic",
+      consentAt: new Date(),
+      createdAt: new Date("2099-12-01T00:00:00Z"),
+    },
+  });
+  const listPath = "/api/v1/admin/requests";
+  const detailPath = listPath + "/" + id;
+  for (const path of [listPath, detailPath]) {
+    expect((await access("", path)).status).toBe(401);
+    expect((await access(owner.cookie, path)).status).toBe(403);
+  }
+  const response = await access(operator.cookie, listPath);
+  expect(response.status).toBe(200);
+  expect(response.headers.get("Cache-Control")).toBe("no-store");
+  const { items } = (await response.json()) as AdminRequestPageDto;
+  expect(items.find((row) => row.id === id)).toEqual({
+    id,
+    kind: "PUBLICATION",
+    status: "NEW",
+    templateId: "quiet-garden",
+    projectTitle: "Synthetic draft",
+    userName: "Synthetic owner",
+    hasAccount: true,
+    createdAt: "2099-12-01T00:00:00.000Z",
+  });
+  const detailResponse = await access(operator.cookie, detailPath);
+  expect(detailResponse.status).toBe(200);
+  expect(detailResponse.headers.get("Cache-Control")).toBe("no-store");
+  const detail = (await detailResponse.json()) as AdminRequestDetailDto;
+  expect(detail).toMatchObject({
+    id,
+    phone: "+15550001230",
+    contactValue: "private-contact-test",
+    submittedRevision: 1,
+    quotedPrice: null,
+    project,
+  });
+  expect(detail).not.toHaveProperty("creationKeyHash");
+  expect(detail).not.toHaveProperty("customerUserId");
+  expect(
+    (await access(operator.cookie, detailPath + "?includeAll=true")).status,
+  ).toBe(422);
+  expect(
+    (await access(operator.cookie, listPath + "?after=invalid")).status,
+  ).toBe(422);
+  expect(
+    (await access(operator.cookie, listPath + "?after=" + id + "&after=" + id))
+      .status,
+  ).toBe(422);
+  expect(
+    (await access(operator.cookie, listPath + "/" + randomUUID())).status,
+  ).toBe(404);
+  await role(operator.id, "revoke");
+  expect((await access(operator.cookie, detailPath)).status).toBe(403);
+});
+
+test("operator queue pages without duplicates when creation timestamps tie", async () => {
+  const operator = await account();
+  await role(operator.id);
+  const fixtureIds = Array.from({ length: 31 }, () => randomUUID())
+    .sort()
+    .reverse();
+  requestIds.push(...fixtureIds);
+  await db.serviceRequest.createMany({
+    data: fixtureIds.map((id) => {
+      const digest = id.replaceAll("-", "").repeat(2);
+      return {
+        id,
+        contactName: "Synthetic queue",
+        phone: "+15550001230",
+        contactChannel: "VK",
+        contactValue: "synthetic-page",
+        creationKeyHash: digest,
+        creationPayloadHash: digest,
+        consentVersion: "synthetic",
+        consentAt: new Date(),
+        createdAt: new Date("2100-01-01T00:00:00Z"),
+      };
+    }),
+  });
+  const path = "/api/v1/admin/requests";
+  const first = await access(operator.cookie, path);
+  expect(first.status).toBe(200);
+  const page = (await first.json()) as AdminRequestPageDto;
+  expect(page.items.map((row) => row.id)).toEqual(fixtureIds.slice(0, 30));
+  expect(page.next).toBe(fixtureIds[29]);
+  const second = await access(operator.cookie, path + "?after=" + page.next);
+  expect(second.status).toBe(200);
+  const next = (await second.json()) as AdminRequestPageDto;
+  expect(next.items[0].id).toBe(fixtureIds[30]);
+  expect(
+    next.items.some((row) => page.items.some((seen) => seen.id === row.id)),
+  ).toBe(false);
 });

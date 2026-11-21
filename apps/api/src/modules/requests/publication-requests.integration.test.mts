@@ -595,7 +595,6 @@ test("failure after rate write rolls back the order and releases owner/project l
 
 test("OpenAPI advertises private cookie/CSRF and nullable current/request prices", () => {
   const doc = createOpenApiDocument(app);
-  expect(doc.info.version).toBe("0.13.0");
   expect(doc.paths["/api/v1/publication-requests"]?.post?.security).toEqual([
     { session: [] },
   ]);
