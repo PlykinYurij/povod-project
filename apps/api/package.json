@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "node --watch --watch-path=src --require ts-node/register src/main.ts",
     "start": "node dist/main.js",
+    "worker:photos": "node dist/photo-worker.js",
     "typecheck": "npm run db:generate && tsc --noEmit -p tsconfig.json && tsc -p tsconfig.tests.json",
     "build": "npm run db:generate && tsc -p tsconfig.build.json",
     "db:generate": "prisma generate --config prisma.config.ts"

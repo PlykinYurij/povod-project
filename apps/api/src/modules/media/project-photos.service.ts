@@ -20,14 +20,16 @@ function photoDto({
   status,
   width,
   height,
+  renderWidth,
+  renderHeight,
   byteSize,
   createdAt,
 }: ProjectPhoto): ProjectPhotoDto {
   return {
     id,
     status,
-    width,
-    height,
+    width: renderWidth ?? width,
+    height: renderHeight ?? height,
     byteSize,
     createdAt: createdAt.toISOString(),
   };
