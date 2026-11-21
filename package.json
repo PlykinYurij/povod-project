@@ -27,6 +27,8 @@
     "db:seed:test": "node scripts/database.mjs seed test",
     "test:database": "node scripts/database.mjs test test",
     "dev:api:database": "node scripts/api-dev.mjs",
+    "worker:photos": "npm run worker:photos --workspace @povod/api",
+    "worker:photos:database": "node scripts/photo-worker-dev.mjs",
     "api:openapi": "node scripts/export-openapi.mjs",
     "api:generate": "orval --config orval.config.ts",
     "test:web": "vitest run --config apps/web/vitest.config.mts",

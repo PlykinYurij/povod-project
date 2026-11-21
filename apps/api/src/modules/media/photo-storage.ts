@@ -1,6 +1,12 @@
-import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import {
+  GetObjectCommand,
+  PutObjectCommand,
+  S3Client,
+} from "@aws-sdk/client-s3";
 import { Injectable, OnModuleDestroy } from "@nestjs/common";
+import { Readable } from "node:stream";
 import { ApiError } from "../../http/api-error";
+import { MAX_PHOTO_BYTES } from "./photo-input";
 
 function unavailable() {
   return new ApiError(
@@ -12,6 +18,15 @@ function unavailable() {
 
 export function originalPhotoKey(projectId: string, photoId: string): string {
   return `projects/${projectId}/photos/${photoId}/original`;
+}
+
+export function photoRenditionKey(
+  projectId: string,
+  photoId: string,
+  token: string,
+  size: "display" | "thumb",
+): string {
+  return `projects/${projectId}/photos/${photoId}/renditions/${token}/${size}.webp`;
 }
 
 @Injectable()
@@ -57,7 +72,56 @@ export class PhotoStorage implements OnModuleDestroy {
     this.configuredTarget();
   }
 
+  async readOriginal(key: string): Promise<Buffer> {
+    const { bucket, client } = this.configuredTarget();
+    const deadline = AbortSignal.timeout(15_000);
+    try {
+      const { Body, ContentLength } = await client.send(
+        new GetObjectCommand({ Bucket: bucket, Key: key }),
+        { abortSignal: deadline },
+      );
+      if (!(Body instanceof Readable)) throw unavailable();
+      const abort = () => Body.destroy(new Error("Media read deadline"));
+      deadline.addEventListener("abort", abort, { once: true });
+      try {
+        if (
+          deadline.aborted ||
+          (ContentLength !== undefined && ContentLength > MAX_PHOTO_BYTES)
+        )
+          throw unavailable();
+        const chunks: Buffer[] = [];
+        let size = 0;
+        for await (const chunk of Body) {
+          if (!Buffer.isBuffer(chunk)) throw unavailable();
+          size += chunk.length;
+          if (size > MAX_PHOTO_BYTES) throw unavailable();
+          chunks.push(chunk);
+        }
+        if (ContentLength !== undefined && ContentLength !== size)
+          throw unavailable();
+        return Buffer.concat(chunks, size);
+      } finally {
+        deadline.removeEventListener("abort", abort);
+        Body.destroy();
+      }
+    } catch {
+      throw unavailable();
+    }
+  }
+
+  async putWebp(key: string, bytes: Buffer): Promise<void> {
+    await this.put(key, bytes, "image/webp");
+  }
+
   async putOriginal(
+    key: string,
+    bytes: Buffer,
+    contentType: string,
+  ): Promise<void> {
+    await this.put(key, bytes, contentType);
+  }
+
+  private async put(
     key: string,
     bytes: Buffer,
     contentType: string,
