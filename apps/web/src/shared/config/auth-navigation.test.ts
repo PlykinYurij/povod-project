@@ -1,6 +1,13 @@
 import { expect, test } from "vitest";
 import { loginHref, safeReturnTo } from "./auth-navigation";
-import { newProjectHref } from "./project-navigation";
+import { newProjectHref, projectEditorHref } from "./project-navigation";
+
+test("login accepts only the UUID-based project editor route", () => {
+  const path = projectEditorHref("f729d400-0942-4633-9bc7-f33ffe78c422");
+  expect(safeReturnTo(path)).toBe(path);
+  expect(safeReturnTo("/projects/other/edit")).toBe("/account");
+  expect(safeReturnTo(path + "/admin")).toBe("/account");
+});
 
 test("login keeps the selected template version", () => {
   const destination = newProjectHref("wedding-garden-v1");

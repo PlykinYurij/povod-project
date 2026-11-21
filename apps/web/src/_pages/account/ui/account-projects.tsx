@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useGetProjects } from "@shared/api";
-import { Alert, Button, Stack, Text, Title } from "@shared/ui";
+import { Alert, Anchor, Button, Stack, Text, Title } from "@shared/ui";
+import { projectEditorHref } from "@shared/config/project-navigation";
 import styles from "../account.module.css";
 
 export function AccountProjects() {
@@ -41,6 +42,11 @@ export function AccountProjects() {
                 <Text fw={600}>{project.title}</Text>
                 {project.firstPublishedAt === null && (
                   <Text size="sm">{t("draft")}</Text>
+                )}
+                {project.canEditDraft && (
+                  <Anchor component={Link} href={projectEditorHref(project.id)}>
+                    {t("edit")}
+                  </Anchor>
                 )}
               </li>
             ))}

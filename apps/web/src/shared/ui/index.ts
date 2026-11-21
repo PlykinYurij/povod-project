@@ -6,10 +6,13 @@ export {
   ActionIcon,
   Anchor,
   Button,
+  Checkbox,
   Group,
   Loader,
+  NativeSelect,
   Stack,
   Text,
+  Textarea,
   TextInput,
   Title,
 } from "@mantine/core";

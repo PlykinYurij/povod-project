@@ -1,4 +1,4 @@
-import { NEW_PROJECT_ROUTE } from "./project-navigation";
+import { isProjectEditorPath, NEW_PROJECT_ROUTE } from "./project-navigation";
 
 export const ACCOUNT_ROUTE = "/account";
 export const LOGIN_ROUTE = "/login";
@@ -17,7 +17,10 @@ export function safeReturnTo(value?: string | string[] | null): string {
     return ACCOUNT_ROUTE;
   try {
     const url = new URL(value, INTERNAL_ORIGIN);
-    if (url.origin !== INTERNAL_ORIGIN || !PRIVATE_ROUTES.has(url.pathname))
+    if (
+      url.origin !== INTERNAL_ORIGIN ||
+      (!PRIVATE_ROUTES.has(url.pathname) && !isProjectEditorPath(url.pathname))
+    )
       return ACCOUNT_ROUTE;
     return `${url.pathname}${url.search}${url.hash}`;
   } catch {
