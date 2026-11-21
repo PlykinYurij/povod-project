@@ -52,5 +52,10 @@ function EditorContent({ projectId }: { projectId: string }) {
   if (!project.data.canEditDraft) return <Alert>{t("locked")}</Alert>;
   if (project.data.templateVersionId !== "wedding-garden-v1")
     return <Alert>{t("unsupported")}</Alert>;
-  return <GardenEditor project={project.data} />;
+  return (
+    <GardenEditor
+      project={project.data}
+      photoSource={{ kind: "owner", id: projectId }}
+    />
+  );
 }

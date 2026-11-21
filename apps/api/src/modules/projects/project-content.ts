@@ -30,10 +30,21 @@ export async function saveLockedDraft(
     content: input.content,
   });
   assertStorableContent(draft);
-  if (draft.content.heroMediaId !== null)
-    throw new ApiError(422, "VALIDATION_FAILED", "Фото не найдено", [
-      { path: "content.heroMediaId", code: "MEDIA_NOT_FOUND" },
-    ]);
+  if (draft.content.heroMediaId !== null) {
+    const photo = await tx.projectPhoto.findFirst({
+      where: {
+        id: draft.content.heroMediaId,
+        projectId: project.id,
+        status: "READY",
+        renditionToken: { not: null },
+      },
+      select: { id: true },
+    });
+    if (!photo)
+      throw new ApiError(422, "VALIDATION_FAILED", "Готовое фото не найдено", [
+        { path: "content.heroMediaId", code: "MEDIA_NOT_FOUND" },
+      ]);
+  }
   const updated = await tx.project.updateMany({
     where: {
       id: project.id,

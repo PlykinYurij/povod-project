@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { FormProvider } from "react-hook-form";
 import type { ProjectDto } from "@shared/api";
+import type { PhotoSource } from "@entities/project-photo";
 import { Alert, Anchor, Button, Stack, Text } from "@shared/ui";
 import { ACCOUNT_ROUTE } from "@shared/config/auth-navigation";
 import {
@@ -10,14 +11,17 @@ import {
   type DraftEditorAccess,
 } from "../model/use-draft-editor";
 import { EditorContent } from "./editor-content";
+import { DraftPhotoField } from "./draft-photo-field";
 import styles from "./garden-editor.module.css";
 
 export function GardenEditor({
   project,
   access,
+  photoSource,
 }: {
   project: ProjectDto;
   access?: DraftEditorAccess;
+  photoSource?: PhotoSource;
 }) {
   const t = useTranslations("DraftEditor");
   const editor = useDraftEditor(project, access);
@@ -34,6 +38,13 @@ export function GardenEditor({
           <fieldset className={styles.fields} disabled={editor.busy || locked}>
             <legend className={styles.legend}>{t("fieldsLegend")}</legend>
             <EditorContent rejected={rejected} />
+            {photoSource && (
+              <DraftPhotoField
+                key={photoSource.id}
+                source={photoSource}
+                rejected={rejected.has("content.heroMediaId")}
+              />
+            )}
           </fieldset>
           <Stack align="start">
             {locked && (

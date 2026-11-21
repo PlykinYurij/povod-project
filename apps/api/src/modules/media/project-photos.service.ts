@@ -5,7 +5,11 @@ import { ApiError } from "../../http/api-error";
 import { AssistedProjectsService } from "../administration/assisted-projects.service";
 import { ProjectAccessService } from "../projects/project-access.service";
 import { inspectPhoto, MAX_PROJECT_PHOTOS, photoDigest } from "./photo-input";
-import { originalPhotoKey, PhotoStorage } from "./photo-storage";
+import {
+  originalPhotoKey,
+  photoRenditionKey,
+  PhotoStorage,
+} from "./photo-storage";
 import type {
   ProjectPhotoDto,
   ProjectPhotoListDto,
@@ -44,10 +48,18 @@ export class ProjectPhotosService {
     private readonly storage: PhotoStorage,
   ) {}
 
-  private project(scope: PhotoScope) {
-    return scope.kind === "owner"
-      ? this.projects.owned(scope.actorId, scope.id)
-      : this.assisted.linkedProject(scope.id);
+  private async project(scope: PhotoScope) {
+    if (scope.kind === "owner")
+      return this.projects.owned(scope.actorId, scope.id);
+    // This path is behind AdminGuard. Operators can preview any linked project;
+    // mutations still use the separate assistance-only lock.
+    const request = await this.database.getClient().serviceRequest.findUnique({
+      where: { id: scope.id },
+      select: { project: { select: { id: true, deletedAt: true } } },
+    });
+    if (!request?.project || request.project.deletedAt)
+      throw new ApiError(404, "PROJECT_NOT_FOUND", "Проект не найден");
+    return request.project;
   }
 
   async list(scope: PhotoScope): Promise<ProjectPhotoListDto> {
@@ -59,12 +71,27 @@ export class ProjectPhotosService {
     return { items: items.map(photoDto) };
   }
 
+  async image(scope: PhotoScope, photoId: string): Promise<Buffer> {
+    const project = await this.project(scope);
+    const photo = await this.database.getClient().projectPhoto.findFirst({
+      where: { id: photoId, projectId: project.id, status: "READY" },
+      select: { renditionToken: true },
+    });
+    if (!photo?.renditionToken)
+      throw new ApiError(404, "PHOTO_NOT_FOUND", "Готовое фото не найдено");
+    return this.storage.readObject(
+      photoRenditionKey(project.id, photoId, photo.renditionToken, "display"),
+    );
+  }
+
   async upload(
     scope: PhotoScope,
     file: { buffer: Buffer } | undefined,
     key: string,
   ): Promise<ProjectPhotoDto> {
-    await this.project(scope);
+    if (scope.kind === "owner")
+      await this.projects.owned(scope.actorId, scope.id);
+    else await this.assisted.linkedProject(scope.id);
     if (!file || !Buffer.isBuffer(file.buffer))
       throw new ApiError(422, "PHOTO_REQUIRED", "Выберите фото");
     const image = await inspectPhoto(file.buffer);

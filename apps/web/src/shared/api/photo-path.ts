@@ -1,5 +1,10 @@
 import { isProjectId } from "@shared/config/project-navigation";
 
+export function isPrivatePhotoImagePath(path: string): boolean {
+  const match = /^(.*)\/([^/]+)\/image$/.exec(path);
+  return !!match && isPrivatePhotoPath(match[1]) && isProjectId(match[2]);
+}
+
 export function isPrivatePhotoPath(path: string): boolean {
   const parts = path.split("/");
   if (parts[0] !== "" || parts[1] !== "api" || parts[2] !== "v1") return false;

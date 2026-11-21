@@ -9,3 +9,12 @@
   margin-block-end: var(--identity-space-md);
   color: var(--identity-muted);
 }
+
+.coverPreview {
+  display: block;
+  max-inline-size: 100%;
+  max-block-size: 260px;
+  inline-size: auto;
+  block-size: auto;
+  object-fit: contain;
+}

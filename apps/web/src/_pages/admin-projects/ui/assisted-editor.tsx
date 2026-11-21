@@ -36,6 +36,7 @@ export function AssistedEditor({
       <Title order={3}>{t("editDraft")}</Title>
       <GardenEditor
         project={project}
+        photoSource={{ kind: "assisted", id: requestId }}
         access={{
           load: async (options) => {
             const record = await getAdminRequest(requestId, options);

@@ -72,7 +72,7 @@ export class PhotoStorage implements OnModuleDestroy {
     this.configuredTarget();
   }
 
-  async readOriginal(key: string): Promise<Buffer> {
+  async readObject(key: string): Promise<Buffer> {
     const { bucket, client } = this.configuredTarget();
     const deadline = AbortSignal.timeout(15_000);
     try {

@@ -345,6 +345,26 @@ test("worker recovers an expired lease and partial PUT, then writes oriented Web
   const response = await upload(path, owner.cookie, jpeg);
   expect(response.status).toBe(200);
   const { id } = (await response.json()) as ProjectPhotoDto;
+  const imagePath = `${path}/${id}/image`;
+  const requestImage = (cookie = owner.cookie) =>
+    fetch(url + imagePath, { headers: { Cookie: cookie } });
+  async function saveCover(projectDto: ProjectDto) {
+    return fetch(url + `/api/v1/projects/${projectDto.id}/draft`, {
+      method: "PATCH",
+      headers: {
+        ...(await csrfHeaders(url, owner.cookie)),
+        Origin: TEST_ORIGIN,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        title: projectDto.title,
+        expectedRevision: projectDto.revision,
+        content: { ...projectDto.content, heroMediaId: id },
+      }),
+    });
+  }
+  expect((await requestImage()).status).toBe(404);
+  expect((await saveCover(draft)).status).toBe(422);
   const queue = workerContext?.get(PhotoWorkQueue);
   const worker = workerContext?.get(PhotoWorkerService);
   if (!worker || !queue) throw new Error("Missing worker fixture");
@@ -410,6 +430,31 @@ test("worker recovers an expired lease and partial PUT, then writes oriented Web
     items: [{ id, status: "READY", width: 500, height: 1000 }],
   });
   expect(await worker.runOnce()).toBe(false);
+  const image = await requestImage();
+  expect(image.status).toBe(200);
+  expect(image.headers.get("Content-Type")).toBe("image/webp");
+  expect(image.headers.get("Cache-Control")).toBe("private, no-store");
+  expect(image.headers.get("X-Content-Type-Options")).toBe("nosniff");
+  expect(Buffer.from(await image.arrayBuffer())).toEqual(output[0].bytes);
+  expect((await requestImage("")).status).toBe(401);
+  const other = await account();
+  expect((await requestImage(other.cookie)).status).toBe(404);
+  const updated = await saveCover(draft);
+  expect(updated.status).toBe(200);
+  expect(await updated.json()).toMatchObject({
+    revision: 2,
+    content: { heroMediaId: id },
+  });
+  const anotherDraft = await project(owner.cookie);
+  expect((await saveCover(anotherDraft)).status).toBe(422);
+  expect(
+    (
+      await fetch(
+        url + `/api/v1/projects/${anotherDraft.id}/photos/${id}/image`,
+        { headers: { Cookie: owner.cookie } },
+      )
+    ).status,
+  ).toBe(404);
 });
 
 test("worker fails mismatched bytes permanently and closes an expired final attempt", async () => {

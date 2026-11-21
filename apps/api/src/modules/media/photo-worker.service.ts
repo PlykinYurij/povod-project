@@ -19,7 +19,7 @@ export class PhotoWorkerService {
     if (!work) return false;
     let renditions: Awaited<ReturnType<typeof renderPhoto>>;
     try {
-      const bytes = await this.storage.readOriginal(
+      const bytes = await this.storage.readObject(
         originalPhotoKey(work.projectId, work.id),
       );
       renditions = await renderPhoto(bytes, work);

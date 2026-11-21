@@ -9,6 +9,7 @@ import {
   Query,
   Req,
   UploadedFile,
+  StreamableFile,
   UseGuards,
 } from "@nestjs/common";
 import {
@@ -30,8 +31,29 @@ import {
 } from "../identity/session.guard";
 import { ProjectIdDto } from "../projects/project.dto";
 import { PhotoUpload } from "./photo-upload";
-import { ProjectPhotoDto, ProjectPhotoListDto } from "./project-photos.dto";
-import { ProjectPhotosService } from "./project-photos.service";
+import {
+  PhotoIdDto,
+  ProjectPhotoDto,
+  ProjectPhotoListDto,
+} from "./project-photos.dto";
+import {
+  ProjectPhotosService,
+  type PhotoScope,
+} from "./project-photos.service";
+
+async function privateImage(
+  photos: ProjectPhotosService,
+  scope: PhotoScope,
+  photoId: string,
+  query: Record<string, unknown>,
+) {
+  rejectUnknownQuery(query);
+  const bytes = await photos.image(scope, photoId);
+  return new StreamableFile(bytes, {
+    type: "image/webp",
+    length: bytes.length,
+  });
+}
 
 @ApiTags("photos")
 @ApiCookieAuth("session")
@@ -41,6 +63,27 @@ import { ProjectPhotosService } from "./project-photos.service";
 @Controller("api/v1/projects/:id/photos")
 export class ProjectPhotosController {
   constructor(private readonly photos: ProjectPhotosService) {}
+
+  @Get(":photoId/image")
+  @Header("Cache-Control", "private, no-store")
+  @Header("X-Content-Type-Options", "nosniff")
+  @ApiOperation({ operationId: "getProjectPhotoImage" })
+  @ApiResponse({
+    status: 200,
+    content: { "image/webp": { schema: { type: "string", format: "binary" } } },
+  })
+  image(
+    @Req() request: AuthenticatedRequest,
+    @Param() params: PhotoIdDto,
+    @Query() query: Record<string, unknown>,
+  ) {
+    return privateImage(
+      this.photos,
+      { kind: "owner", actorId: requireActor(request).id, id: params.id },
+      params.photoId,
+      query,
+    );
+  }
 
   @Get()
   @Header("Cache-Control", "no-store")
@@ -97,6 +140,27 @@ export class ProjectPhotosController {
 @Controller("api/v1/admin/requests/:id/project/photos")
 export class AssistedPhotosController {
   constructor(private readonly photos: ProjectPhotosService) {}
+
+  @Get(":photoId/image")
+  @Header("Cache-Control", "private, no-store")
+  @Header("X-Content-Type-Options", "nosniff")
+  @ApiOperation({ operationId: "getAssistedPhotoImage" })
+  @ApiResponse({
+    status: 200,
+    content: { "image/webp": { schema: { type: "string", format: "binary" } } },
+  })
+  image(
+    @Req() request: AuthenticatedRequest,
+    @Param() params: PhotoIdDto,
+    @Query() query: Record<string, unknown>,
+  ) {
+    return privateImage(
+      this.photos,
+      { kind: "assisted", actorId: requireActor(request).id, id: params.id },
+      params.photoId,
+      query,
+    );
+  }
 
   @Get()
   @Header("Cache-Control", "no-store")

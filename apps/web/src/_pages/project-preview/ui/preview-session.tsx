@@ -7,7 +7,7 @@ import {
   SessionLoading,
   usePrivateSession,
 } from "@entities/identity";
-import { GardenInvitation } from "@entities/invitation";
+import { PrivateGardenPreview } from "@widgets/private-garden-preview";
 import { PublicationRequestPanel } from "@features/request-service";
 import { ApiRequestError, useGetProject } from "@shared/api";
 import { projectEditorHref } from "@shared/config/project-navigation";
@@ -58,7 +58,8 @@ function SavedPreview({ projectId }: { projectId: string }) {
       {saved.canEditDraft && (
         <Anchor href="#publication-request">{t("requestJump")}</Anchor>
       )}
-      <GardenInvitation
+      <PrivateGardenPreview
+        source={{ kind: "owner", id: projectId }}
         content={saved.content}
         rsvp={<p>{t("guestFormPreview")}</p>}
       />
