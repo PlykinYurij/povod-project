@@ -6,11 +6,18 @@ import { ApiRequestError, useGetSession } from "@shared/api";
 import { clearPrivateQueries } from "@shared/api/private-cache";
 import { loginHref } from "@shared/config/auth-navigation";
 
-export function usePrivateSession(leaving = false) {
+export function usePrivateSession({
+  leaving = false,
+  checkOnFocus = true,
+}: { leaving?: boolean; checkOnFocus?: boolean } = {}) {
   const router = useRouter();
   const client = useQueryClient();
   const session = useGetSession({
-    query: { enabled: !leaving, retry: false, refetchOnWindowFocus: true },
+    query: {
+      enabled: !leaving,
+      retry: false,
+      refetchOnWindowFocus: checkOnFocus,
+    },
   });
   const unauthorized =
     session.error instanceof ApiRequestError && session.error.status === 401;

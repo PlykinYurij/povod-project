@@ -13,7 +13,7 @@ import { LogoutStatus } from "./logout-status";
 export function AccountSession() {
   const t = useTranslations("Account");
   const { signOut, leaving, failed } = useSignOut();
-  const { session, unauthorized } = usePrivateSession(leaving);
+  const { session, unauthorized } = usePrivateSession({ leaving });
   if (leaving) return <LogoutStatus failed={failed} retry={signOut} />;
   if (unauthorized) return <Text role="status">{t("expired")}</Text>;
   if (session.isPending || session.isFetching) return <SessionLoading />;
