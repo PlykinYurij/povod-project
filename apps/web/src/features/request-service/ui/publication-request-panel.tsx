@@ -41,6 +41,7 @@ export function PublicationRequestPanel({
     await Promise.all([state.refetch(), reloadProject()]);
   }
   const open = state.data?.request;
+  const closed = state.data?.lastClosed;
   const priceText = (price: TemplatePriceDto | null) =>
     price ? formattedPrice(price, locale) : t("pricePending");
 
@@ -87,6 +88,16 @@ export function PublicationRequestPanel({
       )}
       {state.data && !open && (
         <>
+          {closed && (
+            <Alert role="status">
+              <Text>
+                {t(
+                  closed.status === "REJECTED" ? "lastRejected" : "lastClosed",
+                )}
+              </Text>
+              <Text size="sm">{t("reference", { id: closed.requestId })}</Text>
+            </Alert>
+          )}
           <Text>{t("publicationIntro")}</Text>
           <Text>
             {t("quote", { price: priceText(state.data.currentPrice) })}

@@ -1,26 +1,38 @@
 import {
+  Body,
   Controller,
   Get,
   Header,
   Param,
+  Patch,
   Query,
+  Req,
   UseGuards,
 } from "@nestjs/common";
 import {
   ApiCookieAuth,
+  ApiHeader,
   ApiOperation,
   ApiResponse,
   ApiTags,
 } from "@nestjs/swagger";
 import { ApiErrorDto } from "../../http/api-error";
 import { rejectUnknownQuery } from "../../http/request-contract";
-import { SessionGuard } from "../identity/session.guard";
+import { JsonOriginGuard } from "../../http/json-origin.guard";
+import { CsrfGuard } from "../identity/csrf.guard";
+import {
+  AuthenticatedRequest,
+  requireActor,
+  SessionGuard,
+} from "../identity/session.guard";
 import { ProjectIdDto } from "../projects/project.dto";
 import { AdminGuard } from "./admin.guard";
 import {
   AdminRequestDetailDto,
   AdminRequestListQueryDto,
   AdminRequestPageDto,
+  AdminRequestStatusDto,
+  UpdateAdminRequestStatusDto,
 } from "./admin-requests.dto";
 import { AdminRequestsService } from "./admin-requests.service";
 
@@ -54,5 +66,31 @@ export class AdminRequestsController {
   ): Promise<AdminRequestDetailDto> {
     rejectUnknownQuery(query);
     return this.requests.detail(params.id);
+  }
+
+  @Patch(":id/status")
+  @Header("Cache-Control", "no-store")
+  @UseGuards(JsonOriginGuard, CsrfGuard)
+  @ApiHeader({ name: "X-CSRF-Token", required: true })
+  @ApiOperation({ operationId: "updateAdminRequestStatus" })
+  @ApiResponse({ status: 200, type: AdminRequestStatusDto })
+  @ApiResponse({ status: 404, type: ApiErrorDto })
+  @ApiResponse({
+    status: 409,
+    type: ApiErrorDto,
+    description: "REQUEST_STATE_CONFLICT",
+  })
+  update(
+    @Req() request: AuthenticatedRequest,
+    @Param() params: ProjectIdDto,
+    @Body() input: UpdateAdminRequestStatusDto,
+    @Query() query: Record<string, unknown>,
+  ): Promise<AdminRequestStatusDto> {
+    rejectUnknownQuery(query);
+    return this.requests.updateStatus(
+      requireActor(request).id,
+      params.id,
+      input,
+    );
   }
 }

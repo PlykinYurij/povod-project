@@ -25,6 +25,7 @@ const receipt = {
 };
 const active = {
   currentPrice: { amountMinor: 20000, currency: "RUB", version: 2 },
+  lastClosed: null,
   request: {
     requestId: receipt.requestId,
     kind: "PUBLICATION",
@@ -83,17 +84,28 @@ test("null active request is a valid state rather than a malformed response", as
     "fetch",
     vi
       .fn()
-      .mockResolvedValue(Response.json({ currentPrice: null, request: null })),
+      .mockResolvedValue(
+        Response.json({ currentPrice: null, request: null, lastClosed: null }),
+      ),
   );
   await expect(getProjectPublicationRequest(id)).resolves.toEqual({
     currentPrice: null,
     request: null,
+    lastClosed: null,
   });
 });
 
 test.each([
   { ...active, email: "private" },
   { ...active, currentPrice: "free" },
+  {
+    ...active,
+    lastClosed: {
+      requestId: id,
+      status: "NEW",
+      updatedAt: "2026-11-21T00:00:00.000Z",
+    },
+  },
   { ...active, request: { ...active.request, status: { toString: "NEW" } } },
   { ...active, request: { ...active.request, submittedRevision: null } },
 ])("malformed state never becomes a valid owner status", async (value) => {

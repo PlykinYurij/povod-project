@@ -517,6 +517,7 @@ test("request state rejects extra queries and does not replace empty data with m
             version: template.priceVersion,
           },
     request: null,
+    lastClosed: null,
   });
   expect((await state(actor, draft.id, "?ownerId=forged")).status).toBe(422);
   expect((await state(actor, "invalid")).status).toBe(422);

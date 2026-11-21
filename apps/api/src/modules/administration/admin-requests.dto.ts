@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
-import { IsOptional, IsUUID } from "class-validator";
+import { IsIn, IsInt, IsOptional, IsUUID, Max, Min } from "class-validator";
 import {
   ContactChannel,
   ServiceRequestKind,
@@ -50,6 +50,8 @@ export class AdminRequestPageDto {
 }
 
 export class AdminRequestDetailDto extends AdminRequestSummaryDto {
+  @ApiProperty({ type: "integer", minimum: 1 })
+  requestVersion!: number;
   @ApiProperty()
   contactName!: string;
 
@@ -70,4 +72,24 @@ export class AdminRequestDetailDto extends AdminRequestSummaryDto {
 
   @ApiProperty({ type: ProjectDto, nullable: true })
   project!: ProjectDto | null;
+}
+
+const targets = ["IN_PROGRESS", "REJECTED"] as const;
+
+export class AdminRequestStatusDto {
+  @ApiProperty({ format: "uuid" }) id!: string;
+  @ApiProperty({ enum: ServiceRequestStatus }) status!: ServiceRequestStatus;
+  @ApiProperty({ type: "integer", minimum: 1 }) requestVersion!: number;
+}
+
+export class UpdateAdminRequestStatusDto {
+  @ApiProperty({ enum: targets })
+  @IsIn(targets)
+  status!: (typeof targets)[number];
+
+  @ApiProperty({ type: "integer", minimum: 1, maximum: 2147483646 })
+  @IsInt()
+  @Min(1)
+  @Max(2147483646)
+  expectedVersion!: number;
 }

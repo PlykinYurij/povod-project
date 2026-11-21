@@ -50,4 +50,14 @@ export class ProjectPublicationRequestDto {
   currentPrice!: TemplatePriceDto | null;
   @ApiProperty({ type: ActivePublicationRequestDto, nullable: true })
   request!: ActivePublicationRequestDto | null;
+
+  @ApiProperty({ type: () => ClosedPublicationRequestDto, nullable: true })
+  lastClosed!: ClosedPublicationRequestDto | null;
+}
+
+export class ClosedPublicationRequestDto {
+  @ApiProperty({ format: "uuid" }) requestId!: string;
+  @ApiProperty({ enum: ["COMPLETED", "REJECTED", "CANCELLED"] })
+  status!: "COMPLETED" | "REJECTED" | "CANCELLED";
+  @ApiProperty({ format: "date-time" }) updatedAt!: string;
 }
