@@ -28,7 +28,8 @@ import {
   rejectUnknownQuery,
 } from "../../http/request-contract";
 import { PublicRsvpFormDto, RsvpReceiptDto, SubmitRsvpDto } from "./rsvp.dto";
-import { invitationUnavailable, RSVP_SLUG } from "./rsvp-form";
+import { PUBLICATION_SLUG } from "../publication/publication-address";
+import { invitationUnavailable } from "./rsvp-form";
 import { RsvpService } from "./rsvp.service";
 
 @Injectable()
@@ -49,7 +50,7 @@ class RsvpJsonGuard implements CanActivate {
 @ApiTags("rsvp")
 @ApiParam({
   name: "slug",
-  schema: { type: "string", pattern: RSVP_SLUG.source },
+  schema: { type: "string", pattern: PUBLICATION_SLUG.source },
 })
 @ApiResponse({
   status: 404,
@@ -79,7 +80,7 @@ export class RsvpController {
     @Query() query: Record<string, unknown>,
   ): Promise<PublicRsvpFormDto> {
     rejectUnknownQuery(query);
-    if (!RSVP_SLUG.test(slug)) throw invitationUnavailable();
+    if (!PUBLICATION_SLUG.test(slug)) throw invitationUnavailable();
     return this.rsvp.getForm(slug);
   }
 
@@ -138,7 +139,7 @@ export class RsvpController {
     @Res({ passthrough: true }) response: Response,
   ): Promise<RsvpReceiptDto> {
     rejectUnknownQuery(query);
-    if (!RSVP_SLUG.test(slug)) throw invitationUnavailable();
+    if (!PUBLICATION_SLUG.test(slug)) throw invitationUnavailable();
     const result = await this.rsvp.submit(
       slug,
       input,

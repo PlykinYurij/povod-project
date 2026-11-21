@@ -20,7 +20,7 @@ export async function saveLockedDraft(
     throw new ApiError(
       409,
       "CONTENT_LOCKED",
-      "После публикации структура зафиксирована",
+      "Опубликованный проект закрыт для редактирования",
     );
   if (project.revision !== input.expectedRevision)
     throw new ApiError(409, "REVISION_CONFLICT", "Версия проекта изменилась");
@@ -30,21 +30,7 @@ export async function saveLockedDraft(
     content: input.content,
   });
   assertStorableContent(draft);
-  if (draft.content.heroMediaId !== null) {
-    const photo = await tx.projectPhoto.findFirst({
-      where: {
-        id: draft.content.heroMediaId,
-        projectId: project.id,
-        status: "READY",
-        renditionToken: { not: null },
-      },
-      select: { id: true },
-    });
-    if (!photo)
-      throw new ApiError(422, "VALIDATION_FAILED", "Готовое фото не найдено", [
-        { path: "content.heroMediaId", code: "MEDIA_NOT_FOUND" },
-      ]);
-  }
+  await assertReadyHeroPhoto(tx, project.id, draft.content.heroMediaId);
   const updated = await tx.project.updateMany({
     where: {
       id: project.id,
@@ -64,4 +50,25 @@ export async function saveLockedDraft(
   return projectResponse(
     await tx.project.findUniqueOrThrow({ where: { id: project.id } }),
   );
+}
+
+export async function assertReadyHeroPhoto(
+  tx: Prisma.TransactionClient,
+  projectId: string,
+  photoId: string | null,
+): Promise<void> {
+  if (photoId === null) return;
+  const photo = await tx.projectPhoto.findFirst({
+    where: {
+      id: photoId,
+      projectId,
+      status: "READY",
+      renditionToken: { not: null },
+    },
+    select: { id: true },
+  });
+  if (!photo)
+    throw new ApiError(422, "VALIDATION_FAILED", "Готовое фото не найдено", [
+      { path: "content.heroMediaId", code: "MEDIA_NOT_FOUND" },
+    ]);
 }
