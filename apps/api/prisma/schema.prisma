@@ -59,11 +59,78 @@ model Project {
   updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
   serviceRequests ServiceRequest[]
   photos ProjectPhoto[]
+  publication Publication?
 
   @@unique([ownerId, creationKeyHash])
   @@index([ownerId, deletedAt, firstPublishedAt])
   @@index([createdByUserId])
   @@map("projects")
+}
+
+model Publication {
+  id String @id @default(uuid()) @db.Uuid
+  projectId String @unique @map("project_id") @db.Uuid
+  project Project @relation(fields: [projectId], references: [id], onDelete: Restrict)
+  slug String @unique @db.VarChar(63)
+  visible Boolean @default(false)
+  expiresAt DateTime @map("expires_at") @db.Timestamptz(3)
+  snapshots PublicationSnapshot[]
+  rsvpRateLimits RsvpRateLimit[]
+
+  @@map("publications")
+}
+
+enum RsvpFormSchema {
+  garden_v1
+}
+
+model PublicationSnapshot {
+  id String @id @default(uuid()) @db.Uuid
+  publicationId String @map("publication_id") @db.Uuid
+  publication Publication @relation(fields: [publicationId], references: [id], onDelete: Restrict)
+  projectRevision Int @map("project_revision")
+  content Json @db.JsonB
+  formSchema RsvpFormSchema @map("form_schema")
+  supersededAt DateTime? @map("superseded_at") @db.Timestamptz(3)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  responses RsvpResponse[]
+
+  // SQL enforces one current snapshot per publication.
+  @@unique([id, publicationId])
+  @@map("publication_snapshots")
+}
+
+enum RsvpAttendance {
+  yes
+  no
+}
+
+model RsvpResponse {
+  id String @id @default(uuid()) @db.Uuid
+  publicationId String @map("publication_id") @db.Uuid
+  formVersionId String @map("form_version_id") @db.Uuid
+  formVersion PublicationSnapshot @relation(fields: [formVersionId, publicationId], references: [id, publicationId], onDelete: Restrict)
+  keyHash String @map("key_hash") @db.Char(64)
+  name String @db.VarChar(80)
+  attendance RsvpAttendance
+  companions Int
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@unique([publicationId, keyHash])
+  @@index([formVersionId, publicationId])
+  @@map("rsvp_responses")
+}
+
+model RsvpRateLimit {
+  publicationId String @map("publication_id") @db.Uuid
+  publication Publication @relation(fields: [publicationId], references: [id], onDelete: Cascade)
+  clientKey String @map("client_key") @db.Char(64)
+  count Int
+  expiresAt DateTime @map("expires_at") @db.Timestamptz(3)
+
+  @@id([publicationId, clientKey])
+  @@index([expiresAt])
+  @@map("rsvp_rate_limits")
 }
 
 enum ProjectPhotoStatus {
