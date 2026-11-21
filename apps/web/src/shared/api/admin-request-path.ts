@@ -2,6 +2,14 @@ import { isProjectId } from "@shared/config/project-navigation";
 
 const ROOT = "/api/v1/admin/requests";
 
+export function isAdminRequestStatusPath(path: string): boolean {
+  return (
+    path.startsWith(ROOT + "/") &&
+    path.endsWith("/status") &&
+    isProjectId(path.slice(ROOT.length + 1, -"/status".length))
+  );
+}
+
 export function isAdminRequestPath(path: string): boolean {
   const [resource, query, ...extra] = path.split("?");
   if (extra.length > 0) return false;

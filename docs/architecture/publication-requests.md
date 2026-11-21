@@ -1,6 +1,6 @@
 # Заявка на свой проект · V2-01
 
-Реализованная часть ветки feat/project-publication-requests, ещё не main. [Контракт](../product/v2-01-project-publication-request.md), [QA](../qa/v2-01-publication-requests-report.md), [общая заявка](service-requests.md).
+Исходный API принят в PR #27. Операторские статусы описаны отдельно. [Контракт](../product/v2-01-project-publication-request.md) · [QA](../qa/v2-01-publication-requests-report.md) · [Общая заявка](service-requests.md) · [Обработка](../product/v2-03-request-status.md).
 
 POST /publication-requests требует Session/CSRF/Origin/JSON; actor назначается сервером. General assistance остаётся без Session и не становится private API. Оба пути используют DTO контактов, nonce/receipt/result и PG rate, но разные creation-key namespaces; приватный включает actorId. Helper receipt не возвращает ORM строку или текущие контакты/status.
 
@@ -14,4 +14,4 @@ price_snapshot_minor/currency/version добавлены к ServiceRequest от�
 
 Private GET state читает Project/открытую заявку/currentPrice в одном RepeatableRead snapshot; только минимальные метаданные, без контактов/hash/customer ID. Заявка показывает submittedRevision, проект — currentProjectRevision. currentPrice и зафиксированная request.price независимы. Для скрытого, но поддерживаемого существующего дизайна private quote остаётся доступен. Read-only query не блокирует редактирование; submit использует актуальную блокируемую строку цены и при изменении возвращает 409.
 
-Историческая marker-проверка firstPublishedAt ещё действует до реальной state machine; реальное unpublish должно вернуть edit и возможность нового обращения по D-43. Не подменять это наличием когда-либо оплаченного периода. Терминальные заявки/история и операторские статусы — последующие части V2-03/05, пока GET возвращает только открытую.
+Проверка firstPublishedAt действует до реализации состояний публикации. Реальный unpublish должен вернуть редактирование и возможность нового обращения по D-43. Owner GET дополнительно возвращает lastClosed с идентификатором, временем и статусом последней закрытой заявки. Последовательность всех обращений остаётся отдельной задачей.

@@ -1,5 +1,13 @@
 {
   "AdminRequests": {
+    "takeRequest": "Start reviewing",
+    "rejectRequest": "Decline request",
+    "confirmReject": "This closes the request. If it is linked to a project, its owner can see the status and submit a new request.",
+    "confirmAction": "Confirm decline",
+    "cancelAction": "Cancel",
+    "statusConflict": "The request status changed. Refresh the details.",
+    "statusFailure": "Could not confirm the change. You can retry.",
+    "refreshStatus": "Refresh request",
     "account": "My projects",
     "heading": "Invitation requests",
     "forbidden": "This area is restricted to administrators.",
@@ -52,6 +60,8 @@
     "requestJump": "Go to publication request"
   },
   "Requests": {
+    "lastRejected": "The previous request was declined. You can submit a new one.",
+    "lastClosed": "The previous request is closed.",
     "home": "Back to home",
     "publicTitle": "Request an invitation",
     "publicIntro": "Leave your contact details so we can discuss the invitation you need.",

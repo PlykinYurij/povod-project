@@ -7,6 +7,7 @@ import { GardenInvitation } from "@entities/invitation";
 import { ApiRequestError, useGetAdminRequest } from "@shared/api";
 import { Alert, Stack, Text, Title } from "@shared/ui";
 import styles from "./request-detail.module.css";
+import { RequestStatusActions } from "./request-status-actions";
 
 export function RequestDetail({ requestId }: { requestId: string }) {
   const t = useTranslations("AdminRequests");
@@ -63,6 +64,10 @@ export function RequestDetail({ requestId }: { requestId: string }) {
                 </>
               )}
             </dl>
+            <RequestStatusActions
+              record={record}
+              refresh={() => request.refetch()}
+            />
             {project?.templateVersionId === "wedding-garden-v1" ? (
               <>
                 <Title order={3}>{t("preview")}</Title>

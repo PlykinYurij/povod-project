@@ -301,7 +301,7 @@ test("actual local CLI grants/revokes a synthetic account and refuses production
 
 test("OpenAPI documents cookie auth, response and error boundary", () => {
   const doc = createOpenApiDocument(app);
-  expect(doc.info.version).toBe("0.14.0");
+  expect(doc.info.version).toBe("0.15.0");
   expect(doc.paths["/api/v1/admin/requests"]?.get?.security).toEqual([
     { session: [] },
   ]);
@@ -407,8 +407,57 @@ test("operator queue separates contact details, includes the saved draft and blo
   expect(
     (await access(operator.cookie, listPath + "/" + randomUUID())).status,
   ).toBe(404);
+  async function update(
+    cookie: string,
+    status: string,
+    expectedVersion: number,
+    csrf = true,
+  ) {
+    return fetch(url + detailPath + "/status", {
+      method: "PATCH",
+      headers: {
+        ...(csrf ? await csrfHeaders(url, cookie) : { Cookie: cookie }),
+        Origin: TEST_ORIGIN,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ status, expectedVersion }),
+    });
+  }
+  expect((await update(owner.cookie, "IN_PROGRESS", 1)).status).toBe(403);
+  expect((await update(operator.cookie, "IN_PROGRESS", 1, false)).status).toBe(
+    403,
+  );
+  expect((await update(operator.cookie, "COMPLETED", 1)).status).toBe(422);
+  const inProgress = await update(operator.cookie, "IN_PROGRESS", 1);
+  expect(await inProgress.json()).toEqual({
+    id,
+    status: "IN_PROGRESS",
+    requestVersion: 2,
+  });
+  expect((await update(operator.cookie, "IN_PROGRESS", 1)).status).toBe(200);
+  expect((await update(operator.cookie, "REJECTED", 1)).status).toBe(409);
+  const rejected = await update(operator.cookie, "REJECTED", 2);
+  expect(await rejected.json()).toEqual({
+    id,
+    status: "REJECTED",
+    requestVersion: 3,
+  });
+  expect((await update(operator.cookie, "IN_PROGRESS", 3)).status).toBe(409);
+  const ownerView = await access(
+    owner.cookie,
+    "/api/v1/projects/" + project.id + "/publication-request",
+  );
+  expect(await ownerView.json()).toMatchObject({
+    request: null,
+    lastClosed: {
+      requestId: id,
+      status: "REJECTED",
+      updatedAt: expect.any(String),
+    },
+  });
   await role(operator.id, "revoke");
   expect((await access(operator.cookie, detailPath)).status).toBe(403);
+  expect((await update(operator.cookie, "IN_PROGRESS", 3)).status).toBe(403);
 });
 
 test("operator queue pages without duplicates when creation timestamps tie", async () => {

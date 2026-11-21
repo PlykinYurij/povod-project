@@ -136,10 +136,30 @@ export class PublicationRequestsService {
           tx,
           project.templateVersionId,
         );
-        if (!row) return { currentPrice, request: null };
+        const closed = await tx.serviceRequest.findFirst({
+          where: {
+            projectId,
+            status: { in: ["REJECTED", "CANCELLED", "COMPLETED"] },
+          },
+          select: { id: true, status: true, updatedAt: true },
+          orderBy: [{ updatedAt: "desc" }, { id: "desc" }],
+        });
+        const lastClosed =
+          closed &&
+          (closed.status === "REJECTED" ||
+            closed.status === "CANCELLED" ||
+            closed.status === "COMPLETED")
+            ? {
+                requestId: closed.id,
+                status: closed.status,
+                updatedAt: closed.updatedAt.toISOString(),
+              }
+            : null;
+        if (!row) return { currentPrice, request: null, lastClosed };
         // Explicit response, never the contact/hash-bearing ORM row.
         return {
           currentPrice,
+          lastClosed,
           request: {
             requestId: row.id,
             kind: row.kind,

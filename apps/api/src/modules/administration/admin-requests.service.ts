@@ -8,6 +8,8 @@ import type {
   AdminRequestDetailDto,
   AdminRequestPageDto,
   AdminRequestSummaryDto,
+  AdminRequestStatusDto,
+  UpdateAdminRequestStatusDto,
 } from "./admin-requests.dto";
 
 const PAGE_SIZE = 30;
@@ -73,6 +75,7 @@ export class AdminRequestsService {
         contactChannel: true,
         contactValue: true,
         submittedRevision: true,
+        requestVersion: true,
         priceSnapshotMinor: true,
         priceSnapshotCurrency: true,
         priceSnapshotVersion: true,
@@ -89,11 +92,61 @@ export class AdminRequestsService {
       contactChannel: row.contactChannel,
       contactValue: row.contactValue,
       submittedRevision: row.submittedRevision,
+      requestVersion: row.requestVersion,
       quotedPrice: readRequestPrice(row),
       project:
         row.project && row.project.deletedAt === null
           ? projectResponse(row.project)
           : null,
     };
+  }
+
+  async updateStatus(
+    actorId: string,
+    id: string,
+    input: UpdateAdminRequestStatusDto,
+  ): Promise<AdminRequestStatusDto> {
+    return this.database.getClient().$transaction(async (tx) => {
+      // Keep the role valid until commit, including concurrent role revocation.
+      const [actor] = await tx.$queryRaw<{ role: string }[]>`
+        SELECT "role" FROM "users" WHERE "id" = ${actorId}::uuid FOR SHARE
+      `;
+      if (actor?.role !== "ADMIN")
+        throw new ApiError(
+          403,
+          "ADMIN_REQUIRED",
+          "Требуются права администратора",
+        );
+      const changed = await tx.serviceRequest.updateMany({
+        where: {
+          id,
+          requestVersion: input.expectedVersion,
+          status:
+            input.status === "IN_PROGRESS"
+              ? "NEW"
+              : { in: ["NEW", "IN_PROGRESS"] },
+        },
+        data: { status: input.status, requestVersion: { increment: 1 } },
+      });
+      const current = await tx.serviceRequest.findUnique({
+        where: { id },
+        select: { id: true, status: true, requestVersion: true },
+      });
+      if (!current)
+        throw new ApiError(404, "REQUEST_NOT_FOUND", "Заявка не найдена");
+      if (
+        !changed.count &&
+        !(
+          current.status === input.status &&
+          current.requestVersion === input.expectedVersion + 1
+        )
+      )
+        throw new ApiError(
+          409,
+          "REQUEST_STATE_CONFLICT",
+          "Состояние заявки изменилось",
+        );
+      return current;
+    });
   }
 }
