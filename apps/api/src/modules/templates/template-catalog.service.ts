@@ -1,42 +1,142 @@
 import { Injectable } from "@nestjs/common";
+import { DatabaseService } from "../../database/database.service";
+import type { Prisma } from "../../database/generated/client";
+import { ApiError } from "../../http/api-error";
 import type {
   TemplateCatalogDto,
   TemplateCatalogQueryDto,
+  TemplatePriceDto,
 } from "./template-catalog.dto";
-
-const titles = {
-  ru: { template: "Тихий сад", sage: "Шалфей", sand: "Тёплый песок" },
-  en: { template: "Quiet Garden", sage: "Sage", sand: "Warm sand" },
-};
+import { gardenMetadata, registeredTemplate } from "./template-definitions";
+import { templatePrice } from "./template-price";
 
 @Injectable()
 export class TemplateCatalogService {
-  list(locale: TemplateCatalogQueryDto["locale"] = "ru"): TemplateCatalogDto {
-    const text = titles[locale];
-    // Code-owned metadata only. User projects, snapshots, keys and account data never enter this registry.
-    return {
-      items: [
-        {
-          templateVersionId: "wedding-garden-v1",
-          title: text.template,
-          eventType: "wedding",
-          schemaVersion: 1,
-          themes: [
-            { id: "sage", title: text.sage },
-            { id: "sand", title: text.sand },
-          ],
-          blocks: [
-            { id: "names", required: true },
-            { id: "event", required: true },
-            { id: "venue", required: true },
-            { id: "photo", required: false },
-            { id: "program", required: false },
-            { id: "rsvp", required: true },
-          ],
-          demoPath: "/templates/quiet-garden",
-          previewImagePath: "/templates/quiet-garden/garden.svg",
-        },
+  constructor(private readonly database: DatabaseService) {}
+
+  async list(query: TemplateCatalogQueryDto): Promise<TemplateCatalogDto> {
+    const locale = query.locale ?? "ru";
+    const db = this.database.getClient();
+    // One DB snapshot keeps categories, availability and price fields consistent.
+    const [categories, versions] = await db.$transaction(
+      [
+        db.templateCategory.findMany({
+          where: { active: true },
+          orderBy: { id: "asc" },
+        }),
+        db.templateVersion.findMany({
+          where: {
+            availableForNewProjects: true,
+            template: {
+              active: true,
+              category: { active: true },
+              ...(query.category ? { categoryId: query.category } : {}),
+            },
+          },
+          include: { template: true },
+          orderBy: [{ templateId: "asc" }, { id: "asc" }],
+        }),
       ],
+      { isolationLevel: "RepeatableRead" },
+    );
+    return {
+      categories: categories.map((category) => ({
+        id: category.id,
+        title: locale === "ru" ? category.titleRu : category.titleEn,
+      })),
+      items: versions.filter(registeredTemplate).map((version) => ({
+        templateVersionId: version.id,
+        templateId: version.templateId,
+        categoryId: version.template.categoryId,
+        title:
+          locale === "ru" ? version.template.titleRu : version.template.titleEn,
+        schemaVersion: version.schemaVersion,
+        price: templatePrice(version.template),
+        ...gardenMetadata(locale),
+      })),
     };
+  }
+
+  async assertAvailableForCreation(
+    tx: Prisma.TransactionClient,
+    id: string,
+  ): Promise<void> {
+    // Share locks protect the check through creation; an operator update waits for commit.
+    const versions = await tx.$queryRaw<
+      {
+        id: string;
+        templateId: string;
+        schemaVersion: number;
+        rendererKey: string;
+        defaultsVersion: number;
+        available: boolean;
+        templateActive: boolean;
+        categoryActive: boolean;
+      }[]
+    >`SELECT v.id, v.template_id AS "templateId", v.schema_version AS "schemaVersion",
+       v.renderer_key AS "rendererKey", v.defaults_version AS "defaultsVersion",
+       v.available_for_new_projects AS available, t.active AS "templateActive", c.active AS "categoryActive"
+       FROM template_versions v JOIN templates t ON t.id = v.template_id
+       JOIN template_categories c ON c.id = t.category_id WHERE v.id = ${id}
+       FOR SHARE OF c, t, v`;
+    const version = versions[0];
+    if (
+      !version ||
+      !version.available ||
+      !version.templateActive ||
+      !version.categoryActive ||
+      !registeredTemplate(version)
+    ) {
+      throw new ApiError(404, "TEMPLATE_NOT_FOUND", "Шаблон не найден");
+    }
+  }
+
+  async lockProjectPrice(
+    tx: Prisma.TransactionClient,
+    id: string,
+  ): Promise<TemplatePriceDto | null> {
+    // Retired designs remain usable by existing projects. The quote needs a stable price, not catalog visibility.
+    const rows = await tx.$queryRaw<
+      {
+        id: string;
+        templateId: string;
+        schemaVersion: number;
+        rendererKey: string;
+        defaultsVersion: number;
+        priceMinor: number | null;
+        priceVersion: number;
+        currency: string;
+      }[]
+    >`SELECT v.id, v.template_id AS "templateId", v.schema_version AS "schemaVersion",
+      v.renderer_key AS "rendererKey", v.defaults_version AS "defaultsVersion",
+      t.price_minor AS "priceMinor", t.price_version AS "priceVersion", t.currency
+      FROM template_versions v JOIN templates t ON t.id = v.template_id
+      WHERE v.id = ${id} FOR SHARE OF t, v`;
+    const row = rows[0];
+    if (!row || !registeredTemplate(row) || row.currency !== "RUB") {
+      throw new ApiError(
+        503,
+        "SERVICE_UNAVAILABLE",
+        "Версия шаблона недоступна",
+      );
+    }
+    return templatePrice(row);
+  }
+
+  async projectPrice(
+    tx: Prisma.TransactionClient,
+    id: string,
+  ): Promise<TemplatePriceDto | null> {
+    const version = await tx.templateVersion.findUnique({
+      where: { id },
+      include: { template: true },
+    });
+    if (!version || !registeredTemplate(version))
+      throw new ApiError(
+        503,
+        "SERVICE_UNAVAILABLE",
+        "Версия шаблона недоступна",
+      );
+    return templatePrice(version.template);
   }
 }

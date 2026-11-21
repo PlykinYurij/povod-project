@@ -3,7 +3,7 @@ import { templateCatalogFixture } from "@shared/lib/testing/template-catalog-fix
 import { isTemplateCatalog } from "./catalog-validation";
 
 test("empty and complete catalogs satisfy the generated response shape", () => {
-  expect(isTemplateCatalog({ items: [] })).toBe(true);
+  expect(isTemplateCatalog({ items: [], categories: [] })).toBe(true);
   expect(isTemplateCatalog(templateCatalogFixture())).toBe(true);
 });
 test.each([null, {}, { items: [null] }, { items: "wrong" }])(
@@ -30,6 +30,7 @@ test("arbitrary media URLs, duplicate keys and invalid nested values are rejecte
   duplicate.items.push({ ...duplicate.items[0] });
   expect(isTemplateCatalog(duplicate)).toBe(false);
   const nested = {
+    ...templateCatalogFixture(),
     items: [
       {
         ...templateCatalogFixture().items[0],
@@ -38,4 +39,19 @@ test("arbitrary media URLs, duplicate keys and invalid nested values are rejecte
     ],
   };
   expect(isTemplateCatalog(nested)).toBe(false);
+});
+
+test("price fields and category relationship are checked before display", () => {
+  const priced = templateCatalogFixture();
+  priced.items[0].price = { amountMinor: 123456, currency: "RUB", version: 2 };
+  expect(isTemplateCatalog(priced)).toBe(true);
+  const negative = structuredClone(priced);
+  negative.items[0].price!.amountMinor = -1;
+  expect(isTemplateCatalog(negative)).toBe(false);
+  const fractional = structuredClone(priced);
+  fractional.items[0].price!.amountMinor = 1.5;
+  expect(isTemplateCatalog(fractional)).toBe(false);
+  const missing = templateCatalogFixture();
+  missing.categories = [];
+  expect(isTemplateCatalog(missing)).toBe(false);
 });

@@ -19,3 +19,9 @@ MVP v2 D-38/39 меняет продукт, но не разрешает деп�
 Backend восстановления: [E1-04c — локальная почта, запуск и ручная приёмка](password-reset.md). Production-транспорт не реализован.
 
 [Локальная приёмка web регистрации и восстановления](web-identity.md): формы, файловая почта, подтверждение и новый вход после reset.
+
+- [Локальные права администратора E2-02d](admin-access.md): grant/revoke существующего подтверждённого аккаунта, запрет remote/production; отдельный production bootstrap ещё предстоит.
+
+- [Каталог PostgreSQL E2-01d](template-catalog.md): anonymous GET/filter, обязательный dev DB и честный null-прайс.
+
+- [Общая заявка V2-02](service-requests.md): HTTP, секрет rate/local fallback, явные ограничения публичного запуска и очистки контактов.

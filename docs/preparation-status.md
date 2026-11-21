@@ -312,3 +312,27 @@ Q-23 закрыт: JSONB + строгие DTO/Orval/runtime validation. [Эво�
 ## 21.11.2026 · D-42–44 и непрерывное выполнение плана
 
 Заказ без аккаунта готовит admin; заявка не блокирует draft, published блокирует все поля, unpublish возвращает редактор. Прежнее исключение D-17/задача E2-04c отменены. Обновлены правила, UX, архитектура, QA, ролевые планы и Git workflow. Вопросы Q-25/28 выполняются по A-01/02; цены/реальные доступы не выдумываются. Приёмка владельцем/main отмечаются отдельно, автоматический merge/production не выполняются. Следующий независимый этап — E2-02d: актуальная серверная роль и приватный admin guard без публичной выдачи прав.
+
+## 21.11.2026 · E2-02d реализована для Review
+
+Ветка feat/admin-access от обновлённого main 3626e47 с проверенными зависимыми документами 034c495; main не сливался. User.role USER/ADMIN default USER, новая десятая миграция, серверный AdminGuard, GET /api/v1/admin/access, local-only grant/revoke для существующего подтверждённого аккаунта. Нет публичного назначения роли, роль не читается из клиентского ввода и проверяется заново на запрос.
+
+[Карточка](product/e2-02d-admin-access.md), [QA](qa/e2-02d-admin-access-report.md), [local-проверка](operations/admin-access.md). Typecheck/build обоих workspace, 129 root/119 web и 147 HTTP/PG, format, воспроизводимая генерация OpenAPI 0.10.0/Orval успешны. Dev/test миграции применены и повторены без pending/reset. Dev-аккаунты не повышались, CLI проверен только на очищаемых test-фикстурах. Нет новых зависимостей/workflow/production. Owner review/main открыты; следующий этап E2-01d — категории/версии/прайс, с непубличными тестовыми ценами до реального прайса.
+
+## 21.11.2026 · E2-01d реализована для Review
+
+feat/template-catalog-data: main обновлён и остаётся 3626e47, зависимость E2-02d ab2e9bd подключена только в ветку задачи. Добавлены три таблицы/FK без изменения JSONB проектов, категории RU/EN, DB public catalog/category filter и nullable integer RUB price/version. Неизвестный renderer не становится карточкой; скрытие запрещает новые drafts, сохраняет replay/save, доступность защищена SHARE locks в create tx.
+
+[Карточка](product/e2-01d-catalog-data.md), [ERD](architecture/catalog-data.md), [QA](qa/e2-01d-catalog-data-report.md), [local](operations/template-catalog.md). 163 HTTP/PG (16 новых), 143 root (133 web + 10 artifact), typecheck/build, format; миграция dev/test без reset и повтор без pending; API 0.11.0/Orval воспроизводимы. Реальный локальный Next SSR/API smoke показывает Garden/ненастроенную цену, временные процессы закрыты. Нет новых зависимостей/CI/production. UI фильтра/создания и реальные цены пока не готовы; Q-27 остаётся условием запуска, A-06 не выдумывает сумму. Следующий независимый этап V2-02 — общая заявка без аккаунта, контакты/anti-spam/idempotency по записанным допущениям.
+
+## 21.11.2026 · V2-02 реализована для Review
+
+feat/public-service-requests от обновлённого main 3626e47 с проверенной цепочкой 195f26c. [Контракт](product/v2-02-public-service-request.md), [архитектура](architecture/service-requests.md), [QA](qa/v2-02-service-requests-report.md), [local](operations/service-requests.md). Public POST без регистрации/user/project, contacts/technical consent, UUID key/replay/receipt без контактов/URL, PG IP/phone HMAC rate/expiry/cleanup. Shared origin/key/query правила переиспользованы без удаления private CSRF.
+
+198 HTTP/PG (35 новых), 150 root (140 web + 10 artifact), typecheck/build/format успешны; миграция dev/test применена и повторена без pending/reset, OpenAPI 0.12.0/Orval воспроизводимы. Ранние два worker abort из-за eager secret проверки исправлены ленивым fail-closed submit и обрабатываемым bootstrap exception; финальный прогон без ошибок. UI формы/очередь/публикация не добавлены, новые зависимости/CI/production отсутствуют. A-07/retention/legal/proxy условия записаны, не считаются принятыми владельцем. Ревью/main отдельно. Далее V2-01: заявка со своим проектом, актуальная revision и редактирование без freeze.
+
+## 21.11.2026 · V2-01 реализована для Review
+
+feat/project-publication-requests, обновлённый main 3626e47 + b85152b. [Контракт](product/v2-01-project-publication-request.md), [архитектура](architecture/publication-requests.md), [QA](qa/v2-01-publication-requests-report.md). Owner submit защищён Session/CSRF/ownership; historical revision/quote, actor nonce/replay, one-open partial unique, общая rate policy. Save после submit разрешён; metadata GET показывает current/submitted revisions и current/snapshot price, без контактов. Shared ProjectAccessService и receipt helpers сохраняют единый порядок/семантику.
+
+223 HTTP/PG два последовательных диагностических полных прогона, 159 root (149 web + 10 artifact), typecheck/build/format, миграции dev/test и повтор без pending/reset, OpenAPI 0.13.0/Orval воспроизводимы. Первый параллельный DB запуск дал общий отказ без деталей; повторение не воспроизвелось, причина не объявлена установленной. Новых dependencies/CI/production нет. Owner review/main отдельно; следующий этап — E2-01b web выбор/создание с реальным API, затем редактор/preview и обе контактные формы. A-08/09 записаны для согласованной дальнейшей работы.

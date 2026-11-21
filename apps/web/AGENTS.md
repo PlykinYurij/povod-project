@@ -80,3 +80,11 @@
 - Повторяющиеся правила выносить в общий модуль при реальном повторе; не создавать универсальные абстракции и дополнительные слои заранее. Комментарий объясняет причину/инвариант, а не пересказывает код.
 - Избегать скрытых побочных эффектов, неявной связи и больших компонентов. Состояния/зависимости передавать явно, публичные API модулей держать небольшими.
 - На ревью проверять читаемость, границы ответственности, обработку сбоев и значимое поведение тестами; следовать принятым соглашениям стека, а не добавлять инструмент ради формального «best practices».
+
+- E2-02d: generated getAdminAccess/useGetAdminAccess по OpenAPI 0.10.0; transport разрешает точный GET /api/v1/admin/access, 401/403 не успех, неправильный role payload → 503. Cookie контекст server request-scoped; admin UI/произвольные operator paths ещё не включены. [Карточка](../../docs/product/e2-02d-admin-access.md).
+
+- E2-01d: API 0.11.0, категории + templateId/categoryId + price (minor RUB/version или null). Public query category/locale строго разрешена, cookies/auth/CSRF не пересылать. Runtime guard проверяет связи/цену/URL; null отображать через i18n pricePending, не как free/0. [Карточка](../../docs/product/e2-01d-catalog-data.md). Каталог требует dev:api:database. UI фильтра/создания пока отдельная E2-01b.
+
+- V2-02: generated createServiceRequest/useCreateServiceRequest, API 0.12.0. Exact public POST service-requests всегда credentials omit, без Cookie/Authorization/CSRF bootstrap; origin в браузере автоматический. UUID key задаёт/сохраняет вызывающая форма, transport не генерирует и не retry. Receipt runtime guard не принимает PII/URL/неверный status; RECEIVED значит исходное принятие, не publish/current workflow. [Карточка](../../docs/product/v2-02-public-service-request.md). UI формы ещё V2-05.
+
+- V2-01: generated createPublicationRequest/getProjectPublicationRequest/hooks, API 0.13.0. Private mutations с CSRF/credentials include, server только с явным request-scoped cookie/token. GET state валидирует currentPrice и request.price/revisions, без контактов. REQUEST_ALREADY_OPEN — refresh state, REVISION_CONFLICT/PRICE_CHANGED — сохранить ввод и обновить основу, key не менять при неопределённом исходе. [Карточка](../../docs/product/v2-01-project-publication-request.md).

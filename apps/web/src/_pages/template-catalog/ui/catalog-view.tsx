@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type messages from "@shared/i18n/ru.json";
+import type { Locale } from "@shared/config/locale";
 import type { CatalogState } from "../model/load-catalog";
 import styles from "../catalog.module.css";
 
@@ -8,9 +9,11 @@ export type CatalogLabels = typeof messages.TemplateCatalog;
 export function CatalogView({
   state,
   labels,
+  locale = "ru",
 }: {
   state: CatalogState;
   labels: CatalogLabels;
+  locale?: Locale;
 }) {
   return (
     <main className={styles.page}>
@@ -23,7 +26,7 @@ export function CatalogView({
         <h1>{labels.title}</h1>
         <p>{labels.intro}</p>
       </header>
-      <CatalogContent state={state} labels={labels} />
+      <CatalogContent state={state} labels={labels} locale={locale} />
     </main>
   );
 }
@@ -31,9 +34,11 @@ export function CatalogView({
 function CatalogContent({
   state,
   labels,
+  locale,
 }: {
   state: CatalogState;
   labels: CatalogLabels;
+  locale: Locale;
 }) {
   if (state.kind === "unavailable")
     return (
@@ -52,6 +57,9 @@ function CatalogContent({
         <p>{labels.emptyDescription}</p>
       </section>
     );
+  const categoryTitles = new Map(
+    state.categories.map((category) => [category.id, category.title]),
+  );
   return (
     <ul className={styles.grid}>
       {state.items.map((template) => (
@@ -70,9 +78,19 @@ function CatalogContent({
             />
           </Link>
           <div className={styles.cardBody}>
-            <p className={styles.eyebrow}>{labels.wedding}</p>
+            <p className={styles.eyebrow}>
+              {categoryTitles.get(template.categoryId)}
+            </p>
             <h2>{template.title}</h2>
             <p>{labels.description}</p>
+            <p>
+              {template.price === null
+                ? labels.pricePending
+                : new Intl.NumberFormat(locale, {
+                    style: "currency",
+                    currency: template.price.currency,
+                  }).format(template.price.amountMinor / 100)}
+            </p>
             <p className={styles.themes}>
               <span>{labels.palettes}</span>{" "}
               {template.themes.map((theme) => theme.title).join(" · ")}

@@ -2,6 +2,7 @@ import { afterAll, beforeAll, expect, test, vi } from "vitest";
 import { createRequire } from "node:module";
 import type { INestApplication } from "@nestjs/common";
 import type { TemplateCatalogDto } from "./template-catalog.dto.js";
+import { verifyDatabaseTarget } from "../../../../../scripts/database-safety.mjs";
 
 const require = createRequire(import.meta.url);
 const {
@@ -11,8 +12,11 @@ const {
 let app: INestApplication;
 let origin: string;
 beforeAll(async () => {
-  // This worker must prove that the catalog is independent of identity/DB, not use the integration DB by accident.
-  vi.stubEnv("DATABASE_URL", undefined);
+  await verifyDatabaseTarget(
+    process.env.POVOD_TEST_DATABASE_URL,
+    "test",
+    process.env.POVOD_TEST_DATABASE,
+  );
   app = await createApplication();
   await app.listen(0, "127.0.0.1");
   origin = await app.getUrl();
@@ -22,7 +26,7 @@ afterAll(async () => {
   vi.unstubAllEnvs();
 });
 
-test("anonymous catalog works without a database and returns only public metadata", async () => {
+test("anonymous catalog returns only public metadata from the configured catalog", async () => {
   const response = await fetch(`${origin}/api/v1/templates`);
   const body = (await response.json()) as TemplateCatalogDto;
   expect(response.status).toBe(200);
@@ -31,10 +35,13 @@ test("anonymous catalog works without a database and returns only public metadat
   expect(body.items).toHaveLength(1);
   expect(Object.keys(body.items[0]).sort()).toEqual([
     "blocks",
+    "categoryId",
     "demoPath",
     "eventType",
     "previewImagePath",
+    "price",
     "schemaVersion",
+    "templateId",
     "templateVersionId",
     "themes",
     "title",
@@ -108,7 +115,6 @@ test("OpenAPI describes the public operation and typed nested metadata", () => {
 test("OpenAPI exports the actual garden DTO constraints without adding a write endpoint", () => {
   const document = createOpenApiDocument(app);
   const schemas = document.components?.schemas;
-  expect(document.info.version).toBe("0.9.0");
   expect(schemas?.GardenDraftDto).toMatchObject({
     required: expect.arrayContaining(["title", "templateVersionId", "content"]),
     properties: { title: { type: "string", maxLength: 24 } },

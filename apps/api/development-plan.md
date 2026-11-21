@@ -7,8 +7,12 @@
 [Backlog v2](../../docs/product/backlog-v2.md)/[архитектура](../../docs/architecture/assisted-publication.md) заменяют старые будущие self-publish задачи ниже. E2-02 принят в main 3626e47. Код новых функций ещё не создавался.
 
 - [ ] V2-00: ADR хранения/владения и согласованный request contract по относящимся Q.
-- [ ] E2-01d: категории/шаблоны/версии/фиксированные цены, безопасная миграция Garden.
-- [ ] E2-02d: admin role/guards/закрытая выдача прав, клиент не повышает роль.
+- [x] E2-01d результат/проверки: категории/Template/TemplateVersion/FK, DB catalog/filter/nullable price/version, кодовый registry и сохранность Garden. [QA](../../docs/qa/e2-01d-catalog-data-report.md). Реальная цена не выдумана, Q-27 до запуска.
+- [ ] E2-01d: ревью владельца.
+- [ ] E2-01d: интеграция в main.
+- [x] E2-02d результат/проверки: USER/ADMIN, актуальный AdminGuard, GET admin/access, local grant/revoke, OpenAPI 0.10.0 → Orval. [Карточка/приёмка](../../docs/product/e2-02d-admin-access.md), [QA](../../docs/qa/e2-02d-admin-access-report.md).
+- [ ] E2-02d: ревью владельца.
+- [ ] E2-02d: интеграция в main.
 - [ ] V2-01/02: заявки с проектом и без, отдельные проверяемые PR.
 - [ ] V2-03/04: operator API и создание проекта по заявке, owner policy Q-25.
 - [ ] E2-03/E3-01/E2-04: медиа/RSVP/admin-only publish по отдельным PR.
@@ -211,3 +215,19 @@ E5-02 — совместная проверка безопасности; E5-03/
 - [x] Backend реализован и проверен: [QA](../../docs/qa/e1-04d-report.md), 52 DB/HTTP, 8 unit; owner/main отдельно.
 - [ ] Владелец принял результат.
 - [ ] Проверен в main; SHA записан.
+
+## V2-02 · Общая заявка
+
+- [x] Результат/проверки: public POST, strict contacts/consent, anonymous receipt, shared origin/query/key helpers, PG idempotency/rate/cleanup, OpenAPI 0.12.0. [QA](../../docs/qa/v2-02-service-requests-report.md).
+- [ ] Ревью владельца.
+- [ ] Интеграция в main.
+
+Следующий этап V2-01: owner-заявка с projectId/revision, проект остаётся редактируемым D-43; private CSRF/ownership отдельно от anonymous пути.
+
+## V2-01 · Owner-заявка с проектом
+
+- [x] Результат/проверки: Session/CSRF/owner + current revision/quote, snapshot, одна открытая заявка/nonce/rate, private metadata GET, сохранение после submit разрешено. [QA](../../docs/qa/v2-01-publication-requests-report.md).
+- [ ] Ревью владельца.
+- [ ] Интеграция в main.
+
+Далее frontend выбор/создание/редактор по имеющимся contracts; operator V2-03 и admin-assisted V2-04 остаются отдельными API задачами.

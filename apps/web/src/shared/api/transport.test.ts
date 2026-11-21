@@ -5,7 +5,9 @@ afterEach(() => vi.unstubAllGlobals());
 
 test("public catalog never forwards account credentials or bootstraps CSRF", async () => {
   vi.stubGlobal("window", {});
-  const fetch = vi.fn().mockResolvedValue(Response.json({ items: [] }));
+  const fetch = vi
+    .fn()
+    .mockResolvedValue(Response.json({ items: [], categories: [] }));
   vi.stubGlobal("fetch", fetch);
   await apiFetch("/api/v1/templates?locale=ru", {
     headers: {

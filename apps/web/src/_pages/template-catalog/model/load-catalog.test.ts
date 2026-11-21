@@ -17,9 +17,13 @@ test("real generated method uses requested locale, omits credentials and keeps a
 test("a successful empty response remains distinct from an error", async () => {
   vi.stubGlobal(
     "fetch",
-    vi.fn().mockResolvedValue(Response.json({ items: [] })),
+    vi.fn().mockResolvedValue(Response.json({ items: [], categories: [] })),
   );
-  expect(await loadCatalog("ru")).toEqual({ kind: "ready", items: [] });
+  expect(await loadCatalog("ru")).toEqual({
+    kind: "ready",
+    items: [],
+    categories: [],
+  });
 });
 test.each(["network", "timeout", "bad-response", "unavailable"])(
   "failure state is safe and never claims an empty catalog: %s",

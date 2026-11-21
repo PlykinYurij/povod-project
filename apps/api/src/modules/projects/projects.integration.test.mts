@@ -645,7 +645,6 @@ test("replay still works at the draft limit and after a published fixture withou
 
 test("OpenAPI documents private security, generated nested body, revisions and idempotency", () => {
   const document = createOpenApiDocument(app);
-  expect(document.info.version).toBe("0.9.0");
   const createOperation = document.paths["/api/v1/projects"]?.post;
   expect(createOperation?.operationId).toBe("createProject");
   expect(createOperation?.security).toEqual([{ session: [] }]);

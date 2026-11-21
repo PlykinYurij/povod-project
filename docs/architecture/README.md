@@ -20,3 +20,11 @@
 - [Публикация, единый web и пользовательские поддомены](publication-addresses.md).
 
 D-40: JSONB выбран. [Добавление, удаление и перенос полей шаблона](template-schema-evolution.md): версии схем отдельно от revision проекта; массовое изменение данных — явная проверяемая миграция.
+
+E2-02d (ветка, ещё не main): users.role USER/ADMIN и server AdminGuard реализованы. [Контракт и границы](../product/e2-02d-admin-access.md). Snapshot current-system.md выше сохраняет фактическую историю main 3626e47; в новой ветке добавлены role и десятая миграция, без остальных проектируемых v2 сущностей.
+
+- [Реализованный каталог E2-01d и схема новых таблиц](catalog-data.md): фактическая схема ветки, кодовый registry, FK, locks и ненастроенный прайс; не смешивать с историческим snapshot main.
+
+- [Реализованная общая заявка V2-02](service-requests.md): транзакция, idempotency/rate, data/identity границы; контакты отдельно от Project JSONB и 90 дней.
+
+- [Owner-заявка V2-01](publication-requests.md): общий owner access, сохранение во время ожидания, price snapshot/текущий прайс и границы private API.

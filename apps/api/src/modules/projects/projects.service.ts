@@ -4,10 +4,12 @@ import { DatabaseService } from "../../database/database.service";
 import type { Prisma } from "../../database/generated/client";
 import { ApiError } from "../../http/api-error";
 import { GardenTemplateService } from "../templates/garden/garden-template.service";
+import { TemplateCatalogService } from "../templates/template-catalog.service";
 import { validateGardenDraft } from "../templates/garden/validate-garden";
 import { CreateProjectDto, SaveProjectDraftDto } from "./project.dto";
 import { projectResponse, projectSummary } from "./project-mapping";
 import { assertStorableContent } from "./storable-content";
+import { ProjectAccessService } from "./project-access.service";
 
 const hash = (value: string) =>
   createHash("sha256").update(value).digest("hex");
@@ -20,6 +22,8 @@ export class ProjectsService {
   constructor(
     private readonly database: DatabaseService,
     private readonly templates: GardenTemplateService,
+    private readonly catalog: TemplateCatalogService,
+    private readonly access: ProjectAccessService,
   ) {}
 
   async list(ownerId: string) {
@@ -31,11 +35,7 @@ export class ProjectsService {
   }
 
   async get(ownerId: string, id: string) {
-    const project = await this.database
-      .getClient()
-      .project.findFirst({ where: { id, ownerId, deletedAt: null } });
-    if (!project) throw notFound();
-    return projectResponse(project);
+    return projectResponse(await this.access.owned(ownerId, id));
   }
 
   async create(ownerId: string, input: CreateProjectDto, key: string) {
@@ -46,7 +46,7 @@ export class ProjectsService {
     );
     return this.database.getClient().$transaction(
       async (tx) => {
-        await lockOwner(tx, ownerId);
+        await this.access.lockOwner(tx, ownerId);
         const previous = await tx.project.findUnique({
           where: {
             ownerId_creationKeyHash: { ownerId, creationKeyHash: keyHash },
@@ -62,6 +62,10 @@ export class ProjectsService {
             );
           return { project: projectResponse(previous), replay: true };
         }
+        await this.catalog.assertAvailableForCreation(
+          tx,
+          input.templateVersionId,
+        );
         const draft = this.templates.createDraft(
           input.templateVersionId,
           input.title,
@@ -94,11 +98,7 @@ export class ProjectsService {
   async save(ownerId: string, id: string, input: SaveProjectDraftDto) {
     return this.database.getClient().$transaction(
       async (tx) => {
-        await lockOwner(tx, ownerId);
-        const project = await tx.project.findFirst({
-          where: { id, ownerId, deletedAt: null },
-        });
-        if (!project) throw notFound();
+        const project = await this.access.lockOwned(tx, ownerId, id);
         if (project.firstPublishedAt)
           throw new ApiError(
             409,
@@ -149,18 +149,6 @@ export class ProjectsService {
       { isolationLevel: "ReadCommitted" },
     );
   }
-}
-
-async function lockOwner(
-  tx: Prisma.TransactionClient,
-  ownerId: string,
-): Promise<void> {
-  // All future quota/publication writers must keep the same owner -> project lock order.
-  const owners = await tx.$queryRaw<
-    { id: string }[]
-  >`SELECT id FROM users WHERE id = ${ownerId}::uuid FOR UPDATE`;
-  if (!owners.length)
-    throw new ApiError(401, "AUTH_REQUIRED", "Войдите в аккаунт");
 }
 
 function jsonContent(content: object): Prisma.InputJsonObject {

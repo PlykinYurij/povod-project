@@ -1,4 +1,7 @@
 import { isTemplateCatalog } from "./catalog-validation";
+import { isPublicCatalogPath } from "./catalog-path";
+import { isServiceRequestReceipt } from "./service-request-validation";
+import { isProjectPublicationRequest } from "./publication-request-validation";
 
 export class ApiRequestError extends Error {
   constructor(
@@ -85,11 +88,11 @@ async function browserCsrf(): Promise<string> {
 function allowedProjectMethods(path: string): readonly string[] | undefined {
   if (path === "/api/v1/projects") return ["GET", "POST"];
   const resource =
-    /^\/api\/v1\/projects\/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}(\/draft)?$/i.exec(
+    /^\/api\/v1\/projects\/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}(\/draft|\/publication-request)?$/i.exec(
       path,
     );
   if (!resource) return undefined;
-  return resource[1] ? ["PATCH"] : ["GET"];
+  return resource[1]?.toLowerCase() === "/draft" ? ["PATCH"] : ["GET"];
 }
 
 /** Orval fetch mutator. Only fixed API paths can receive credentials. */
@@ -97,25 +100,39 @@ export async function apiFetch<T>(
   path: string,
   options: RequestInit = {},
 ): Promise<T> {
-  const publicCatalog = /^\/api\/v1\/templates(?:\?locale=(?:ru|en))?$/.test(
-    path,
-  );
+  const publicCatalog = isPublicCatalogPath(path);
   const projectMethods = allowedProjectMethods(path);
+  const adminAccess = path === "/api/v1/admin/access";
+  const publicRequest = path === "/api/v1/service-requests";
+  const privateRequest = path === "/api/v1/publication-requests";
   if (
     (!path.startsWith("/api/v1/auth/") &&
       path !== "/health" &&
       !publicCatalog &&
-      !projectMethods) ||
+      !projectMethods &&
+      !adminAccess &&
+      !publicRequest &&
+      !privateRequest) ||
     path.includes("..") ||
     path.includes("\\")
   )
     throw new Error("Untrusted API path");
   const method = (options.method ?? "GET").toUpperCase();
+  if (privateRequest && method !== "POST")
+    throw new Error("Publication request only supports POST");
+  if (publicRequest && method !== "POST")
+    throw new Error("Public service request only supports POST");
+  if (adminAccess && method !== "GET")
+    throw new Error("Admin access is read-only");
   if (projectMethods && !projectMethods.includes(method))
     throw new Error("Unsupported project method");
   const headers = new Headers(options.headers);
-  if (publicCatalog) {
-    if (options.method && options.method.toUpperCase() !== "GET")
+  if (publicCatalog || publicRequest) {
+    if (
+      publicCatalog &&
+      options.method &&
+      options.method.toUpperCase() !== "GET"
+    )
       throw new Error("Public catalog is read-only");
     headers.delete("Cookie");
     headers.delete("Authorization");
@@ -128,6 +145,7 @@ export async function apiFetch<T>(
   if (
     options.method &&
     !["GET", "HEAD"].includes(options.method.toUpperCase()) &&
+    !publicRequest &&
     !headers.has("X-CSRF-Token")
   ) {
     if (typeof window === "undefined")
@@ -140,11 +158,20 @@ export async function apiFetch<T>(
     ...options,
     headers,
     body: mutation && options.body === undefined ? "{}" : options.body,
-    credentials: publicCatalog ? "omit" : "include",
+    credentials: publicCatalog || publicRequest ? "omit" : "include",
     cache: "no-store",
   });
   const body = await readJson(response);
   if (!response.ok) throw responseError(response, body);
+  if ((publicRequest || privateRequest) && !isServiceRequestReceipt(body))
+    throw new ApiRequestError(503, "SERVICE_UNAVAILABLE");
+  if (
+    path.toLowerCase().endsWith("/publication-request") &&
+    !isProjectPublicationRequest(body)
+  )
+    throw new ApiRequestError(503, "SERVICE_UNAVAILABLE");
+  if (adminAccess && (!isObject(body) || body.role !== "ADMIN"))
+    throw new ApiRequestError(503, "SERVICE_UNAVAILABLE");
   if (publicCatalog && !isTemplateCatalog(body))
     throw new ApiRequestError(503, "SERVICE_UNAVAILABLE");
   if (response.status !== 204 && body === undefined)
