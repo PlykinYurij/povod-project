@@ -5,13 +5,22 @@ import { FormProvider } from "react-hook-form";
 import type { ProjectDto } from "@shared/api";
 import { Alert, Anchor, Button, Stack, Text } from "@shared/ui";
 import { ACCOUNT_ROUTE } from "@shared/config/auth-navigation";
-import { useDraftEditor } from "../model/use-draft-editor";
+import {
+  useDraftEditor,
+  type DraftEditorAccess,
+} from "../model/use-draft-editor";
 import { EditorContent } from "./editor-content";
 import styles from "./garden-editor.module.css";
 
-export function GardenEditor({ project }: { project: ProjectDto }) {
+export function GardenEditor({
+  project,
+  access,
+}: {
+  project: ProjectDto;
+  access?: DraftEditorAccess;
+}) {
   const t = useTranslations("DraftEditor");
-  const editor = useDraftEditor(project);
+  const editor = useDraftEditor(project, access);
   const rejected = new Set(editor.error?.fields.map(({ path }) => path));
   const conflict = editor.status === "conflict";
   const locked = editor.status === "locked";

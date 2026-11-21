@@ -10,6 +10,7 @@ import {
   getProject,
   saveProjectDraft,
   type ProjectDto,
+  type SaveProjectDraftDto,
 } from "@shared/api";
 import { useFormAction } from "@shared/lib/use-form-action";
 import {
@@ -18,7 +19,19 @@ import {
   type GardenEditorValues,
 } from "./editor-values";
 
-export function useDraftEditor(project: ProjectDto) {
+export type DraftEditorAccess = {
+  load: (options: RequestInit) => Promise<ProjectDto>;
+  save: (
+    input: SaveProjectDraftDto,
+    options: RequestInit,
+  ) => Promise<ProjectDto>;
+  onProject: (project: ProjectDto) => void;
+};
+
+export function useDraftEditor(
+  project: ProjectDto,
+  access?: DraftEditorAccess,
+) {
   const form = useForm<GardenEditorValues>({
     defaultValues: toEditorValues(project),
   });
@@ -34,8 +47,12 @@ export function useDraftEditor(project: ProjectDto) {
   function applyServerProject(current: ProjectDto, source: "saved" | "loaded") {
     revision.current = current.revision;
     form.reset(toEditorValues(current));
-    cache.setQueryData(getGetProjectQueryKey(project.id), current);
-    void cache.invalidateQueries({ queryKey: getGetProjectsQueryKey() });
+    if (access) {
+      access.onProject(current);
+    } else {
+      cache.setQueryData(getGetProjectQueryKey(project.id), current);
+      void cache.invalidateQueries({ queryKey: getGetProjectsQueryKey() });
+    }
     setStatus(current.canEditDraft ? source : "locked");
   }
 
@@ -45,13 +62,11 @@ export function useDraftEditor(project: ProjectDto) {
       async () => {
         setStatus("initial");
         try {
-          return await saveProjectDraft(
-            project.id,
-            toSaveRequest(values, revision.current),
-            {
-              signal: AbortSignal.timeout(15_000),
-            },
-          );
+          const request = toSaveRequest(values, revision.current);
+          const options = { signal: AbortSignal.timeout(15_000) };
+          return await (access
+            ? access.save(request, options)
+            : saveProjectDraft(project.id, request, options));
         } catch (failure) {
           if (action.isActive() && failure instanceof ApiRequestError) {
             if (failure.code === "REVISION_CONFLICT") setStatus("conflict");
@@ -66,7 +81,10 @@ export function useDraftEditor(project: ProjectDto) {
 
   function loadServerVersion() {
     return action.run(
-      () => getProject(project.id, { signal: AbortSignal.timeout(10_000) }),
+      () => {
+        const options = { signal: AbortSignal.timeout(10_000) };
+        return access ? access.load(options) : getProject(project.id, options);
+      },
       (current) => applyServerProject(current, "loaded"),
     );
   }

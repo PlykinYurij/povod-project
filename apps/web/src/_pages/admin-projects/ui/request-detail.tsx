@@ -2,16 +2,24 @@
 
 import { useEffect, useRef } from "react";
 import { useLocale, useTranslations } from "next-intl";
+import { useQueryClient } from "@tanstack/react-query";
 import { SessionFailure, SessionLoading } from "@entities/identity";
 import { GardenInvitation } from "@entities/invitation";
-import { ApiRequestError, useGetAdminRequest } from "@shared/api";
+import {
+  ApiRequestError,
+  getListAdminRequestsQueryKey,
+  useGetAdminRequest,
+} from "@shared/api";
 import { Alert, Stack, Text, Title } from "@shared/ui";
 import styles from "./request-detail.module.css";
 import { RequestStatusActions } from "./request-status-actions";
+import { AssistedCreate } from "./assisted-create";
+import { AssistedEditor } from "./assisted-editor";
 
 export function RequestDetail({ requestId }: { requestId: string }) {
   const t = useTranslations("AdminRequests");
   const locale = useLocale();
+  const cache = useQueryClient();
   const panel = useRef<HTMLElement>(null);
   const request = useGetAdminRequest(requestId, {
     query: { retry: false, refetchOnMount: "always" },
@@ -57,7 +65,7 @@ export function RequestDetail({ requestId }: { requestId: string }) {
               <dd>{record.contactValue}</dd>
               <dt>{t("status")}</dt>
               <dd>{t(record.status)}</dd>
-              {record.kind === "PUBLICATION" && (
+              {(record.kind === "PUBLICATION" || project) && (
                 <>
                   <dt>{t("quote")}</dt>
                   <dd>{priceText}</dd>
@@ -68,6 +76,30 @@ export function RequestDetail({ requestId }: { requestId: string }) {
               record={record}
               refresh={() => request.refetch()}
             />
+            {record.kind === "ASSISTANCE" &&
+              !record.hasAccount &&
+              !project &&
+              (record.status === "NEW" || record.status === "IN_PROGRESS") && (
+                <AssistedCreate
+                  record={record}
+                  refresh={async () => {
+                    await request.refetch();
+                    void cache.invalidateQueries({
+                      queryKey: getListAdminRequestsQueryKey(),
+                    });
+                  }}
+                />
+              )}
+            {record.kind === "ASSISTANCE" &&
+              !record.hasAccount &&
+              project?.templateVersionId === "wedding-garden-v1" &&
+              project.canEditDraft && (
+                <AssistedEditor
+                  key={project.id}
+                  requestId={requestId}
+                  project={project}
+                />
+              )}
             {project?.templateVersionId === "wedding-garden-v1" ? (
               <>
                 <Title order={3}>{t("preview")}</Title>

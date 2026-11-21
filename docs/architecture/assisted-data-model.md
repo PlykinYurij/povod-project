@@ -2,6 +2,8 @@
 
 **D-42/43 приоритетнее прежних формулировок ниже:** admin создаёт проект из готового шаблона для заказа без аккаунта; редактор доступен при открытой заявке и после unpublish, в published блокируются все поля. Live snapshot меняется только атомарной admin-публикацией просмотренной revision. [Допущения](../product/implementation-assumptions.md).
 
+В V2-04 связь `ServiceRequest.projectId` указывает на операторский черновик с `ownerId = null`. Создатель записан отдельно в `createdByUserId`. Для обычных проектов сохраняется прежняя модель владения. [Реализация и миграция](../product/v2-04-assisted-project.md).
+
 20.11.2026. D-40 выбирает JSONB со строгой версионированной схемой; D-41 разрешает гостевую общую заявку и уточняет admin экран. Таблицы/миграции ниже пока **проектируются**. [Продукт](../product/mvp-v2.md), [система и API](assisted-publication.md), [эволюция схем](template-schema-evolution.md). Фактическая БД до изменений — [Prisma](../../apps/api/prisma/schema.prisma) и E2-02; requests/templates/publications/roles ещё нет.
 
 ## Типизация и хранение — разные уровни

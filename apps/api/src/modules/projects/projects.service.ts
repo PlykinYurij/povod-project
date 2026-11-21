@@ -1,14 +1,13 @@
 import { Injectable } from "@nestjs/common";
 import { createHash } from "node:crypto";
 import { DatabaseService } from "../../database/database.service";
-import type { Prisma } from "../../database/generated/client";
 import { ApiError } from "../../http/api-error";
 import { GardenTemplateService } from "../templates/garden/garden-template.service";
 import { TemplateCatalogService } from "../templates/template-catalog.service";
-import { validateGardenDraft } from "../templates/garden/validate-garden";
 import { CreateProjectDto, SaveProjectDraftDto } from "./project.dto";
 import { projectResponse, projectSummary } from "./project-mapping";
 import { assertStorableContent } from "./storable-content";
+import { jsonContent, saveLockedDraft } from "./project-content";
 import { ProjectAccessService } from "./project-access.service";
 
 const hash = (value: string) =>
@@ -82,6 +81,7 @@ export class ProjectsService {
         const project = await tx.project.create({
           data: {
             ownerId,
+            createdByUserId: ownerId,
             templateVersionId: draft.templateVersionId,
             title: draft.title,
             content: jsonContent(draft.content),
@@ -99,59 +99,9 @@ export class ProjectsService {
     return this.database.getClient().$transaction(
       async (tx) => {
         const project = await this.access.lockOwned(tx, ownerId, id);
-        if (project.firstPublishedAt)
-          throw new ApiError(
-            409,
-            "CONTENT_LOCKED",
-            "После публикации структура зафиксирована",
-          );
-        if (project.revision !== input.expectedRevision)
-          throw new ApiError(
-            409,
-            "REVISION_CONFLICT",
-            "Версия проекта изменилась",
-          );
-        const draft = validateGardenDraft({
-          templateVersionId: project.templateVersionId,
-          title: input.title,
-          content: input.content,
-        });
-        assertStorableContent(draft);
-        // No media objects exist in this stage. Never accept an arbitrary reference as an owned photo.
-        if (draft.content.heroMediaId !== null)
-          throw new ApiError(422, "VALIDATION_FAILED", "Фото не найдено", [
-            { path: "content.heroMediaId", code: "MEDIA_NOT_FOUND" },
-          ]);
-        const updated = await tx.project.updateMany({
-          where: {
-            id,
-            ownerId,
-            deletedAt: null,
-            firstPublishedAt: null,
-            revision: input.expectedRevision,
-          },
-          data: {
-            title: draft.title,
-            content: jsonContent(draft.content),
-            revision: { increment: 1 },
-          },
-        });
-        if (updated.count !== 1)
-          throw new ApiError(
-            409,
-            "REVISION_CONFLICT",
-            "Версия проекта изменилась",
-          );
-        return projectResponse(
-          await tx.project.findUniqueOrThrow({ where: { id } }),
-        );
+        return saveLockedDraft(tx, project, input);
       },
       { isolationLevel: "ReadCommitted" },
     );
   }
-}
-
-function jsonContent(content: object): Prisma.InputJsonObject {
-  // DTOs contain only validated JSON primitives; JSON round-trip yields Prisma's explicit JSON input shape.
-  return JSON.parse(JSON.stringify(content)) as Prisma.InputJsonObject;
 }

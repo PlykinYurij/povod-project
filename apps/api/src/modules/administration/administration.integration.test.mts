@@ -27,6 +27,7 @@ const {
 }: typeof import("../identity/session.service.js") = require("../../../dist/modules/identity/session.service.js");
 const ids: string[] = [];
 const requestIds: string[] = [];
+const assistedProjectIds: string[] = [];
 const pendingEmails: string[] = [];
 let app: INestApplication;
 let db: ReturnType<typeof createDatabaseClient>;
@@ -49,6 +50,7 @@ afterAll(async () => {
   await app?.close();
   if (db) {
     await db.serviceRequest.deleteMany({ where: { id: { in: requestIds } } });
+    await db.project.deleteMany({ where: { id: { in: assistedProjectIds } } });
     await db.user.deleteMany({ where: { id: { in: ids } } });
     await db.pendingRegistration.deleteMany({
       where: { email: { in: pendingEmails } },
@@ -301,7 +303,7 @@ test("actual local CLI grants/revokes a synthetic account and refuses production
 
 test("OpenAPI documents cookie auth, response and error boundary", () => {
   const doc = createOpenApiDocument(app);
-  expect(doc.info.version).toBe("0.15.0");
+  expect(doc.info.version).toBe("0.16.0");
   expect(doc.paths["/api/v1/admin/requests"]?.get?.security).toEqual([
     { session: [] },
   ]);
@@ -497,4 +499,107 @@ test("operator queue pages without duplicates when creation timestamps tie", asy
   expect(
     next.items.some((row) => page.items.some((seen) => seen.id === row.id)),
   ).toBe(false);
+});
+
+test("an anonymous request creates one operator-managed project and reuses the draft validator", async () => {
+  const admin = await account();
+  const ordinary = await account();
+  await role(admin.id);
+  const id = randomUUID();
+  requestIds.push(id);
+  const digest = id.replaceAll("-", "").repeat(2);
+  await db.serviceRequest.create({
+    data: {
+      id,
+      kind: "ASSISTANCE",
+      contactName: "Synthetic client",
+      phone: "+15550001233",
+      contactChannel: "VK",
+      contactValue: "synthetic-client",
+      creationKeyHash: digest,
+      creationPayloadHash: digest,
+      consentVersion: "synthetic",
+      consentAt: new Date(),
+    },
+  });
+  const path = "/api/v1/admin/requests/" + id + "/project";
+  const input = {
+    title: "Приглашение клиента",
+    templateVersionId: "wedding-garden-v1",
+    expectedRequestVersion: 1,
+  };
+  async function mutate(cookie: string, body: unknown, edit = false) {
+    return fetch(url + path + (edit ? "/draft" : ""), {
+      method: edit ? "PATCH" : "POST",
+      headers: {
+        ...(await csrfHeaders(url, cookie)),
+        Origin: TEST_ORIGIN,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    });
+  }
+  expect((await mutate(ordinary.cookie, input)).status).toBe(403);
+  expect(
+    (await mutate(admin.cookie, { ...input, expectedRequestVersion: 2 }))
+      .status,
+  ).toBe(409);
+  expect(
+    (await mutate(admin.cookie, { ...input, templateVersionId: "unknown-v1" }))
+      .status,
+  ).toBe(404);
+  expect(
+    (await db.serviceRequest.findUniqueOrThrow({ where: { id } })).projectId,
+  ).toBeNull();
+  const responses = await Promise.all([
+    mutate(admin.cookie, input),
+    mutate(admin.cookie, input),
+  ]);
+  const linked = await db.serviceRequest.findUniqueOrThrow({ where: { id } });
+  if (linked.projectId) assistedProjectIds.push(linked.projectId);
+  expect(responses.map((response) => response.status)).toEqual([200, 200]);
+  const [project, repeat] = await Promise.all(
+    responses.map(async (response) => (await response.json()) as ProjectDto),
+  );
+  expect(repeat.id).toBe(project.id);
+  expect(linked).toMatchObject({
+    customerUserId: null,
+    projectId: project.id,
+    status: "IN_PROGRESS",
+    requestVersion: 2,
+  });
+  expect(
+    await db.project.findUniqueOrThrow({ where: { id: project.id } }),
+  ).toMatchObject({
+    ownerId: null,
+    createdByUserId: admin.id,
+    revision: 1,
+  });
+  expect(
+    (await mutate(admin.cookie, { ...input, title: "Другой проект" })).status,
+  ).toBe(409);
+  expect(
+    (await access(admin.cookie, "/api/v1/projects/" + project.id)).status,
+  ).toBe(404);
+  expect(await (await access(admin.cookie, "/api/v1/projects")).json()).toEqual(
+    { items: [] },
+  );
+  const edit = {
+    title: "Исправленное название",
+    content: project.content,
+    expectedRevision: 1,
+  };
+  expect((await mutate(ordinary.cookie, edit, true)).status).toBe(403);
+  const updated = await mutate(admin.cookie, edit, true);
+  expect(updated.status).toBe(200);
+  expect(await updated.json()).toMatchObject({
+    title: edit.title,
+    revision: 2,
+  });
+  expect((await mutate(admin.cookie, edit, true)).status).toBe(409);
+  expect(await (await mutate(admin.cookie, input)).json()).toMatchObject({
+    id: project.id,
+    title: edit.title,
+    revision: 2,
+  });
 });

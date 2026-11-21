@@ -33,7 +33,8 @@ model User {
   sessions Session[]
   emailVerifiedAt DateTime? @map("email_verified_at") @db.Timestamptz(3)
   passwordResets PasswordReset[]
-  projects Project[]
+  projects Project[] @relation("ProjectOwner")
+  createdProjects Project[] @relation("ProjectCreator")
   serviceRequests ServiceRequest[]
 
   @@map("users")
@@ -41,8 +42,10 @@ model User {
 
 model Project {
   id String @id @default(uuid()) @db.Uuid
-  ownerId String @map("owner_id") @db.Uuid
-  owner User @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  ownerId String? @map("owner_id") @db.Uuid
+  owner User? @relation("ProjectOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  createdByUserId String? @map("created_by_user_id") @db.Uuid
+  createdBy User? @relation("ProjectCreator", fields: [createdByUserId], references: [id], onDelete: SetNull)
   templateVersionId String @map("template_version_id")
   templateVersion TemplateVersion @relation(fields: [templateVersionId], references: [id], onDelete: Restrict)
   title String @db.VarChar(24)
@@ -58,6 +61,7 @@ model Project {
 
   @@unique([ownerId, creationKeyHash])
   @@index([ownerId, deletedAt, firstPublishedAt])
+  @@index([createdByUserId])
   @@map("projects")
 }
 
