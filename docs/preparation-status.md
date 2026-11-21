@@ -1,6 +1,8 @@
 # Состояние подготовки «Повода»
 
-Актуально: E2-02 принят в main 3626e47. Владелец изменил концепцию на заявки/admin-only публикацию D-38/39: [MVP v2](product/mvp-v2.md), [архитектура](architecture/assisted-publication.md), [план](product/backlog-v2.md), [сверка](product/mvp-v2-review.md). Старый self-publish план не исполнять; новый код/миграции ещё не начаты.
+В main 3574643 приняты E2-02d, E2-01d и серверные части V2-02/V2-01. Ветка `feat/catalog-draft-creation` содержит E2-01b с каталогом, выбором шаблона, входом и созданием черновика. Следующий этап — E2-02b, редактор черновика. [Приёмка E2-01b](product/e2-01b-draft-creation.md).
+
+Актуальная модель продукта — заявки и публикация администратором по D-38/39. [MVP v2](product/mvp-v2.md) · [Архитектура](architecture/assisted-publication.md) · [План](product/backlog-v2.md).
 
 ## E1-04b · Backend сессий, Review · 17 ноября
 

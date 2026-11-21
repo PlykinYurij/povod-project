@@ -95,6 +95,19 @@
   border-radius: var(--space-3);
   background: var(--catalog-surface);
 }
+.filters,
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4);
+}
+.filters {
+  margin-bottom: var(--space-6);
+}
+.filters a[aria-current="page"] {
+  font-weight: 700;
+}
 .page a:focus-visible {
   outline: 3px solid var(--catalog-focus);
   outline-offset: 4px;

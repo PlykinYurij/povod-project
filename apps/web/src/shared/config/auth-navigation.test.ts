@@ -1,5 +1,13 @@
 import { expect, test } from "vitest";
 import { loginHref, safeReturnTo } from "./auth-navigation";
+import { newProjectHref } from "./project-navigation";
+
+test("login keeps the selected template version", () => {
+  const destination = newProjectHref("wedding-garden-v1");
+  const parameters = new URL(loginHref(destination), "https://povod.invalid")
+    .searchParams;
+  expect(safeReturnTo(parameters.get("returnTo"))).toBe(destination);
+});
 
 test("private destination keeps its query and fragment through login", () => {
   const destination = "/account?tab=saved#details";

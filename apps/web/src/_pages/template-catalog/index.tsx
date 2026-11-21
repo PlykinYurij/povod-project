@@ -1,10 +1,10 @@
 import { getLocale, getTranslations } from "next-intl/server";
 import { parseLocale } from "@shared/config/locale";
-import { loadCatalog } from "./model/load-catalog";
+import { loadCatalog } from "@entities/template/server";
 import { CatalogView, type CatalogLabels } from "./ui/catalog-view";
 export { TemplateCatalogLoading } from "./ui/catalog-loading";
 
-export async function TemplateCatalogPage() {
+export async function TemplateCatalogPage({ category }: { category?: string }) {
   const locale = parseLocale(await getLocale());
   const t = await getTranslations("TemplateCatalog");
   const labels: CatalogLabels = {
@@ -25,10 +25,14 @@ export async function TemplateCatalogPage() {
     demo: t("demo"),
     loading: t("loading"),
     pricePending: t("pricePending"),
+    categories: t("categories"),
+    allCategories: t("allCategories"),
+    choose: t("choose"),
   };
   return (
     <CatalogView
-      state={await loadCatalog(locale)}
+      state={await loadCatalog(locale, category)}
+      category={category}
       labels={labels}
       locale={locale}
     />

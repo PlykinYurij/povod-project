@@ -10,13 +10,13 @@ export default async function IdentityLayout({
   children: ReactNode;
 }) {
   const locale = parseLocale(await getLocale());
-  const { Common, Auth, Account, Identity } = await getMessages();
+  const { Common, Auth, Account, Identity, Projects } = await getMessages();
   return (
     <>
       <ColorSchemeScript defaultColorScheme="light" />
       <IdentityProviders
         locale={locale}
-        messages={{ Common, Auth, Account, Identity }}
+        messages={{ Common, Auth, Account, Identity, Projects }}
       >
         {children}
       </IdentityProviders>

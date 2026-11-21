@@ -1,9 +1,11 @@
+import { NEW_PROJECT_ROUTE } from "./project-navigation";
+
 export const ACCOUNT_ROUTE = "/account";
 export const LOGIN_ROUTE = "/login";
 
 const INTERNAL_ORIGIN = "https://povod.invalid";
 // Extend explicitly when another private route is implemented, not from user input.
-const PRIVATE_ROUTES = new Set([ACCOUNT_ROUTE]);
+const PRIVATE_ROUTES = new Set([ACCOUNT_ROUTE, NEW_PROJECT_ROUTE]);
 
 export function safeReturnTo(value?: string | string[] | null): string {
   if (

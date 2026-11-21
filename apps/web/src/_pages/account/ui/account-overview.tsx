@@ -1,7 +1,8 @@
 "use client";
 import { useTranslations } from "next-intl";
 import type { RegisteredUserDto } from "@shared/api";
-import { Button, Group, Text, Title } from "@shared/ui";
+import { Button, Group, Text } from "@shared/ui";
+import { AccountProjects } from "./account-projects";
 import styles from "../account.module.css";
 
 export function AccountOverview({
@@ -22,12 +23,7 @@ export function AccountOverview({
         </Text>
         <Button onClick={signOut}>{auth("logout")}</Button>
       </Group>
-      <div className={styles.empty}>
-        <Title order={2}>{t("empty")}</Title>
-        <Text className={styles.muted} mt="md">
-          {t("description")}
-        </Text>
-      </div>
+      <AccountProjects />
     </>
   );
 }

@@ -27,6 +27,7 @@ beforeEach(() => {
       if (path.endsWith("/csrf"))
         return Response.json({ csrfToken: "synthetic" });
       if (path.endsWith("/logout")) return new Response(null, { status: 204 });
+      if (path.endsWith("/projects")) return Response.json({ items: [] });
       if (path.endsWith("/session")) {
         if (sessionStatus === 200)
           return Response.json({

@@ -61,7 +61,7 @@ export async function GardenDemoPage({
       </div>
       <footer className={styles.footer}>
         <p>{t("next")}</p>
-        <Link href="/account">{t("account")}</Link>
+        <Link href="/templates">{t("back")}</Link>
       </footer>
     </main>
   );

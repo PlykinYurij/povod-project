@@ -1,7 +1,8 @@
 import Link from "next/link";
 import type messages from "@shared/i18n/ru.json";
 import type { Locale } from "@shared/config/locale";
-import type { CatalogState } from "../model/load-catalog";
+import type { CatalogState } from "@entities/template/server";
+import { newProjectHref } from "@shared/config/project-navigation";
 import styles from "../catalog.module.css";
 
 export type CatalogLabels = typeof messages.TemplateCatalog;
@@ -10,10 +11,12 @@ export function CatalogView({
   state,
   labels,
   locale = "ru",
+  category,
 }: {
   state: CatalogState;
   labels: CatalogLabels;
   locale?: Locale;
+  category?: string;
 }) {
   return (
     <main className={styles.page}>
@@ -26,7 +29,28 @@ export function CatalogView({
         <h1>{labels.title}</h1>
         <p>{labels.intro}</p>
       </header>
-      <CatalogContent state={state} labels={labels} locale={locale} />
+      {state.kind === "ready" && (
+        <nav className={styles.filters} aria-label={labels.categories}>
+          <Link href="/templates" aria-current={!category ? "page" : undefined}>
+            {labels.allCategories}
+          </Link>
+          {state.categories.map(({ id, title }) => (
+            <Link
+              key={id}
+              href={`/templates?${new URLSearchParams({ category: id })}`}
+              aria-current={category === id ? "page" : undefined}
+            >
+              {title}
+            </Link>
+          ))}
+        </nav>
+      )}
+      <CatalogContent
+        state={state}
+        labels={labels}
+        locale={locale}
+        category={category}
+      />
     </main>
   );
 }
@@ -35,17 +59,26 @@ function CatalogContent({
   state,
   labels,
   locale,
+  category,
 }: {
   state: CatalogState;
   labels: CatalogLabels;
   locale: Locale;
+  category?: string;
 }) {
   if (state.kind === "unavailable")
     return (
       <section className={styles.message} role="alert">
         <h2>{labels.errorTitle}</h2>
         <p>{labels.errorDescription}</p>
-        <a href="/templates" className={styles.action}>
+        <a
+          href={
+            category
+              ? `/templates?${new URLSearchParams({ category })}`
+              : "/templates"
+          }
+          className={styles.action}
+        >
           {labels.retry}
         </a>
       </section>
@@ -95,10 +128,19 @@ function CatalogContent({
               <span>{labels.palettes}</span>{" "}
               {template.themes.map((theme) => theme.title).join(" · ")}
             </p>
-            <Link href={template.demoPath} className={styles.action}>
-              {labels.demo}
-              <span className={styles.srOnly}>: {template.title}</span>
-            </Link>
+            <div className={styles.actions}>
+              <Link
+                href={newProjectHref(template.templateVersionId)}
+                className={styles.action}
+              >
+                {labels.choose}
+                <span className={styles.srOnly}>: {template.title}</span>
+              </Link>
+              <Link href={template.demoPath}>
+                {labels.demo}
+                <span className={styles.srOnly}>: {template.title}</span>
+              </Link>
+            </div>
           </div>
         </li>
       ))}

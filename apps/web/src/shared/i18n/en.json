@@ -1,5 +1,29 @@
 {
+  "Projects": {
+    "list": "My projects",
+    "loading": "Loading projects…",
+    "listError": "Could not load your projects.",
+    "retry": "Retry",
+    "draft": "Draft",
+    "catalog": "Browse templates",
+    "create": "Create draft",
+    "templateUnavailable": "This template is unavailable. Choose another template from the catalog.",
+    "catalogError": "Could not load this template.",
+    "selection": "Template: {title}",
+    "creationHelp": "Your draft will be saved to your account.",
+    "name": "Project name",
+    "nameHelp": "Up to 24 characters. The name appears only in your account.",
+    "invalidName": "Enter a name of 1 to 24 characters without control characters.",
+    "quota": "You have reached the five-draft limit.",
+    "keyConflict": "Could not repeat this request. Check your project list.",
+    "saveError": "Could not create the draft. Please try again.",
+    "verifySave": "Could not confirm that the draft was saved. Retry or check your project list.",
+    "openProjects": "Open my projects"
+  },
   "TemplateCatalog": {
+    "categories": "Template categories",
+    "allCategories": "All categories",
+    "choose": "Choose template",
     "pricePending": "Price to be confirmed",
     "navigation": "Navigation",
     "home": "Back to home",
@@ -32,8 +56,7 @@
     "mediaPending": "Photo still processing",
     "apply": "Show",
     "notice": "This first template demo uses fictional data. It does not create a project, publish a site or accept guest responses. The controls above let you review its states. This sample invitation is in Russian.",
-    "next": "The editor and creating your own invitations come in a later stage.",
-    "account": "Go to your account"
+    "next": "Choose this template in the catalog to create a draft."
   },
   "Common": {
     "brand": "Повод",
@@ -75,7 +98,6 @@
     "title": "My invitations",
     "signedIn": "Signed in as {email}",
     "empty": "Your first occasion starts here",
-    "description": "Sign-in and sign-out are available. Creating invitations will follow in the next stage.",
     "expired": "Your session has ended. Sign in again.",
     "error": "We could not check your session. Please try again.",
     "signIn": "Go to sign in",
