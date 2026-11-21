@@ -13,10 +13,13 @@ export type CatalogState =
     }
   | { kind: "unavailable" };
 
-export async function loadCatalog(locale: Locale): Promise<CatalogState> {
+export async function loadCatalog(
+  locale: Locale,
+  category?: string,
+): Promise<CatalogState> {
   try {
     const response = await getTemplateCatalog(
-      { locale },
+      category === undefined ? { locale } : { locale, category },
       { signal: AbortSignal.timeout(5_000) },
     );
     return {

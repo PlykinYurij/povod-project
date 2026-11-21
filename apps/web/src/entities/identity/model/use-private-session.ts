@@ -6,7 +6,7 @@ import { ApiRequestError, useGetSession } from "@shared/api";
 import { clearPrivateQueries } from "@shared/api/private-cache";
 import { loginHref } from "@shared/config/auth-navigation";
 
-export function useAccountSession(leaving: boolean) {
+export function usePrivateSession(leaving = false) {
   const router = useRouter();
   const client = useQueryClient();
   const session = useGetSession({

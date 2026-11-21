@@ -34,7 +34,7 @@ test("configured price uses integer minor units and the display locale", () => {
   expect(screen.getByText(/1\s?234,56\s?₽/)).toBeTruthy();
   expect(screen.queryByText(ru.TemplateCatalog.pricePending)).toBeNull();
 });
-test("catalog renders API labels and a local demo link without pretending to create projects", () => {
+test("catalog links to the selected version without creating a draft on navigation", () => {
   render(
     <CatalogView
       state={{ kind: "ready", ...templateCatalogFixture() }}
@@ -47,8 +47,35 @@ test("catalog renders API labels and a local demo link without pretending to cre
       .getByRole("link", { name: "Посмотреть демо: Тихий сад" })
       .getAttribute("href"),
   ).toBe("/templates/quiet-garden");
+  expect(
+    screen
+      .getByRole("link", { name: "Выбрать шаблон: Тихий сад" })
+      .getAttribute("href"),
+  ).toBe("/projects/new?templateVersionId=wedding-garden-v1");
   expect(document.querySelector("form")).toBeNull();
   expect(screen.queryByRole("button", { name: /создать/i })).toBeNull();
+});
+
+test("empty category keeps filters available and marks the selected category", () => {
+  const { categories } = templateCatalogFixture();
+  render(
+    <CatalogView
+      state={{ kind: "ready", items: [], categories }}
+      labels={ru.TemplateCatalog}
+      category={categories[0].id}
+    />,
+  );
+  expect(
+    screen
+      .getByRole("link", { name: categories[0].title })
+      .getAttribute("aria-current"),
+  ).toBe("page");
+  expect(
+    screen
+      .getByRole("link", { name: ru.TemplateCatalog.allCategories })
+      .getAttribute("href"),
+  ).toBe("/templates");
+  expect(screen.getByRole("status")).toBeTruthy();
 });
 test("empty catalog has its own state", () => {
   render(
