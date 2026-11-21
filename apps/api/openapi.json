@@ -2907,12 +2907,220 @@
           "photos"
         ]
       }
+    },
+    "/api/v1/public/invitations/by-address/{slug}/rsvp": {
+      "get": {
+        "operationId": "getPublicRsvpForm",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-z0-9][a-z0-9-]{1,61}[a-z0-9]$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicRsvpFormDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "INVITATION_UNAVAILABLE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "VALIDATION_FAILED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "SERVICE_UNAVAILABLE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "",
+        "tags": [
+          "rsvp"
+        ]
+      },
+      "post": {
+        "operationId": "submitPublicRsvp",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-z0-9][a-z0-9-]{1,61}[a-z0-9]$"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubmitRsvpDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Original receipt replayed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RsvpReceiptDto"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Response stored",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RsvpReceiptDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "MALFORMED_JSON",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "INVITATION_UNAVAILABLE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "IDEMPOTENCY_KEY_REUSED, RSVP_FORM_CHANGED or RSVP_LIMIT_REACHED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "BODY_TOO_LARGE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "UNSUPPORTED_MEDIA_TYPE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "VALIDATION_FAILED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "RATE_LIMITED",
+            "headers": {
+              "Retry-After": {
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "SERVICE_UNAVAILABLE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "",
+        "tags": [
+          "rsvp"
+        ]
+      }
     }
   },
   "info": {
     "title": "Повод API",
     "description": "",
-    "version": "0.18.0",
+    "version": "0.19.0",
     "contact": {}
   },
   "tags": [],
@@ -4352,6 +4560,85 @@
         },
         "required": [
           "items"
+        ]
+      },
+      "PublicRsvpFormDto": {
+        "type": "object",
+        "properties": {
+          "formVersionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "schema": {
+            "type": "string",
+            "enum": [
+              "garden-v1"
+            ]
+          },
+          "nameMaxLength": {
+            "type": "integer",
+            "example": 80
+          },
+          "maxCompanions": {
+            "type": "integer",
+            "example": 2
+          }
+        },
+        "required": [
+          "formVersionId",
+          "schema",
+          "nameMaxLength",
+          "maxCompanions"
+        ]
+      },
+      "SubmitRsvpDto": {
+        "type": "object",
+        "properties": {
+          "formVersionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "attendance": {
+            "type": "string",
+            "enum": [
+              "yes",
+              "no"
+            ]
+          },
+          "companions": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2,
+            "description": "Must be zero when attendance is no"
+          }
+        },
+        "required": [
+          "formVersionId",
+          "name",
+          "attendance",
+          "companions"
+        ]
+      },
+      "RsvpReceiptDto": {
+        "type": "object",
+        "properties": {
+          "responseId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "receivedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "responseId",
+          "receivedAt"
         ]
       }
     }

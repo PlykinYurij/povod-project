@@ -115,3 +115,7 @@ Identity FR-02–04 детализирован отдельно: [методы �
 ## Дополнение D-25: адрес публикации
 
 К publish body добавляется slug; 409 SLUG_TAKEN с fields.path=slug не расходует слот/период и не создаёт снимок. Ошибка формата — 422, системное имя запрещено. Предварительный GET /publication-addresses/availability?slug=... только подсказывает доступность; уникальный normalizedSlug резервируется в транзакции publish. Повтор key/body возвращает прежний URL; slug входит в requestHash. GET /public/invitations/by-address/{slug} — безопасный DTO для Next host-routing, publicId остаётся внутренним стабильным id. Канонический публичный URL теперь поддомен, прежние /i/{publicId} в документах — ранний пример, поддержку alias не считать обещанной. Детали: [публикация и адреса](publication-addresses.md).
+
+## Фактический публичный API RSVP E3-01
+
+OpenAPI 0.19.0 описывает GET и POST `/api/v1/public/invitations/by-address/{slug}/rsvp`. GET выдаёт версию доступной формы, POST записывает ответ и возвращает квитанцию. Для чтения и записи нужен видимый актуальный снимок и действующий срок. Маршрут гостевого HTML и операцию admin publish добавляют E2-04/E2-04b. [Поля, ошибки и правила повтора](../product/e3-01-rsvp-next.md).
