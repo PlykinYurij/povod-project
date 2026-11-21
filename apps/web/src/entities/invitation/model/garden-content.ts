@@ -13,6 +13,7 @@ export type GardenContent = ImmutableContent<GardenContentDto>;
 export interface GardenMedia {
   readonly id: string;
   readonly src: string;
+  readonly objectUrl?: true;
   readonly alt: string;
   readonly width: number;
   readonly height: number;

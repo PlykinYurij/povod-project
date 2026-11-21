@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { useQueryClient } from "@tanstack/react-query";
 import { SessionFailure, SessionLoading } from "@entities/identity";
-import { GardenInvitation } from "@entities/invitation";
+import { PrivateGardenPreview } from "@widgets/private-garden-preview";
 import {
   ApiRequestError,
   getListAdminRequestsQueryKey,
@@ -111,7 +111,8 @@ export function RequestDetail({ requestId }: { requestId: string }) {
                     })}
                   </Text>
                 )}
-                <GardenInvitation
+                <PrivateGardenPreview
+                  source={{ kind: "assisted", id: requestId }}
                   content={project.content}
                   rsvp={<p>{t("noGuestForm")}</p>}
                   idPrefix="admin-preview"

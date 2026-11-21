@@ -1,5 +1,13 @@
 import { ApiProperty } from "@nestjs/swagger";
+import { IsUUID } from "class-validator";
 import { ProjectPhotoStatus } from "../../database/generated/client";
+import { ProjectIdDto } from "../projects/project.dto";
+
+export class PhotoIdDto extends ProjectIdDto {
+  @ApiProperty({ format: "uuid" })
+  @IsUUID()
+  photoId!: string;
+}
 
 export class ProjectPhotoDto {
   @ApiProperty({ format: "uuid" }) id!: string;

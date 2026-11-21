@@ -10,6 +10,6 @@
 
 После `npm run db:migrate:dev` и `npm run build --workspace @povod/api` запустите `npm run worker:photos:database` в отдельном терминале с теми же настройками приватного хранилища. Команда использует локальную dev-БД. `npm run worker:photos` использует явный `DATABASE_URL` и подходит для процесса окружения после миграции. Worker требуется доступ на GET оригинала и PUT производных. Ctrl+C останавливает опрос, затем процесс завершает текущую попытку и закрывает подключения.
 
-Готовые версии находятся под `projects/<id>/photos/<id>/renditions/<токен готовой попытки>/`. Живой токен хранится в PostgreSQL. Другие токены содержат частичные или отброшенные результаты. Операции очистки и безопасная выдача производных идут в E4-03 и E2-03c соответственно. [Карточка worker](../product/e2-03b-photo-worker.md).
+Готовые версии находятся под `projects/<id>/photos/<id>/renditions/<токен готовой попытки>/`. Живой токен хранится в PostgreSQL. Другие токены содержат частичные или отброшенные результаты. API читает display.webp для приватного предпросмотра с проверкой прав. Для этого экземпляру API требуется доступ GET к готовым производным. При добавлении CSP для редактора разрешение загрузки браузерных Blob URL относится к `img-src`. [Worker](../product/e2-03b-photo-worker.md) · [Редактор](../product/e2-03c-editor-photos.md).
 
 Источники по интеграции, проверено 21.11.2026. [AWS SDK и контрольные суммы](https://docs.aws.amazon.com/sdk-for-javascript/v3/developer-guide/s3-checksums.html) · [Пределы входа Sharp](https://sharp.pixelplumbing.com/api-constructor/).

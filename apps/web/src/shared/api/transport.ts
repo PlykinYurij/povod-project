@@ -7,7 +7,7 @@ import {
   isAdminRequestStatusPath,
   assistedProjectMethod,
 } from "./admin-request-path";
-import { isPrivatePhotoPath } from "./photo-path";
+import { isPrivatePhotoImagePath, isPrivatePhotoPath } from "./photo-path";
 import { validPhotoResponse } from "./photo-validation";
 
 export class ApiRequestError extends Error {
@@ -114,6 +114,7 @@ export async function apiFetch<T>(
   const adminRequestStatus = isAdminRequestStatusPath(path);
   const assistedMethod = assistedProjectMethod(path);
   const photo = isPrivatePhotoPath(path);
+  const photoImage = isPrivatePhotoImagePath(path);
   const publicRequest = path === "/api/v1/service-requests";
   const privateRequest = path === "/api/v1/publication-requests";
   if (
@@ -126,6 +127,7 @@ export async function apiFetch<T>(
       !adminRequestStatus &&
       !assistedMethod &&
       !photo &&
+      !photoImage &&
       !publicRequest &&
       !privateRequest) ||
     path.includes("..") ||
@@ -145,6 +147,8 @@ export async function apiFetch<T>(
     throw new Error("Unsupported assisted project method");
   if (photo && method !== "GET" && method !== "POST")
     throw new Error("Unsupported photo method");
+  if (photoImage && method !== "GET")
+    throw new Error("Unsupported image method");
   if (projectMethods && !projectMethods.includes(method))
     throw new Error("Unsupported project method");
   const headers = new Headers(options.headers);
@@ -187,6 +191,16 @@ export async function apiFetch<T>(
     credentials: publicCatalog || publicRequest ? "omit" : "include",
     cache: "no-store",
   });
+  if (photoImage && response.ok) {
+    const image = await response.blob();
+    if (
+      image.type !== "image/webp" ||
+      image.size === 0 ||
+      image.size > 15 * 1024 * 1024
+    )
+      throw new ApiRequestError(503, "SERVICE_UNAVAILABLE");
+    return image as T;
+  }
   const body = await readJson(response);
   if (!response.ok) throw responseError(response, body);
   if (photo && !validPhotoResponse(body, method === "GET"))

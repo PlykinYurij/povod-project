@@ -16,7 +16,8 @@ export function GardenPhoto({
 }) {
   const t = getGardenTranslations(locale);
   if (!mediaId) return null;
-  const src = media?.id === mediaId ? safeGardenImage(media.src) : null;
+  const src =
+    media?.id === mediaId ? safeGardenImage(media.src, media.objectUrl) : null;
   if (
     !media ||
     !src ||

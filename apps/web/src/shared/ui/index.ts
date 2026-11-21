@@ -7,6 +7,7 @@ export {
   Anchor,
   Button,
   Checkbox,
+  FileInput,
   Group,
   Loader,
   NativeSelect,

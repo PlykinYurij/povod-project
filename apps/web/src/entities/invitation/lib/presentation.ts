@@ -44,8 +44,16 @@ export function safeGardenRoute(value: string | null) {
   }
 }
 
-export function safeGardenImage(value: string) {
+export function safeGardenImage(value: string, objectUrl = false) {
   if (/[\x00-\x20\x7f\\]/.test(value)) return null;
+  if (objectUrl && typeof window !== "undefined" && value.startsWith("blob:")) {
+    try {
+      const url = new URL(value);
+      return url.origin === window.location.origin ? url.href : null;
+    } catch {
+      return null;
+    }
+  }
   if (value.startsWith("/") && !value.startsWith("//") && !value.includes(".."))
     return value;
   return safeGardenRoute(value);

@@ -1,10 +1,24 @@
 import { afterEach, expect, test, vi } from "vitest";
-import { uploadProjectPhoto } from "./generated/http";
+import { getProjectPhotoImage, uploadProjectPhoto } from "./generated/http";
 import { apiFetch } from "./transport";
 
 const project = "f729d400-0942-4633-9bc7-f33ffe78c422";
 
 afterEach(() => vi.unstubAllGlobals());
+
+test("a ready derivative is decoded as a private WebP, never JSON", async () => {
+  const fetch = vi.fn().mockResolvedValue(
+    new Response("webp contents", {
+      headers: { "Content-Type": "image/webp" },
+    }),
+  );
+  vi.stubGlobal("fetch", fetch);
+  const image = await getProjectPhotoImage(project, project);
+  expect(image.type).toBe("image/webp");
+  expect(await image.text()).toBe("webp contents");
+  expect(fetch.mock.calls[0][1].credentials).toBe("include");
+  expect(fetch.mock.calls[0][1].cache).toBe("no-store");
+});
 
 test("Orval keeps the multipart boundary browser managed and the request private", async () => {
   const fetch = vi.fn().mockResolvedValue(
