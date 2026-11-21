@@ -5,6 +5,7 @@ import { TemplatesModule } from "./modules/templates/templates.module";
 import { ProjectsModule } from "./modules/projects/projects.module";
 import { AdministrationModule } from "./modules/administration/administration.module";
 import { RequestsModule } from "./modules/requests/requests.module";
+import { MediaModule } from "./modules/media/media.module";
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { RequestsModule } from "./modules/requests/requests.module";
     ProjectsModule,
     AdministrationModule,
     RequestsModule,
+    MediaModule,
   ],
   controllers: [HealthController],
 })

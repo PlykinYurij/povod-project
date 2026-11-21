@@ -7,6 +7,8 @@ import {
   isAdminRequestStatusPath,
   assistedProjectMethod,
 } from "./admin-request-path";
+import { isPrivatePhotoPath } from "./photo-path";
+import { validPhotoResponse } from "./photo-validation";
 
 export class ApiRequestError extends Error {
   constructor(
@@ -111,6 +113,7 @@ export async function apiFetch<T>(
   const adminRequest = isAdminRequestPath(path);
   const adminRequestStatus = isAdminRequestStatusPath(path);
   const assistedMethod = assistedProjectMethod(path);
+  const photo = isPrivatePhotoPath(path);
   const publicRequest = path === "/api/v1/service-requests";
   const privateRequest = path === "/api/v1/publication-requests";
   if (
@@ -122,6 +125,7 @@ export async function apiFetch<T>(
       !adminRequest &&
       !adminRequestStatus &&
       !assistedMethod &&
+      !photo &&
       !publicRequest &&
       !privateRequest) ||
     path.includes("..") ||
@@ -139,6 +143,8 @@ export async function apiFetch<T>(
     throw new Error("Unsupported request status method");
   if (assistedMethod && method !== assistedMethod)
     throw new Error("Unsupported assisted project method");
+  if (photo && method !== "GET" && method !== "POST")
+    throw new Error("Unsupported photo method");
   if (projectMethods && !projectMethods.includes(method))
     throw new Error("Unsupported project method");
   const headers = new Headers(options.headers);
@@ -155,7 +161,12 @@ export async function apiFetch<T>(
   }
   const mutation =
     !!options.method && !["GET", "HEAD"].includes(options.method.toUpperCase());
-  if (mutation && !headers.has("Content-Type"))
+  if (photo && method === "POST") {
+    if (!(options.body instanceof FormData))
+      throw new Error("Photos require FormData");
+    // The browser supplies the boundary for the actual FormData body.
+    headers.delete("Content-Type");
+  } else if (mutation && !headers.has("Content-Type"))
     headers.set("Content-Type", "application/json");
   if (
     options.method &&
@@ -178,6 +189,8 @@ export async function apiFetch<T>(
   });
   const body = await readJson(response);
   if (!response.ok) throw responseError(response, body);
+  if (photo && !validPhotoResponse(body, method === "GET"))
+    throw new ApiRequestError(503, "SERVICE_UNAVAILABLE");
   if ((publicRequest || privateRequest) && !isServiceRequestReceipt(body))
     throw new ApiRequestError(503, "SERVICE_UNAVAILABLE");
   if (

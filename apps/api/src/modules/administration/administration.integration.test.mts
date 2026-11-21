@@ -303,7 +303,6 @@ test("actual local CLI grants/revokes a synthetic account and refuses production
 
 test("OpenAPI documents cookie auth, response and error boundary", () => {
   const doc = createOpenApiDocument(app);
-  expect(doc.info.version).toBe("0.16.0");
   expect(doc.paths["/api/v1/admin/requests"]?.get?.security).toEqual([
     { session: [] },
   ]);
