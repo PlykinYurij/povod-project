@@ -1,5 +1,8 @@
 import type { Prisma, RsvpFormSchema } from "../../database/generated/client";
-import { invitationUnavailable } from "./rsvp-form";
+import {
+  activePublicationBySlug,
+  invitationUnavailable,
+} from "../publication/active-publication";
 
 export async function readActiveRsvpForm(
   tx: Prisma.TransactionClient,
@@ -13,11 +16,7 @@ export async function readActiveRsvpForm(
     }[]
   >`
     SELECT p.id AS "publicationId", s.id AS "formVersionId", s.form_schema::text AS "formSchema"
-    FROM publications p
-    JOIN projects project ON project.id = p.project_id
-    JOIN publication_snapshots s ON s.publication_id = p.id AND s.superseded_at IS NULL
-    WHERE p.slug = ${slug} AND p.visible AND p.expires_at > clock_timestamp()
-      AND project.deleted_at IS NULL
+    ${activePublicationBySlug(slug)}
   `;
   if (!form) throw invitationUnavailable();
   return form;

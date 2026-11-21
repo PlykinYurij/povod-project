@@ -7,7 +7,10 @@ import { SessionFailure, SessionLoading } from "@entities/identity";
 import { PrivateGardenPreview } from "@widgets/private-garden-preview";
 import {
   ApiRequestError,
+  getGetAdminRequestQueryKey,
   getListAdminRequestsQueryKey,
+  type AdminRequestDetailDto,
+  type PublicationReceiptDto,
   useGetAdminRequest,
 } from "@shared/api";
 import { Alert, Stack, Text, Title } from "@shared/ui";
@@ -15,9 +18,11 @@ import styles from "./request-detail.module.css";
 import { RequestStatusActions } from "./request-status-actions";
 import { AssistedCreate } from "./assisted-create";
 import { AssistedEditor } from "./assisted-editor";
+import { PublishedLink, PublishRequestForm } from "@features/publish-request";
 
 export function RequestDetail({ requestId }: { requestId: string }) {
   const t = useTranslations("AdminRequests");
+  const publishText = useTranslations("AdminPublish");
   const locale = useLocale();
   const cache = useQueryClient();
   const panel = useRef<HTMLElement>(null);
@@ -34,6 +39,29 @@ export function RequestDetail({ requestId }: { requestId: string }) {
       }).format(price.amountMinor / 100)
     : t("pricePending");
   const project = record?.project;
+
+  function onPublished(receipt: PublicationReceiptDto) {
+    cache.setQueryData<AdminRequestDetailDto>(
+      getGetAdminRequestQueryKey(requestId),
+      (current) =>
+        current && current.requestVersion <= receipt.requestVersion
+          ? {
+              ...current,
+              publication: receipt,
+              status: "COMPLETED",
+              requestVersion: receipt.requestVersion,
+              project: current.project
+                ? {
+                    ...current.project,
+                    canEditDraft: false,
+                    firstPublishedAt: receipt.publishedAt,
+                  }
+                : null,
+            }
+          : current,
+    );
+    void cache.invalidateQueries({ queryKey: getListAdminRequestsQueryKey() });
+  }
 
   return (
     <section
@@ -117,6 +145,26 @@ export function RequestDetail({ requestId }: { requestId: string }) {
                   rsvp={<p>{t("noGuestForm")}</p>}
                   idPrefix="admin-preview"
                 />
+                {record.publication && (
+                  <PublishedLink receipt={record.publication} />
+                )}
+                {project.canEditDraft &&
+                  (record.status === "NEW" ||
+                    record.status === "IN_PROGRESS") &&
+                  (price ? (
+                    <PublishRequestForm
+                      requestId={requestId}
+                      approval={{
+                        expectedRequestVersion: record.requestVersion,
+                        expectedProjectRevision: project.revision,
+                        expectedPriceVersion: price.version,
+                      }}
+                      onPublished={onPublished}
+                      refresh={() => request.refetch()}
+                    />
+                  ) : (
+                    <Text>{publishText("pricePending")}</Text>
+                  ))}
               </>
             ) : (
               <Text>{t(project ? "unsupported" : "noProject")}</Text>

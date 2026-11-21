@@ -22,6 +22,14 @@ export function isAdminRequestStatusPath(path: string): boolean {
   );
 }
 
+export function isAdminRequestPublishPath(path: string): boolean {
+  return (
+    path.startsWith(ROOT + "/") &&
+    path.endsWith("/publish") &&
+    isProjectId(path.slice(ROOT.length + 1, -"/publish".length))
+  );
+}
+
 export function isAdminRequestPath(path: string): boolean {
   const [resource, query, ...extra] = path.split("?");
   if (extra.length > 0) return false;

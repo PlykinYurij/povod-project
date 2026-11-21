@@ -1,4 +1,28 @@
 {
+  "AdminPublish": {
+    "title": "Publish invitation",
+    "description": "Guests will see this version. The 90-day period starts immediately and the project is locked for editing.",
+    "slug": "Subdomain name",
+    "slugHint": "Use 3 to 63 lowercase Latin letters, digits or hyphens. Start and end with a letter or digit.",
+    "slugInvalid": "Choose a valid subdomain name.",
+    "slugTaken": "This name is already taken.",
+    "confirm": "I have reviewed this version and the quoted price",
+    "confirmRequired": "Confirm you have reviewed the invitation and price.",
+    "submit": "Publish",
+    "stale": "The request or project has changed. Refresh and review the preview again.",
+    "refresh": "Refresh request",
+    "quota": "Both publication slots for this account are in use.",
+    "pricePending": "Publishing requires a quoted price on the request.",
+    "invalidContent": "Check required fields and that the selected photo is ready.",
+    "failed": "Publication could not be confirmed. Retry with the same address.",
+    "published": "Invitation published",
+    "linkLabel": "Invitation link",
+    "copy": "Copy link",
+    "open": "Open invitation",
+    "copied": "Link copied.",
+    "manual": "Copy the link from the field manually.",
+    "invalidReceipt": "The link is unavailable. Refresh the request."
+  },
   "AdminRequests": {
     "createDraft": "Create draft from request",
     "chooseTemplate": "Choose a template",
@@ -261,6 +285,7 @@
     "next": "Choose this template in the catalog to create a draft."
   },
   "Common": {
+    "notFound": "Page unavailable",
     "brand": "Повод",
     "language": "Interface language",
     "theme": "Switch theme",

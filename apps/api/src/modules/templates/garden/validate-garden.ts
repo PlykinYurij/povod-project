@@ -1,20 +1,31 @@
-import { plainToInstance } from "class-transformer";
+import { plainToInstance, type ClassConstructor } from "class-transformer";
 import { validateSync } from "class-validator";
 import { ApiError, type FieldErrorDto } from "../../../http/api-error";
 import {
   reservedFieldErrors,
   validationFields,
 } from "../../../http/validation-errors";
-import { GardenDraftDto } from "./garden-content.dto";
+import { GardenContentDto, GardenDraftDto } from "./garden-content.dto";
 
 /** Runtime boundary for persisted JSON/future draft writes; no coercion or normalization. */
 export function validateGardenDraft(input: unknown): GardenDraftDto {
+  return validateGardenDto(GardenDraftDto, input);
+}
+
+export function validateGardenContent(input: unknown): GardenContentDto {
+  return validateGardenDto(GardenContentDto, input);
+}
+
+function validateGardenDto<T extends object>(
+  type: ClassConstructor<T>,
+  input: unknown,
+): T {
   if (input === null || typeof input !== "object" || Array.isArray(input)) {
     throw invalid([{ path: "content", code: "INVALID_VALUE" }]);
   }
   const reserved = reservedFieldErrors(input);
   if (reserved.length) throw invalid(reserved);
-  const draft = plainToInstance(GardenDraftDto, input, {
+  const draft = plainToInstance(type, input, {
     enableImplicitConversion: false,
   });
   const fields = validationFields(

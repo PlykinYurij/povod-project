@@ -3279,12 +3279,146 @@
           "administration"
         ]
       }
+    },
+    "/api/v1/public/invitations/by-address/{slug}": {
+      "get": {
+        "operationId": "getGuestPublication",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-z0-9][a-z0-9-]{1,61}[a-z0-9]$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GuestPublicationDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "",
+        "tags": [
+          "publication"
+        ]
+      }
+    },
+    "/api/v1/public/invitations/by-address/{slug}/cover/{snapshotId}": {
+      "get": {
+        "operationId": "getGuestPublicationCover",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-z0-9][a-z0-9-]{1,61}[a-z0-9]$"
+            }
+          },
+          {
+            "name": "snapshotId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "image/webp": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "",
+        "tags": [
+          "publication"
+        ]
+      }
     }
   },
   "info": {
     "title": "Повод API",
     "description": "",
-    "version": "0.20.0",
+    "version": "0.21.0",
     "contact": {}
   },
   "tags": [],
@@ -4239,6 +4373,42 @@
           "next"
         ]
       },
+      "PublicationReceiptDto": {
+        "type": "object",
+        "properties": {
+          "publicationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "snapshotId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "requestVersion": {
+            "type": "integer"
+          },
+          "publishedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "publicationId",
+          "snapshotId",
+          "url",
+          "requestVersion",
+          "publishedAt",
+          "expiresAt"
+        ]
+      },
       "AdminRequestDetailDto": {
         "type": "object",
         "properties": {
@@ -4324,6 +4494,15 @@
                 "$ref": "#/components/schemas/ProjectDto"
               }
             ]
+          },
+          "publication": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PublicationReceiptDto"
+              }
+            ]
           }
         },
         "required": [
@@ -4342,7 +4521,8 @@
           "contactValue",
           "submittedRevision",
           "quotedPrice",
-          "project"
+          "project",
+          "publication"
         ]
       },
       "UpdateAdminRequestStatusDto": {
@@ -4837,40 +5017,52 @@
           "slug"
         ]
       },
-      "PublicationReceiptDto": {
+      "GuestCoverDto": {
         "type": "object",
         "properties": {
-          "publicationId": {
+          "width": {
+            "type": "integer"
+          },
+          "height": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "width",
+          "height"
+        ]
+      },
+      "GuestPublicationDto": {
+        "type": "object",
+        "properties": {
+          "templateVersionId": {
             "type": "string",
-            "format": "uuid"
+            "enum": [
+              "wedding-garden-v1"
+            ]
           },
           "snapshotId": {
             "type": "string",
             "format": "uuid"
           },
-          "url": {
-            "type": "string",
-            "format": "uri"
+          "content": {
+            "$ref": "#/components/schemas/GardenContentDto"
           },
-          "requestVersion": {
-            "type": "integer"
-          },
-          "publishedAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "expiresAt": {
-            "type": "string",
-            "format": "date-time"
+          "cover": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/GuestCoverDto"
+              }
+            ]
           }
         },
         "required": [
-          "publicationId",
+          "templateVersionId",
           "snapshotId",
-          "url",
-          "requestVersion",
-          "publishedAt",
-          "expiresAt"
+          "content",
+          "cover"
         ]
       }
     }

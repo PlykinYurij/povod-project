@@ -289,7 +289,28 @@ test("commits the reviewed snapshot, stable URL, period, audit and RSVP together
     }),
   });
   await expectError(saved, 409, "CONTENT_LOCKED");
-  const guestPath = `${origin}/api/v1/public/invitations/by-address/${input.slug}/rsvp`;
+  const detail = await fetch(`${origin}/api/v1/admin/requests/${request.id}`, {
+    headers: admin,
+  });
+  expect(detail.status).toBe(200);
+  expect(await detail.json()).toMatchObject({ publication: receipt });
+  const pagePath = `${origin}/api/v1/public/invitations/by-address/${input.slug}`;
+  // The guest gets the published content even if the draft data is changed in storage.
+  await db.project.update({
+    where: { id: project!.id },
+    data: { content: {} },
+  });
+  const publicSnapshot = await fetch(pagePath);
+  expect(publicSnapshot.status).toBe(200);
+  expect(publicSnapshot.headers.get("Cache-Control")).toBe("no-store");
+  expect(publicSnapshot.headers.get("Set-Cookie")).toBeNull();
+  expect(await publicSnapshot.json()).toEqual({
+    templateVersionId: "wedding-garden-v1",
+    snapshotId: receipt.snapshotId,
+    content,
+    cover: null,
+  });
+  const guestPath = pagePath + "/rsvp";
   const form = await fetch(guestPath);
   expect(form.status).toBe(200);
   expect(await form.json()).toMatchObject({
@@ -328,6 +349,16 @@ test("commits the reviewed snapshot, stable URL, period, audit and RSVP together
     409,
     "ALREADY_PUBLISHED",
   );
+  await db.publication.update({
+    where: { id: receipt.publicationId },
+    data: { visible: false },
+  });
+  await expectError(await fetch(pagePath), 404, "INVITATION_UNAVAILABLE");
+  await db.publication.update({
+    where: { id: receipt.publicationId },
+    data: { visible: true, expiresAt: new Date(0) },
+  });
+  await expectError(await fetch(pagePath), 404, "INVITATION_UNAVAILABLE");
 });
 
 test("keeps a draft when request, quote, content, address or configuration is invalid", async () => {
@@ -463,7 +494,21 @@ test("rejects processing or foreign photos and publishes an owned ready renditio
       renderHeight: 10,
     },
   });
-  expect((await publish(request.id, input)).status).toBe(201);
+  const published = await publish(request.id, input);
+  expect(published.status).toBe(201);
+  const receipt = (await published.json()) as PublicationReceiptDto;
+  const pagePath = `${origin}/api/v1/public/invitations/by-address/${input.slug}`;
+  expect(await (await fetch(pagePath)).json()).toEqual({
+    templateVersionId: "wedding-garden-v1",
+    snapshotId: receipt.snapshotId,
+    content: { ...content, heroMediaId: receipt.snapshotId },
+    cover: { width: 10, height: 10 },
+  });
+  await expectError(
+    await fetch(pagePath + "/cover/" + photo.id),
+    404,
+    "INVITATION_UNAVAILABLE",
+  );
 });
 
 test("serializes two operators on one request and two projects on one address", async () => {

@@ -16,6 +16,8 @@
     "footerText": "Самые тёплые моменты — вместе."
   },
   "system": {
+    "publishedCoverAlt": "Фотография приглашения",
+    "invitationUnavailable": "Приглашение недоступно",
     "firstNamePlaceholder": "Первое имя",
     "secondNamePlaceholder": "Второе имя",
     "missingDate": "Дата ещё не указана",

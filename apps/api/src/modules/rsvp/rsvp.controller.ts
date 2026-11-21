@@ -29,7 +29,7 @@ import {
 } from "../../http/request-contract";
 import { PublicRsvpFormDto, RsvpReceiptDto, SubmitRsvpDto } from "./rsvp.dto";
 import { PUBLICATION_SLUG } from "../publication/publication-address";
-import { invitationUnavailable } from "./rsvp-form";
+import { invitationUnavailable } from "../publication/active-publication";
 import { RsvpService } from "./rsvp.service";
 
 @Injectable()

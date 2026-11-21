@@ -1,6 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { IsInt, IsString, Matches, Max, Min } from "class-validator";
 import { PUBLICATION_SLUG } from "./publication-address";
+import type { PublicationReceipt } from "../../database/generated/client";
 
 const MAX_DB_VERSION = 2_147_483_647;
 
@@ -51,4 +52,26 @@ export class PublicationReceiptDto {
 
   @ApiProperty({ format: "date-time" })
   expiresAt!: string;
+}
+
+export const receiptFields = {
+  publicationId: true,
+  snapshotId: true,
+  url: true,
+  requestVersion: true,
+  publishedAt: true,
+  expiresAt: true,
+} as const;
+
+export function toPublicationReceipt(
+  row: Pick<PublicationReceipt, keyof typeof receiptFields>,
+): PublicationReceiptDto {
+  return {
+    publicationId: row.publicationId,
+    snapshotId: row.snapshotId,
+    url: row.url,
+    requestVersion: row.requestVersion,
+    publishedAt: row.publishedAt.toISOString(),
+    expiresAt: row.expiresAt.toISOString(),
+  };
 }

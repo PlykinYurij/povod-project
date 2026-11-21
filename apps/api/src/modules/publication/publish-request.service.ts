@@ -5,7 +5,6 @@ import type {
   Prisma,
   Project,
   ServiceRequest,
-  PublicationReceipt,
 } from "../../database/generated/client";
 import { ApiError } from "../../http/api-error";
 import { assertReadyHeroPhoto, jsonContent } from "../projects/project-content";
@@ -14,9 +13,9 @@ import { readRequestPrice } from "../requests/request-price";
 import { validateGardenComplete } from "../templates/garden/validate-garden";
 import { lockPublicationContext } from "./publication-locks";
 import { publicationUrl } from "./publication-address";
-import type {
-  PublicationReceiptDto,
-  PublishRequestDto,
+import {
+  toPublicationReceipt,
+  type PublishRequestDto,
 } from "./publish-request.dto";
 
 const PUBLICATION_DURATION_MS = 90 * 24 * 60 * 60 * 1_000;
@@ -62,7 +61,7 @@ export class PublishRequestService {
               "Ключ уже использован для другого запроса",
             );
           }
-          return { receipt: receiptDto(previous), replay: true };
+          return { receipt: toPublicationReceipt(previous), replay: true };
         }
         const draft = await validateReviewedDraft(tx, request, project, input);
         const url = publicationUrl(input.slug);
@@ -117,7 +116,7 @@ export class PublishRequestService {
             expiresAt,
           },
         });
-        return { receipt: receiptDto(receipt), replay: false };
+        return { receipt: toPublicationReceipt(receipt), replay: false };
       },
       { isolationLevel: "ReadCommitted" },
     );
@@ -190,15 +189,4 @@ async function assertOwnerSlot(
       "Оба места публикации заняты",
     );
   }
-}
-
-function receiptDto(row: PublicationReceipt): PublicationReceiptDto {
-  return {
-    publicationId: row.publicationId,
-    snapshotId: row.snapshotId,
-    url: row.url,
-    requestVersion: row.requestVersion,
-    publishedAt: row.publishedAt.toISOString(),
-    expiresAt: row.expiresAt.toISOString(),
-  };
 }
