@@ -27,10 +27,19 @@ export class AssistedProjectsService {
     `;
     if (!locked)
       throw new ApiError(404, "REQUEST_NOT_FOUND", "Заявка не найдена");
-    const request = await tx.serviceRequest.findUniqueOrThrow({
+    return this.assistance(id, tx);
+  }
+
+  private async assistance(
+    id: string,
+    tx: Prisma.TransactionClient = this.database.getClient(),
+  ) {
+    const request = await tx.serviceRequest.findUnique({
       where: { id },
       include: { project: true },
     });
+    if (!request)
+      throw new ApiError(404, "REQUEST_NOT_FOUND", "Заявка не найдена");
     if (request.kind !== "ASSISTANCE" || request.customerUserId !== null)
       throw new ApiError(
         409,
@@ -38,6 +47,25 @@ export class AssistedProjectsService {
         "Заявка уже относится к проекту пользователя",
       );
     return request;
+  }
+
+  async linkedProject(id: string) {
+    return this.requireLinked((await this.assistance(id)).project);
+  }
+
+  private requireLinked(
+    project: Awaited<
+      ReturnType<AssistedProjectsService["assistance"]>
+    >["project"],
+  ) {
+    if (!project || project.ownerId !== null || project.deletedAt)
+      throw new ApiError(404, "PROJECT_NOT_FOUND", "Проект не найден");
+    return project;
+  }
+
+  async lockLinked(tx: Prisma.TransactionClient, actorId: string, id: string) {
+    await requireAdminForWrite(tx, actorId);
+    return this.requireLinked((await this.lockAssistance(tx, id)).project);
   }
 
   async create(actorId: string, id: string, input: CreateAssistedProjectDto) {
@@ -107,11 +135,7 @@ export class AssistedProjectsService {
 
   async save(actorId: string, id: string, input: SaveProjectDraftDto) {
     return this.database.getClient().$transaction(async (tx) => {
-      await requireAdminForWrite(tx, actorId);
-      const request = await this.lockAssistance(tx, id);
-      const project = request.project;
-      if (!project || project.ownerId !== null || project.deletedAt)
-        throw new ApiError(404, "PROJECT_NOT_FOUND", "Проект не найден");
+      const project = await this.lockLinked(tx, actorId, id);
       return saveLockedDraft(tx, project, input);
     });
   }

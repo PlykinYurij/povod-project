@@ -17,6 +17,6 @@ import { AdminRequestsService } from "./admin-requests.service";
     AssistedProjectsController,
   ],
   providers: [AdminGuard, AdminRequestsService, AssistedProjectsService],
-  exports: [AdminGuard],
+  exports: [AdminGuard, AssistedProjectsService],
 })
 export class AdministrationModule {}
