@@ -1,5 +1,20 @@
 # План backend
 
+Актуализация D-42–44: редактирование разрешено до публикации и после снятия, заявка не блокирует форму. Заказ без аккаунта выполняет admin. Последовательная работа разрешена без ожидания review/main между каждым этапом; результат/приёмка/интеграция отмечаются отдельно. [Допущения](../../docs/product/implementation-assumptions.md). Ближайшая независимая backend задача — E2-02d (роль/admin guard); затем каталог и заявки.
+
+## Актуальный план MVP v2 · D-38/39
+
+[Backlog v2](../../docs/product/backlog-v2.md)/[архитектура](../../docs/architecture/assisted-publication.md) заменяют старые будущие self-publish задачи ниже. E2-02 принят в main 3626e47. Код новых функций ещё не создавался.
+
+- [ ] V2-00: ADR хранения/владения и согласованный request contract по относящимся Q.
+- [ ] E2-01d: категории/шаблоны/версии/фиксированные цены, безопасная миграция Garden.
+- [ ] E2-02d: admin role/guards/закрытая выдача прав, клиент не повышает роль.
+- [ ] V2-01/02: заявки с проектом и без, отдельные проверяемые PR.
+- [ ] V2-03/04: operator API и создание проекта по заявке, owner policy Q-25.
+- [ ] E2-03/E3-01/E2-04: медиа/RSVP/admin-only publish по отдельным PR.
+
+Выполнение/owner accepted/main отмечать отдельно. Остальная часть файла — история v1, а не поручение обходить новый backlog.
+
 20.11.2026: схема E2-01 принята в main f220170 (PR #24). [E2-02](../../docs/product/e2-02-private-drafts.md) реализован для Review на feat/private-project-drafts: private create/list/get/save, квота пять draft, revision/idempotency/owner/CSRF, миграция и OpenAPI 0.9.0 → Orval. [QA](../../docs/qa/e2-02-private-drafts-report.md). Следующие editor/preview/media не реализованы.
 
 Актуализация D-30–32: backend сессий/reset принят ранее; E1-04d backend регистрации с email-кодом подготовлен к Review, 52 DB/HTTP и 8 unit успешны. Q-21 закрыт; legacy-маркер и политика — Q-22 до публичного запуска. UI/production mail отдельно.
