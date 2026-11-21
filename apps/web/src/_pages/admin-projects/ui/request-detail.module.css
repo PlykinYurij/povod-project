@@ -1,0 +1,19 @@
+.panel {
+  scroll-margin-block-start: var(--identity-space-lg);
+  overflow-wrap: anywhere;
+}
+
+.contacts {
+  margin: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+  gap: var(--identity-space-sm);
+}
+
+.contacts dt {
+  font-weight: 600;
+}
+
+.contacts dd {
+  margin: 0;
+}

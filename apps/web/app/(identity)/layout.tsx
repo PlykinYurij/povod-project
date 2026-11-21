@@ -19,6 +19,7 @@ export default async function IdentityLayout({
     DraftEditor,
     ProjectPreview,
     Requests,
+    AdminRequests,
   } = await getMessages();
   return (
     <>
@@ -34,6 +35,7 @@ export default async function IdentityLayout({
           DraftEditor,
           ProjectPreview,
           Requests,
+          AdminRequests,
         }}
       >
         {children}
