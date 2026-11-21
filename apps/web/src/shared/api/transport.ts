@@ -5,6 +5,7 @@ import { isProjectPublicationRequest } from "./publication-request-validation";
 import {
   isAdminRequestPath,
   isAdminRequestStatusPath,
+  assistedProjectMethod,
 } from "./admin-request-path";
 
 export class ApiRequestError extends Error {
@@ -109,6 +110,7 @@ export async function apiFetch<T>(
   const adminAccess = path === "/api/v1/admin/access";
   const adminRequest = isAdminRequestPath(path);
   const adminRequestStatus = isAdminRequestStatusPath(path);
+  const assistedMethod = assistedProjectMethod(path);
   const publicRequest = path === "/api/v1/service-requests";
   const privateRequest = path === "/api/v1/publication-requests";
   if (
@@ -119,6 +121,7 @@ export async function apiFetch<T>(
       !adminAccess &&
       !adminRequest &&
       !adminRequestStatus &&
+      !assistedMethod &&
       !publicRequest &&
       !privateRequest) ||
     path.includes("..") ||
@@ -134,6 +137,8 @@ export async function apiFetch<T>(
     throw new Error("Admin access is read-only");
   if (adminRequestStatus && method !== "PATCH")
     throw new Error("Unsupported request status method");
+  if (assistedMethod && method !== assistedMethod)
+    throw new Error("Unsupported assisted project method");
   if (projectMethods && !projectMethods.includes(method))
     throw new Error("Unsupported project method");
   const headers = new Headers(options.headers);

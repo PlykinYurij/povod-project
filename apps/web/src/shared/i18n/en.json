@@ -1,5 +1,14 @@
 {
   "AdminRequests": {
+    "createDraft": "Create draft from request",
+    "chooseTemplate": "Choose a template",
+    "draftTitle": "Project name",
+    "titleInvalid": "Enter a name of 1 to 24 characters without control characters.",
+    "createFailed": "Could not confirm creation. You can retry with the same details.",
+    "catalogLoading": "Loading templates…",
+    "catalogUnavailable": "Templates are unavailable.",
+    "catalogEmpty": "No templates are available.",
+    "editDraft": "Edit draft",
     "takeRequest": "Start reviewing",
     "rejectRequest": "Decline request",
     "confirmReject": "This closes the request. If it is linked to a project, its owner can see the status and submit a new request.",

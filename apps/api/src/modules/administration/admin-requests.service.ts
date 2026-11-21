@@ -4,6 +4,7 @@ import type { Prisma } from "../../database/generated/client";
 import { ApiError } from "../../http/api-error";
 import { projectResponse } from "../projects/project-mapping";
 import { readRequestPrice } from "../requests/request-price";
+import { requireAdminForWrite } from "./admin-write";
 import type {
   AdminRequestDetailDto,
   AdminRequestPageDto,
@@ -107,16 +108,7 @@ export class AdminRequestsService {
     input: UpdateAdminRequestStatusDto,
   ): Promise<AdminRequestStatusDto> {
     return this.database.getClient().$transaction(async (tx) => {
-      // Keep the role valid until commit, including concurrent role revocation.
-      const [actor] = await tx.$queryRaw<{ role: string }[]>`
-        SELECT "role" FROM "users" WHERE "id" = ${actorId}::uuid FOR SHARE
-      `;
-      if (actor?.role !== "ADMIN")
-        throw new ApiError(
-          403,
-          "ADMIN_REQUIRED",
-          "Требуются права администратора",
-        );
+      await requireAdminForWrite(tx, actorId);
       const changed = await tx.serviceRequest.updateMany({
         where: {
           id,
