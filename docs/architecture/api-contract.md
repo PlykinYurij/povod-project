@@ -125,3 +125,5 @@ OpenAPI описывает GET и POST `/api/v1/public/invitations/by-address/{s
 OpenAPI 0.20.0 добавил `POST /api/v1/admin/requests/{id}/publish`. Операция отвечает квитанцией и создаёт снимок с доступной анкетой. [Поля, ошибки и правила повтора](../product/e2-04-admin-publication.md).
 
 OpenAPI 0.21.0 добавляет GET `/api/v1/public/invitations/by-address/{slug}` и `/cover/{snapshotId}` под тем же API-префиксом. Приватная карточка заявки возвращает квитанцию в `publication`, если публикация состоялась. [Публичное чтение и гостевой SSR](../product/e2-04b-guest-page.md).
+
+OpenAPI 0.22.0 возвращает схему `rsvp` вместе с публичным снимком. Браузерный `POST /rsvp` на гостевом хосте пересылает ответ в Nest по версии формы. Production API применяет IP-лимит по проверенному адресу relay. [Контракт E3-01b](../product/e3-01b-guest-rsvp.md).

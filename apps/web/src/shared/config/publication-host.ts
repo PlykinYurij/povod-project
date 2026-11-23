@@ -1,6 +1,6 @@
 export const PUBLICATION_SLUG = /^[a-z0-9][a-z0-9-]{1,61}[a-z0-9]$/;
 const DNS_LABEL = /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/;
-const HOST = /^([a-z0-9.-]+)(?::[0-9]{1,5})?$/i;
+const HOST = /^([a-z0-9.-]+)(?::([0-9]{1,5}))?$/i;
 const PLATFORM_LABELS = new Set(["app", "admin", "www"]);
 const RESERVED_LABELS = new Set(["mail", "api", "support"]);
 
@@ -18,8 +18,15 @@ export function publicationSurface(host: string | null): Surface {
   ) {
     return { kind: "invalid" };
   }
-  const hostname = host?.match(HOST)?.[1]?.toLowerCase();
-  if (!hostname || hostname.length > 253) return { kind: "invalid" };
+  const match = host?.match(HOST);
+  const hostname = match?.[1].toLowerCase();
+  const port = match?.[2] ? Number(match[2]) : undefined;
+  if (
+    !hostname ||
+    hostname.length > 253 ||
+    (port !== undefined && (port < 1 || port > 65535))
+  )
+    return { kind: "invalid" };
   if (
     hostname === domain ||
     hostname === "localhost" ||

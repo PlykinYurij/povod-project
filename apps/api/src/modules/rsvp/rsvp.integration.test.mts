@@ -97,6 +97,44 @@ async function expectError(response: Response, status: number, code: string) {
   expect(await response.json()).toMatchObject({ error: { code } });
 }
 
+test("requires the relay in production and buckets trusted client addresses separately", async () => {
+  const { path, body, publicationId } = await fixture();
+  const previousNodeEnv = process.env.NODE_ENV;
+  const secret = "9b".repeat(32);
+  vi.stubEnv("NODE_ENV", "production");
+  vi.stubEnv("RSVP_RELAY_SECRET", secret);
+  try {
+    await expectError(await submit(path, body), 403, "RSVP_RELAY_REQUIRED");
+    async function relay(ip: string, proof: string) {
+      return fetch(path, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Idempotency-Key": randomUUID(),
+          "X-Povod-Rsvp-Client-IP": ip,
+          "X-Povod-Rsvp-Relay": proof,
+        },
+        body: JSON.stringify(body),
+      });
+    }
+    await expectError(
+      await relay("192.0.2.1", "0".repeat(64)),
+      403,
+      "RSVP_RELAY_REQUIRED",
+    );
+    expect((await relay("192.0.2.1", secret)).status).toBe(201);
+    expect((await relay("192.0.2.2", secret)).status).toBe(201);
+    const counters = await db.rsvpRateLimit.findMany({
+      where: { publicationId },
+    });
+    expect(counters).toHaveLength(2);
+    expect(counters.map(({ count }) => count)).toEqual([1, 1]);
+  } finally {
+    vi.stubEnv("NODE_ENV", previousNodeEnv);
+    vi.stubEnv("RSVP_RELAY_SECRET", undefined);
+  }
+});
+
 test("publishes a cookie-free form contract without including the project snapshot", async () => {
   const { path, formVersionId } = await fixture();
   const response = await fetch(path);

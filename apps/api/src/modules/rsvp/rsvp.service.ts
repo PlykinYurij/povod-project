@@ -8,11 +8,7 @@ import type {
   RsvpReceiptDto,
   SubmitRsvpDto,
 } from "./rsvp.dto";
-import {
-  publicFormSchema,
-  RSVP_MAX_COMPANIONS,
-  RSVP_NAME_MAX_LENGTH,
-} from "./rsvp-form";
+import { describeRsvpForm } from "./rsvp-form";
 import { RsvpRateService } from "./rsvp-rate.service";
 
 const RESPONSE_LIMIT = 300;
@@ -26,12 +22,7 @@ export class RsvpService {
 
   async getForm(slug: string): Promise<PublicRsvpFormDto> {
     const form = await readActiveRsvpForm(this.database.getClient(), slug);
-    return {
-      formVersionId: form.formVersionId,
-      schema: publicFormSchema(form.formSchema),
-      nameMaxLength: RSVP_NAME_MAX_LENGTH,
-      maxCompanions: RSVP_MAX_COMPANIONS,
-    };
+    return describeRsvpForm(form.formVersionId, form.formSchema);
   }
 
   async submit(

@@ -58,11 +58,29 @@ export function isGuestPublication(value: unknown): boolean {
     !record(value.content)
   )
     return false;
+  if (
+    !record(value.rsvp) ||
+    value.rsvp.formVersionId !== value.snapshotId ||
+    value.rsvp.schema !== "garden-v1" ||
+    value.rsvp.nameMaxLength !== 80 ||
+    value.rsvp.maxCompanions !== 2
+  )
+    return false;
   if (value.cover === null) return value.content.heroMediaId === null;
   return (
     record(value.cover) &&
     validDimension(value.cover.width) &&
     validDimension(value.cover.height) &&
     value.content.heroMediaId === value.snapshotId
+  );
+}
+
+export function isRsvpReceipt(value: unknown): boolean {
+  return (
+    record(value) &&
+    typeof value.responseId === "string" &&
+    isProjectId(value.responseId) &&
+    typeof value.receivedAt === "string" &&
+    Number.isFinite(Date.parse(value.receivedAt))
   );
 }

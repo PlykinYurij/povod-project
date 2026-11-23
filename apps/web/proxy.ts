@@ -10,6 +10,8 @@ export function proxy(request: NextRequest) {
   const path = request.nextUrl.pathname;
   if (surface.kind === "platform") return NextResponse.next();
   const method = request.method;
+  if (surface.kind === "guest" && method === "POST" && path === "/rsvp")
+    return NextResponse.next();
   if (surface.kind === "guest" && (method === "GET" || method === "HEAD")) {
     if (path.startsWith("/_next/static/")) return NextResponse.next();
     if (

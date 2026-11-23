@@ -11,9 +11,11 @@ import {
 import { isPrivatePhotoImagePath, isPrivatePhotoPath } from "./photo-path";
 import { validPhotoResponse } from "./photo-validation";
 import { guestPublicationKind } from "./guest-publication-path";
+import { trustedApiOrigin } from "./api-origin";
 import {
   isGuestPublication,
   isPublicationReceipt,
+  isRsvpReceipt,
 } from "./guest-publication-validation";
 
 export class ApiRequestError extends Error {
@@ -30,22 +32,6 @@ export class ApiRequestError extends Error {
 
 function isObject(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
-}
-
-function apiOrigin(useInternal = false): string {
-  const origin =
-    (useInternal ? process.env.POVOD_INTERNAL_API_ORIGIN : undefined) ??
-    process.env.NEXT_PUBLIC_API_ORIGIN ??
-    "http://127.0.0.1:3001";
-  const url = new URL(origin);
-  if (
-    !["http:", "https:"].includes(url.protocol) ||
-    url.origin !== origin ||
-    url.username ||
-    url.password
-  )
-    throw new Error("API origin must be an exact trusted HTTP(S) origin");
-  return origin;
 }
 
 async function readJson(response: Response): Promise<unknown> {
@@ -82,7 +68,7 @@ async function browserCsrf(): Promise<string> {
   // Share only an in-flight browser bootstrap; never a server request's cookies/token.
   if (!browserBootstrap)
     browserBootstrap = (async () => {
-      const response = await fetch(`${apiOrigin()}/api/v1/auth/csrf`, {
+      const response = await fetch(`${trustedApiOrigin()}/api/v1/auth/csrf`, {
         credentials: "include",
         cache: "no-store",
       });
@@ -156,7 +142,9 @@ export async function apiFetch<T>(
     throw new Error("Unsupported request status method");
   if (adminPublish && method !== "POST")
     throw new Error("Publish only supports POST");
-  if (guest && method !== "GET")
+  const guestSubmit =
+    guest === "rsvp" && method === "POST" && typeof window !== "undefined";
+  if (guest && method !== "GET" && !guestSubmit)
     throw new Error("Guest publication is read-only");
   if (assistedMethod && method !== assistedMethod)
     throw new Error("Unsupported assisted project method");
@@ -192,6 +180,7 @@ export async function apiFetch<T>(
     options.method &&
     !["GET", "HEAD"].includes(options.method.toUpperCase()) &&
     !publicRequest &&
+    !guestSubmit &&
     !headers.has("X-CSRF-Token")
   ) {
     if (typeof window === "undefined")
@@ -201,7 +190,9 @@ export async function apiFetch<T>(
     headers.set("X-CSRF-Token", await browserCsrf());
   }
   const response = await fetch(
-    apiOrigin(!!guest && typeof window === "undefined") + path,
+    guestSubmit
+      ? "/rsvp"
+      : trustedApiOrigin(!!guest && typeof window === "undefined") + path,
     {
       ...options,
       headers,
@@ -224,6 +215,8 @@ export async function apiFetch<T>(
   const body = await readJson(response);
   if (!response.ok) throw responseError(response, body);
   if (guest === "page" && !isGuestPublication(body))
+    throw new ApiRequestError(503, "SERVICE_UNAVAILABLE");
+  if (guestSubmit && !isRsvpReceipt(body))
     throw new ApiRequestError(503, "SERVICE_UNAVAILABLE");
   if (adminPublish && !isPublicationReceipt(body))
     throw new ApiRequestError(503, "SERVICE_UNAVAILABLE");

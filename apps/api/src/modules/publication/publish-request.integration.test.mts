@@ -309,6 +309,12 @@ test("commits the reviewed snapshot, stable URL, period, audit and RSVP together
     snapshotId: receipt.snapshotId,
     content,
     cover: null,
+    rsvp: {
+      formVersionId: receipt.snapshotId,
+      schema: "garden-v1",
+      nameMaxLength: 80,
+      maxCompanions: 2,
+    },
   });
   const guestPath = pagePath + "/rsvp";
   const form = await fetch(guestPath);
@@ -503,6 +509,12 @@ test("rejects processing or foreign photos and publishes an owned ready renditio
     snapshotId: receipt.snapshotId,
     content: { ...content, heroMediaId: receipt.snapshotId },
     cover: { width: 10, height: 10 },
+    rsvp: {
+      formVersionId: receipt.snapshotId,
+      schema: "garden-v1",
+      nameMaxLength: 80,
+      maxCompanions: 2,
+    },
   });
   await expectError(
     await fetch(pagePath + "/cover/" + photo.id),
