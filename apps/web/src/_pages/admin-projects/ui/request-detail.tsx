@@ -18,6 +18,7 @@ import styles from "./request-detail.module.css";
 import { RequestStatusActions } from "./request-status-actions";
 import { AssistedCreate } from "./assisted-create";
 import { AssistedEditor } from "./assisted-editor";
+import { AssistedResponses } from "./assisted-responses";
 import { PublishedLink, PublishRequestForm } from "@features/publish-request";
 
 export function RequestDetail({ requestId }: { requestId: string }) {
@@ -148,6 +149,11 @@ export function RequestDetail({ requestId }: { requestId: string }) {
                 {record.publication && (
                   <PublishedLink receipt={record.publication} />
                 )}
+                {record.publication &&
+                  record.kind === "ASSISTANCE" &&
+                  !record.hasAccount && (
+                    <AssistedResponses key={requestId} requestId={requestId} />
+                  )}
                 {project.canEditDraft &&
                   (record.status === "NEW" ||
                     record.status === "IN_PROGRESS") &&

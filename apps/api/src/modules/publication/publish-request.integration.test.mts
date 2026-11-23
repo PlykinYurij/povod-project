@@ -5,6 +5,7 @@ import { afterAll, beforeAll, expect, test, vi } from "vitest";
 import { verifyDatabaseTarget } from "../../../../../scripts/database-safety.mjs";
 import { csrfHeaders, TEST_ORIGIN } from "../../../tests/auth-client.mjs";
 import type { ApiErrorDto } from "../../http/api-error.js";
+import type { RsvpDashboardDto } from "../rsvp/rsvp-dashboard.dto.js";
 import type {
   PublicationReceiptDto,
   PublishRequestDto,
@@ -199,6 +200,160 @@ async function expectDraft(projectId: string, requestId: string) {
       .status,
   ).toBe("IN_PROGRESS");
 }
+
+test("serves RSVP dashboard only to the owner and to administrators of assisted projects", async () => {
+  const { paths } = createOpenApiDocument(app);
+  for (const route of [
+    "/api/v1/projects/{id}/responses",
+    "/api/v1/admin/requests/{id}/responses",
+  ]) {
+    expect(paths[route].get?.responses["200"]).toMatchObject({
+      content: {
+        "application/json": {
+          schema: { $ref: "#/components/schemas/RsvpDashboardDto" },
+        },
+      },
+    });
+  }
+  const owner = await user();
+  const other = await user();
+  const a = await fixture(owner.id);
+  const b = await fixture(null);
+  const draft = await fixture(owner.id);
+  const requestPath = (id: string) =>
+    `${origin}/api/v1/admin/requests/${id}/responses`;
+  const projectPath = (id: string) =>
+    `${origin}/api/v1/projects/${id}/responses`;
+  const ownerPath = projectPath(a.project!.id);
+  const assistedPath = requestPath(b.request.id);
+  await expectError(
+    await fetch(ownerPath, { headers: owner.headers }),
+    404,
+    "RSVP_DASHBOARD_UNAVAILABLE",
+  );
+  expect((await publish(a.request.id, a.input)).status).toBe(201);
+  const published = await publish(b.request.id, b.input);
+  expect(published.status).toBe(201);
+  const receipt = (await published.json()) as PublicationReceiptDto;
+  const empty = {
+    counts: { total: 0, yes: 0, no: 0, companions: 0 },
+    items: [],
+  };
+  const emptyResponse = await fetch(ownerPath, { headers: owner.headers });
+  expect(emptyResponse.headers.get("cache-control")).toBe("private, no-store");
+  expect(await emptyResponse.json()).toEqual(empty);
+  expect(await (await fetch(assistedPath, { headers: admin })).json()).toEqual(
+    empty,
+  );
+  await expectError(await fetch(ownerPath), 401, "AUTH_REQUIRED");
+  await expectError(
+    await fetch(ownerPath, { headers: other.headers }),
+    404,
+    "RSVP_DASHBOARD_UNAVAILABLE",
+  );
+  await expectError(
+    await fetch(ownerPath, { headers: admin }),
+    404,
+    "RSVP_DASHBOARD_UNAVAILABLE",
+  );
+  await expectError(
+    await fetch(assistedPath, { headers: owner.headers }),
+    403,
+    "ADMIN_REQUIRED",
+  );
+  await expectError(
+    await fetch(requestPath(a.request.id), { headers: admin }),
+    404,
+    "RSVP_DASHBOARD_UNAVAILABLE",
+  );
+  await expectError(
+    await fetch(projectPath(draft.project!.id), { headers: owner.headers }),
+    404,
+    "RSVP_DASHBOARD_UNAVAILABLE",
+  );
+  const revoked = await user("ADMIN");
+  await db.user.update({ where: { id: revoked.id }, data: { role: "USER" } });
+  await expectError(
+    await fetch(assistedPath, { headers: revoked.headers }),
+    403,
+    "ADMIN_REQUIRED",
+  );
+  for (const query of [
+    "attendance=maybe",
+    "attendance=yes&attendance=no",
+    "ownerId=foreign",
+  ]) {
+    await expectError(
+      await fetch(assistedPath + "?" + query, { headers: admin }),
+      422,
+      "VALIDATION_FAILED",
+    );
+  }
+  const guestPath = `${origin}/api/v1/public/invitations/by-address/${b.input.slug}/rsvp`;
+  for (const [attendance, companions] of [
+    ["yes", 2],
+    ["no", 0],
+    ["yes", 1],
+  ]) {
+    const result = await fetch(guestPath, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Idempotency-Key": randomUUID(),
+      },
+      body: JSON.stringify({
+        formVersionId: receipt.snapshotId,
+        name: "Синтетический гость",
+        attendance,
+        companions,
+      }),
+    });
+    expect(result.status).toBe(201);
+  }
+  const tie = new Date("2026-11-23T08:00:00Z");
+  await db.rsvpResponse.updateMany({
+    where: { publicationId: receipt.publicationId },
+    data: { createdAt: tie },
+  });
+  await db.publication.update({
+    where: { id: receipt.publicationId },
+    data: { visible: false },
+  });
+  const result = await fetch(assistedPath + "?attendance=yes", {
+    headers: admin,
+  });
+  expect(result.status).toBe(200);
+  const body = (await result.json()) as RsvpDashboardDto;
+  expect(body.counts).toEqual({ total: 3, yes: 2, no: 1, companions: 3 });
+  expect(body.items).toHaveLength(2);
+  expect(body.items.map(({ id }) => id)).toEqual(
+    body.items
+      .map(({ id }) => id)
+      .sort()
+      .reverse(),
+  );
+  for (const row of body.items) {
+    expect(row).toEqual({
+      id: expect.any(String),
+      name: "Синтетический гость",
+      attendance: "yes",
+      companions: expect.any(Number),
+      receivedAt: tie.toISOString(),
+    });
+  }
+  expect(
+    await (await fetch(ownerPath, { headers: owner.headers })).json(),
+  ).toEqual(empty);
+  await db.publication.update({
+    where: { id: receipt.publicationId },
+    data: { expiresAt: new Date(0) },
+  });
+  await expectError(
+    await fetch(assistedPath, { headers: admin }),
+    404,
+    "RSVP_DASHBOARD_UNAVAILABLE",
+  );
+});
 
 test("requires fresh admin role, CSRF and trusted origin", async () => {
   const owner = await user();

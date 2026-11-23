@@ -4,7 +4,7 @@ const PROJECT_ID =
   "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}";
 const projectIdPattern = new RegExp(`^${PROJECT_ID}$`);
 const privateProjectPattern = new RegExp(
-  `^/projects/${PROJECT_ID}/(?:edit|preview)$`,
+  `^/projects/${PROJECT_ID}/(?:edit|preview|responses)$`,
 );
 
 export function isProjectId(value: string): boolean {
@@ -21,6 +21,10 @@ export function projectEditorHref(projectId: string): string {
 
 export function projectPreviewHref(projectId: string): string {
   return `/projects/${encodeURIComponent(projectId)}/preview`;
+}
+
+export function projectResponsesHref(projectId: string): string {
+  return `/projects/${encodeURIComponent(projectId)}/responses`;
 }
 
 export function newProjectHref(templateVersionId: string): string {
