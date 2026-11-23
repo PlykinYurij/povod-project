@@ -4,11 +4,17 @@ import { isServiceRequestReceipt } from "./service-request-validation";
 import { isProjectPublicationRequest } from "./publication-request-validation";
 import {
   isAdminRequestPath,
+  isAdminRequestPublishPath,
   isAdminRequestStatusPath,
   assistedProjectMethod,
 } from "./admin-request-path";
 import { isPrivatePhotoImagePath, isPrivatePhotoPath } from "./photo-path";
 import { validPhotoResponse } from "./photo-validation";
+import { guestPublicationKind } from "./guest-publication-path";
+import {
+  isGuestPublication,
+  isPublicationReceipt,
+} from "./guest-publication-validation";
 
 export class ApiRequestError extends Error {
   constructor(
@@ -26,8 +32,11 @@ function isObject(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
 
-function apiOrigin(): string {
-  const origin = process.env.NEXT_PUBLIC_API_ORIGIN ?? "http://127.0.0.1:3001";
+function apiOrigin(useInternal = false): string {
+  const origin =
+    (useInternal ? process.env.POVOD_INTERNAL_API_ORIGIN : undefined) ??
+    process.env.NEXT_PUBLIC_API_ORIGIN ??
+    "http://127.0.0.1:3001";
   const url = new URL(origin);
   if (
     !["http:", "https:"].includes(url.protocol) ||
@@ -35,9 +44,7 @@ function apiOrigin(): string {
     url.username ||
     url.password
   )
-    throw new Error(
-      "NEXT_PUBLIC_API_ORIGIN must be an exact trusted HTTP(S) origin",
-    );
+    throw new Error("API origin must be an exact trusted HTTP(S) origin");
   return origin;
 }
 
@@ -112,9 +119,11 @@ export async function apiFetch<T>(
   const adminAccess = path === "/api/v1/admin/access";
   const adminRequest = isAdminRequestPath(path);
   const adminRequestStatus = isAdminRequestStatusPath(path);
+  const adminPublish = isAdminRequestPublishPath(path);
   const assistedMethod = assistedProjectMethod(path);
   const photo = isPrivatePhotoPath(path);
   const photoImage = isPrivatePhotoImagePath(path);
+  const guest = guestPublicationKind(path);
   const publicRequest = path === "/api/v1/service-requests";
   const privateRequest = path === "/api/v1/publication-requests";
   if (
@@ -125,9 +134,11 @@ export async function apiFetch<T>(
       !adminAccess &&
       !adminRequest &&
       !adminRequestStatus &&
+      !adminPublish &&
       !assistedMethod &&
       !photo &&
       !photoImage &&
+      !guest &&
       !publicRequest &&
       !privateRequest) ||
     path.includes("..") ||
@@ -143,6 +154,10 @@ export async function apiFetch<T>(
     throw new Error("Admin access is read-only");
   if (adminRequestStatus && method !== "PATCH")
     throw new Error("Unsupported request status method");
+  if (adminPublish && method !== "POST")
+    throw new Error("Publish only supports POST");
+  if (guest && method !== "GET")
+    throw new Error("Guest publication is read-only");
   if (assistedMethod && method !== assistedMethod)
     throw new Error("Unsupported assisted project method");
   if (photo && method !== "GET" && method !== "POST")
@@ -152,7 +167,8 @@ export async function apiFetch<T>(
   if (projectMethods && !projectMethods.includes(method))
     throw new Error("Unsupported project method");
   const headers = new Headers(options.headers);
-  if (publicCatalog || publicRequest) {
+  const publicEndpoint = publicCatalog || publicRequest || guest !== undefined;
+  if (publicEndpoint) {
     if (
       publicCatalog &&
       options.method &&
@@ -184,14 +200,18 @@ export async function apiFetch<T>(
       );
     headers.set("X-CSRF-Token", await browserCsrf());
   }
-  const response = await fetch(apiOrigin() + path, {
-    ...options,
-    headers,
-    body: mutation && options.body === undefined ? "{}" : options.body,
-    credentials: publicCatalog || publicRequest ? "omit" : "include",
-    cache: "no-store",
-  });
-  if (photoImage && response.ok) {
+  const response = await fetch(
+    apiOrigin(!!guest && typeof window === "undefined") + path,
+    {
+      ...options,
+      headers,
+      body: mutation && options.body === undefined ? "{}" : options.body,
+      credentials: publicEndpoint ? "omit" : "include",
+      redirect: guest ? "error" : options.redirect,
+      cache: "no-store",
+    },
+  );
+  if ((photoImage || guest === "cover") && response.ok) {
     const image = await response.blob();
     if (
       image.type !== "image/webp" ||
@@ -203,6 +223,10 @@ export async function apiFetch<T>(
   }
   const body = await readJson(response);
   if (!response.ok) throw responseError(response, body);
+  if (guest === "page" && !isGuestPublication(body))
+    throw new ApiRequestError(503, "SERVICE_UNAVAILABLE");
+  if (adminPublish && !isPublicationReceipt(body))
+    throw new ApiRequestError(503, "SERVICE_UNAVAILABLE");
   if (photo && !validPhotoResponse(body, method === "GET"))
     throw new ApiRequestError(503, "SERVICE_UNAVAILABLE");
   if ((publicRequest || privateRequest) && !isServiceRequestReceipt(body))

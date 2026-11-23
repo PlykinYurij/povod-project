@@ -36,6 +36,7 @@ model User {
   projects Project[] @relation("ProjectOwner")
   createdProjects Project[] @relation("ProjectCreator")
   serviceRequests ServiceRequest[]
+  publishedRequests PublicationReceipt[]
 
   @@map("users")
 }
@@ -94,10 +95,31 @@ model PublicationSnapshot {
   supersededAt DateTime? @map("superseded_at") @db.Timestamptz(3)
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
   responses RsvpResponse[]
+  receipt PublicationReceipt?
 
   // SQL enforces one current snapshot per publication.
   @@unique([id, publicationId])
   @@map("publication_snapshots")
+}
+
+model PublicationReceipt {
+  requestId String @id @map("request_id") @db.Uuid
+  request ServiceRequest @relation(fields: [requestId], references: [id], onDelete: Restrict)
+  snapshotId String @map("snapshot_id") @db.Uuid
+  publicationId String @map("publication_id") @db.Uuid
+  snapshot PublicationSnapshot @relation(fields: [snapshotId, publicationId], references: [id, publicationId], onDelete: Restrict)
+  actorId String? @map("actor_id") @db.Uuid
+  actor User? @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  keyHash String @map("key_hash") @db.Char(64)
+  payloadHash String @map("payload_hash") @db.Char(64)
+  url String @db.VarChar(262)
+  requestVersion Int @map("request_version")
+  publishedAt DateTime @map("published_at") @db.Timestamptz(3)
+  expiresAt DateTime @map("expires_at") @db.Timestamptz(3)
+
+  @@unique([snapshotId, publicationId])
+  @@index([actorId])
+  @@map("publication_receipts")
 }
 
 enum RsvpAttendance {
@@ -246,6 +268,7 @@ model ServiceRequest {
   creationPayloadHash String @map("creation_payload_hash") @db.Char(64)
   consentAt DateTime @map("consent_at") @db.Timestamptz(3)
   consentVersion String @map("consent_version") @db.VarChar(40)
+  publicationReceipt PublicationReceipt?
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
 

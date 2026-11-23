@@ -25,5 +25,6 @@ import { ProjectPhotosService } from "./project-photos.service";
     PhotoStorage,
     ProjectPhotosService,
   ],
+  exports: [PhotoStorage],
 })
 export class MediaModule {}

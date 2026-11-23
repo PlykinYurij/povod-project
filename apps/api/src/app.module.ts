@@ -7,6 +7,7 @@ import { AdministrationModule } from "./modules/administration/administration.mo
 import { RequestsModule } from "./modules/requests/requests.module";
 import { MediaModule } from "./modules/media/media.module";
 import { RsvpModule } from "./modules/rsvp/rsvp.module";
+import { PublicationModule } from "./modules/publication/publication.module";
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { RsvpModule } from "./modules/rsvp/rsvp.module";
     RequestsModule,
     MediaModule,
     RsvpModule,
+    PublicationModule,
   ],
   controllers: [HealthController],
 })

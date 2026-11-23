@@ -16,6 +16,8 @@
     "footerText": "The warmest moments are shared."
   },
   "system": {
+    "publishedCoverAlt": "Invitation cover photo",
+    "invitationUnavailable": "Invitation unavailable",
     "firstNamePlaceholder": "First name",
     "secondNamePlaceholder": "Second name",
     "missingDate": "Date has not been set",

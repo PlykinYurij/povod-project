@@ -118,4 +118,10 @@ Identity FR-02–04 детализирован отдельно: [методы �
 
 ## Фактический публичный API RSVP E3-01
 
-OpenAPI 0.19.0 описывает GET и POST `/api/v1/public/invitations/by-address/{slug}/rsvp`. GET выдаёт версию доступной формы, POST записывает ответ и возвращает квитанцию. Для чтения и записи нужен видимый актуальный снимок и действующий срок. Маршрут гостевого HTML и операцию admin publish добавляют E2-04/E2-04b. [Поля, ошибки и правила повтора](../product/e3-01-rsvp-next.md).
+OpenAPI описывает GET и POST `/api/v1/public/invitations/by-address/{slug}/rsvp`. GET выдаёт версию доступной формы, POST записывает ответ и возвращает квитанцию. Для чтения и записи нужен видимый актуальный снимок и действующий срок. [Поля, ошибки и правила повтора](../product/e3-01-rsvp-next.md).
+
+## Фактическая операция admin publish E2-04
+
+OpenAPI 0.20.0 добавил `POST /api/v1/admin/requests/{id}/publish`. Операция отвечает квитанцией и создаёт снимок с доступной анкетой. [Поля, ошибки и правила повтора](../product/e2-04-admin-publication.md).
+
+OpenAPI 0.21.0 добавляет GET `/api/v1/public/invitations/by-address/{slug}` и `/cover/{snapshotId}` под тем же API-префиксом. Приватная карточка заявки возвращает квитанцию в `publication`, если публикация состоялась. [Публичное чтение и гостевой SSR](../product/e2-04b-guest-page.md).

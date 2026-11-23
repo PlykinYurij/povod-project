@@ -3,6 +3,10 @@ import { DatabaseService } from "../../database/database.service";
 import type { Prisma } from "../../database/generated/client";
 import { ApiError } from "../../http/api-error";
 import { projectResponse } from "../projects/project-mapping";
+import {
+  receiptFields,
+  toPublicationReceipt,
+} from "../publication/publish-request.dto";
 import { readRequestPrice } from "../requests/request-price";
 import { requireAdminForWrite } from "./admin-write";
 import type {
@@ -80,6 +84,7 @@ export class AdminRequestsService {
         priceSnapshotMinor: true,
         priceSnapshotCurrency: true,
         priceSnapshotVersion: true,
+        publicationReceipt: { select: receiptFields },
         project: {
           include: { templateVersion: { select: { templateId: true } } },
         },
@@ -95,6 +100,10 @@ export class AdminRequestsService {
       submittedRevision: row.submittedRevision,
       requestVersion: row.requestVersion,
       quotedPrice: readRequestPrice(row),
+      publication:
+        row.publicationReceipt && row.project && !row.project.deletedAt
+          ? toPublicationReceipt(row.publicationReceipt)
+          : null,
       project:
         row.project && row.project.deletedAt === null
           ? projectResponse(row.project)
