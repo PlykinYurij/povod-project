@@ -17,6 +17,12 @@ test("guest reads use the configured upstream, strip credentials and reject redi
       snapshotId: id,
       content: { heroMediaId: null },
       cover: null,
+      rsvp: {
+        formVersionId: id,
+        schema: "garden-v1",
+        nameMaxLength: 80,
+        maxCompanions: 2,
+      },
     }),
   );
   vi.stubGlobal("fetch", fetchFake);
@@ -42,4 +48,38 @@ test("guest reads use the configured upstream, strip credentials and reject redi
     "read-only",
   );
   expect(fetchFake).toHaveBeenCalledTimes(1);
+});
+
+test("the browser posts through its own guest address without cookies or a CSRF bootstrap", async () => {
+  vi.stubGlobal("window", {});
+  const fetchFake = vi.fn().mockResolvedValue(
+    Response.json(
+      {
+        responseId: id,
+        receivedAt: "2026-11-23T00:00:00.000Z",
+      },
+      { status: 201 },
+    ),
+  );
+  vi.stubGlobal("fetch", fetchFake);
+  await apiFetch(guestPath + "/rsvp", {
+    method: "POST",
+    headers: {
+      Cookie: "synthetic",
+      Authorization: "synthetic",
+      "Idempotency-Key": id,
+    },
+    body: "{}",
+  });
+  expect(fetchFake).toHaveBeenCalledTimes(1);
+  const [url, options] = fetchFake.mock.calls[0];
+  expect(url).toBe("/rsvp");
+  expect(options).toMatchObject({
+    credentials: "omit",
+    cache: "no-store",
+    redirect: "error",
+  });
+  expect(options.headers.get("Cookie")).toBeNull();
+  expect(options.headers.get("X-CSRF-Token")).toBeNull();
+  expect(options.headers.get("Idempotency-Key")).toBe(id);
 });

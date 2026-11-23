@@ -31,6 +31,7 @@ import { PublicRsvpFormDto, RsvpReceiptDto, SubmitRsvpDto } from "./rsvp.dto";
 import { PUBLICATION_SLUG } from "../publication/publication-address";
 import { invitationUnavailable } from "../publication/active-publication";
 import { RsvpService } from "./rsvp.service";
+import { rsvpClientIp } from "./rsvp-relay";
 
 @Injectable()
 class RsvpJsonGuard implements CanActivate {
@@ -109,6 +110,11 @@ export class RsvpController {
     description: "MALFORMED_JSON",
   })
   @ApiResponse({
+    status: 403,
+    type: ApiErrorDto,
+    description: "RSVP_RELAY_REQUIRED",
+  })
+  @ApiResponse({
     status: 409,
     type: ApiErrorDto,
     description:
@@ -144,7 +150,7 @@ export class RsvpController {
       slug,
       input,
       readIdempotencyKey(key),
-      request.ip ?? request.socket.remoteAddress ?? "unknown",
+      rsvpClientIp(request),
     );
     if ("retryAfter" in result) {
       response.setHeader("Retry-After", result.retryAfter);

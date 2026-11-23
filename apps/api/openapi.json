@@ -3032,6 +3032,16 @@
               }
             }
           },
+          "403": {
+            "description": "RSVP_RELAY_REQUIRED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
           "404": {
             "description": "INVITATION_UNAVAILABLE",
             "content": {
@@ -3418,7 +3428,7 @@
   "info": {
     "title": "Повод API",
     "description": "",
-    "version": "0.21.0",
+    "version": "0.22.0",
     "contact": {}
   },
   "tags": [],
@@ -5056,13 +5066,17 @@
                 "$ref": "#/components/schemas/GuestCoverDto"
               }
             ]
+          },
+          "rsvp": {
+            "$ref": "#/components/schemas/PublicRsvpFormDto"
           }
         },
         "required": [
           "templateVersionId",
           "snapshotId",
           "content",
-          "cover"
+          "cover",
+          "rsvp"
         ]
       }
     }

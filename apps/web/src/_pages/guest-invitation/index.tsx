@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { cache } from "react";
 import { GardenInvitation } from "@entities/invitation";
+import { GuestRsvp } from "@features/guest-rsvp";
 import { ApiRequestError, getGuestPublication } from "@shared/api/server";
 import { getGardenTranslations } from "@shared/i18n/garden";
 
@@ -51,12 +52,13 @@ export async function guestInvitationMetadata(
 
 export async function GuestInvitationPage({ slug }: { slug: string }) {
   const invitation = await readInvitation(slug);
-  const { cover, content, snapshotId } = invitation;
+  const { cover, content, rsvp, snapshotId } = invitation;
   const t = getGardenTranslations(content.locale);
   return (
     <main>
       <GardenInvitation
         content={content}
+        rsvp={<GuestRsvp slug={slug} schema={rsvp} locale={content.locale} />}
         media={
           cover
             ? {

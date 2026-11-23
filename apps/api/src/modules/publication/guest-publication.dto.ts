@@ -1,5 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { GardenContentDto } from "../templates/garden/garden-content.dto";
+import { PublicRsvpFormDto } from "../rsvp/rsvp.dto";
 
 export class GuestCoverDto {
   @ApiProperty({ type: "integer" }) width!: number;
@@ -13,4 +14,6 @@ export class GuestPublicationDto {
   @ApiProperty({ type: GardenContentDto }) content!: GardenContentDto;
   @ApiProperty({ type: GuestCoverDto, nullable: true })
   cover!: GuestCoverDto | null;
+  @ApiProperty({ type: PublicRsvpFormDto })
+  rsvp!: PublicRsvpFormDto;
 }

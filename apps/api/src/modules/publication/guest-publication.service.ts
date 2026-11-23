@@ -1,8 +1,10 @@
 import { Injectable } from "@nestjs/common";
 import { DatabaseService } from "../../database/database.service";
+import type { RsvpFormSchema } from "../../database/generated/client";
 import { ApiError } from "../../http/api-error";
 import { photoRenditionKey, PhotoStorage } from "../media/photo-storage";
 import { validateGardenContent } from "../templates/garden/validate-garden";
+import { describeRsvpForm } from "../rsvp/rsvp-form";
 import {
   activePublicationBySlug,
   invitationUnavailable,
@@ -27,6 +29,7 @@ export class GuestPublicationService {
       snapshotId: snapshot.id,
       content: { ...snapshot.content, heroMediaId: cover ? snapshot.id : null },
       cover: cover ? { width: cover.width, height: cover.height } : null,
+      rsvp: describeRsvpForm(snapshot.id, snapshot.formSchema),
     };
   }
 
@@ -50,9 +53,11 @@ export class GuestPublicationService {
         projectId: string;
         templateVersionId: string;
         content: unknown;
+        formSchema: RsvpFormSchema;
       }[]
     >`
-      SELECT s.id, project.id AS "projectId", project.template_version_id AS "templateVersionId", s.content
+      SELECT s.id, project.id AS "projectId", project.template_version_id AS "templateVersionId",
+        s.content, s.form_schema::text AS "formSchema"
       ${activePublicationBySlug(slug)}
     `;
     if (!row) throw invitationUnavailable();
@@ -64,6 +69,7 @@ export class GuestPublicationService {
         projectId: row.projectId,
         templateVersionId: row.templateVersionId,
         content: validateGardenContent(row.content),
+        formSchema: row.formSchema,
       } as const;
     } catch {
       throw new ApiError(
