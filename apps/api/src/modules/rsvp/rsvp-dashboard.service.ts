@@ -4,7 +4,7 @@ import type { Prisma, RsvpAttendance } from "../../database/generated/client";
 import { ApiError } from "../../http/api-error";
 import type { RsvpDashboardDto } from "./rsvp-dashboard.dto";
 
-type Scope =
+export type RsvpScope =
   | { kind: "owner"; projectId: string; ownerId: string }
   | { kind: "assisted"; requestId: string };
 
@@ -13,25 +13,12 @@ export class RsvpDashboardService {
   constructor(private readonly database: DatabaseService) {}
 
   async list(
-    scope: Scope,
+    scope: RsvpScope,
     attendance?: RsvpAttendance,
   ): Promise<RsvpDashboardDto> {
     return this.database.getClient().$transaction(
       async (tx) => {
-        const [clock] = await tx.$queryRaw<
-          { now: Date }[]
-        >`SELECT clock_timestamp() AS now`;
-        const publication = await tx.publication.findFirst({
-          where: { expiresAt: { gt: clock.now }, project: projectScope(scope) },
-          select: { id: true },
-        });
-        if (!publication) {
-          throw new ApiError(
-            404,
-            "RSVP_DASHBOARD_UNAVAILABLE",
-            "Ответы недоступны",
-          );
-        }
+        const publication = await readDashboardPublication(tx, scope);
         // The write transaction caps the project at 300 stored replies.
         const rows = await tx.rsvpResponse.findMany({
           where: { publicationId: publication.id },
@@ -62,7 +49,23 @@ export class RsvpDashboardService {
   }
 }
 
-function projectScope(scope: Scope): Prisma.ProjectWhereInput {
+export async function readDashboardPublication(
+  tx: Prisma.TransactionClient,
+  scope: RsvpScope,
+) {
+  const [clock] = await tx.$queryRaw<
+    { now: Date }[]
+  >`SELECT clock_timestamp() AS now`;
+  const publication = await tx.publication.findFirst({
+    where: { expiresAt: { gt: clock.now }, project: projectScope(scope) },
+    select: { id: true, projectId: true },
+  });
+  if (!publication)
+    throw new ApiError(404, "RSVP_DASHBOARD_UNAVAILABLE", "Ответы недоступны");
+  return publication;
+}
+
+function projectScope(scope: RsvpScope): Prisma.ProjectWhereInput {
   if (scope.kind === "owner")
     return { id: scope.projectId, ownerId: scope.ownerId, deletedAt: null };
 

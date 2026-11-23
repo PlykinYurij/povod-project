@@ -16,6 +16,7 @@
     "footerText": "The warmest moments are shared."
   },
   "system": {
+    "rsvpDeleted": "The organizer deleted this reply.",
     "rsvpName": "Name or nickname",
     "rsvpNameInvalid": "Enter a name from 1 to {max} characters.",
     "rsvpAttendance": "Will you attend?",

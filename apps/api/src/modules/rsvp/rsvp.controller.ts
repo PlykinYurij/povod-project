@@ -118,7 +118,7 @@ export class RsvpController {
     status: 409,
     type: ApiErrorDto,
     description:
-      "IDEMPOTENCY_KEY_REUSED, RSVP_FORM_CHANGED or RSVP_LIMIT_REACHED",
+      "IDEMPOTENCY_KEY_REUSED, RSVP_FORM_CHANGED, RSVP_LIMIT_REACHED or RSVP_RESPONSE_DELETED",
   })
   @ApiResponse({
     status: 413,

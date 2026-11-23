@@ -1,5 +1,14 @@
 {
   "RsvpDashboard": {
+    "export": "Download XLSX",
+    "exportFailed": "Could not download the file. Try again.",
+    "delete": "Delete",
+    "deleteNamed": "Delete response: {name}",
+    "deleteConfirmation": "Confirm deletion",
+    "deletePrompt": "Delete the reply from “{name}”? It will disappear from the list and export.",
+    "cancelDelete": "Cancel",
+    "confirmDelete": "Delete response",
+    "deleteFailed": "Could not delete the response. Try again.",
     "heading": "Guest responses",
     "account": "Back to projects",
     "filter": "Attendance",

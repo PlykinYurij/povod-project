@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { createRequire } from "node:module";
 import type { INestApplication } from "@nestjs/common";
+import { strFromU8, unzipSync } from "fflate";
 import { afterAll, beforeAll, expect, test, vi } from "vitest";
 import { verifyDatabaseTarget } from "../../../../../scripts/database-safety.mjs";
 import { csrfHeaders, TEST_ORIGIN } from "../../../tests/auth-client.mjs";
@@ -350,6 +351,167 @@ test("serves RSVP dashboard only to the owner and to administrators of assisted 
   });
   await expectError(
     await fetch(assistedPath, { headers: admin }),
+    404,
+    "RSVP_DASHBOARD_UNAVAILABLE",
+  );
+});
+
+test("exports a formula-safe workbook, removes a reply and releases its slot without replaying it", async () => {
+  const owner = await user();
+  const other = await user();
+  const fixtureA = await fixture(owner.id);
+  const fixtureB = await fixture(null);
+  const a = (await (
+    await publish(fixtureA.request.id, fixtureA.input)
+  ).json()) as PublicationReceiptDto;
+  const b = (await (
+    await publish(fixtureB.request.id, fixtureB.input)
+  ).json()) as PublicationReceiptDto;
+  const path = `${origin}/api/v1/projects/${fixtureA.project!.id}/responses`;
+  const assisted = `${origin}/api/v1/admin/requests/${fixtureB.request.id}/responses`;
+  const mime =
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+  const guestKey = randomUUID();
+  const payload = {
+    formVersionId: a.snapshotId,
+    name: '=Гость("<&>")',
+    attendance: "yes",
+    companions: 2,
+  };
+  const guest = (key: string, body = payload) =>
+    fetch(
+      `${origin}/api/v1/public/invitations/by-address/${fixtureA.input.slug}/rsvp`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Idempotency-Key": key },
+        body: JSON.stringify(body),
+      },
+    );
+  const submit = await guest(guestKey);
+  expect(submit.status).toBe(201);
+  const { responseId } = (await submit.json()) as { responseId: string };
+  const second = await db.rsvpResponse.create({
+    data: {
+      publicationId: b.publicationId,
+      formVersionId: b.snapshotId,
+      name: "Другой гость",
+      attendance: "no",
+      companions: 0,
+      keyHash: "a".repeat(64),
+    },
+  });
+
+  const exported = await fetch(path + "/export", { headers: owner.headers });
+  expect(exported.status).toBe(200);
+  expect(exported.headers.get("Content-Type")).toBe(mime);
+  expect(exported.headers.get("Content-Disposition")).toBe(
+    'attachment; filename="rsvp-responses.xlsx"',
+  );
+  expect(exported.headers.get("Cache-Control")).toBe("private, no-store");
+  const zip = unzipSync(new Uint8Array(await exported.arrayBuffer()));
+  const sheet = strFromU8(zip["xl/worksheets/sheet1.xml"]);
+  expect(sheet).toContain("Имя или псевдоним");
+  expect(sheet).toContain(
+    't="inlineStr"><is><t xml:space="preserve">=Гость("&lt;&amp;&gt;")',
+  );
+  expect(sheet).toContain('<c r="C2"><v>2</v></c>');
+  expect(sheet).not.toContain("<f>");
+  expect(sheet).not.toContain("Другой гость");
+  expect((await fetch(assisted + "/export", { headers: admin })).status).toBe(
+    200,
+  );
+  await expectError(
+    await fetch(path + "/export", { headers: other.headers }),
+    404,
+    "RSVP_DASHBOARD_UNAVAILABLE",
+  );
+  await expectError(
+    await fetch(assisted + "/export", { headers: owner.headers }),
+    403,
+    "ADMIN_REQUIRED",
+  );
+
+  const remove = (url: string, headers: Record<string, string>, body = {}) =>
+    fetch(url, {
+      method: "DELETE",
+      headers: {
+        ...headers,
+        Origin: TEST_ORIGIN,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    });
+  await expectError(
+    await remove(path + "/" + responseId, { Cookie: owner.headers.Cookie }),
+    403,
+    "CSRF_FAILED",
+  );
+  await expectError(
+    await remove(path + "/" + responseId, other.headers),
+    404,
+    "RSVP_DASHBOARD_UNAVAILABLE",
+  );
+  await expectError(
+    await remove(path + "/" + second.id, owner.headers),
+    404,
+    "RSVP_RESPONSE_NOT_FOUND",
+  );
+  await expectError(
+    await remove(path + "/" + responseId, owner.headers, {
+      responseId: second.id,
+    }),
+    422,
+    "VALIDATION_FAILED",
+  );
+  await db.rsvpResponse.createMany({
+    data: Array.from({ length: 299 }, (_, index) => ({
+      publicationId: a.publicationId,
+      formVersionId: a.snapshotId,
+      keyHash: (index + 1).toString(16).padStart(64, "0"),
+      name: "Синтетический гость",
+      attendance: "no" as const,
+      companions: 0,
+    })),
+  });
+  await expectError(await guest(randomUUID()), 409, "RSVP_LIMIT_REACHED");
+  const removals = await Promise.all([
+    remove(path + "/" + responseId, owner.headers),
+    remove(path + "/" + responseId, owner.headers),
+  ]);
+  expect(removals.map(({ status }) => status)).toEqual([204, 204]);
+  await expectError(await guest(guestKey), 409, "RSVP_RESPONSE_DELETED");
+  await expectError(
+    await guest(guestKey, { ...payload, name: "Новое значение" }),
+    409,
+    "RSVP_RESPONSE_DELETED",
+  );
+  expect(
+    await db.rsvpResponse.findUnique({ where: { id: responseId } }),
+  ).toBeNull();
+  expect(
+    await db.rsvpDeletedKey.count({
+      where: { responseId, publicationId: a.publicationId },
+    }),
+  ).toBe(1);
+  expect((await guest(randomUUID())).status).toBe(201);
+  expect(
+    await db.rsvpResponse.count({ where: { publicationId: a.publicationId } }),
+  ).toBe(300);
+  expect((await remove(assisted + "/" + second.id, admin)).status).toBe(204);
+  expect(
+    await db.rsvpResponse.count({ where: { publicationId: b.publicationId } }),
+  ).toBe(0);
+  await db.publication.update({
+    where: { id: b.publicationId },
+    data: { expiresAt: new Date(0) },
+  });
+  await expectError(
+    await fetch(assisted + "/export", { headers: admin }),
+    404,
+    "RSVP_DASHBOARD_UNAVAILABLE",
+  );
+  await expectError(
+    await remove(assisted + "/" + second.id, admin),
     404,
     "RSVP_DASHBOARD_UNAVAILABLE",
   );

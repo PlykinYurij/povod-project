@@ -36,11 +36,13 @@ export function GuestRsvp({
   const apiError = error instanceof ApiRequestError ? error : undefined;
   const uncertain = !!error && (!apiError || apiError.status >= 500);
   const terminal =
-    apiError?.code === "RSVP_LIMIT_REACHED"
-      ? "rsvpLimit"
-      : apiError?.status === 404
-        ? "rsvpUnavailable"
-        : undefined;
+    apiError?.code === "RSVP_RESPONSE_DELETED"
+      ? "rsvpDeleted"
+      : apiError?.code === "RSVP_LIMIT_REACHED"
+        ? "rsvpLimit"
+        : apiError?.status === 404
+          ? "rsvpUnavailable"
+          : undefined;
   const refresh =
     apiError?.code === "RSVP_FORM_CHANGED" ||
     apiError?.code === "IDEMPOTENCY_KEY_REUSED";

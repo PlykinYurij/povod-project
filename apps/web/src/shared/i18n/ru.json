@@ -1,5 +1,14 @@
 {
   "RsvpDashboard": {
+    "export": "Скачать XLSX",
+    "exportFailed": "Не удалось скачать файл. Попробуйте ещё раз.",
+    "delete": "Удалить",
+    "deleteNamed": "Удалить ответ: {name}",
+    "deleteConfirmation": "Подтверждение удаления",
+    "deletePrompt": "Удалить ответ «{name}»? Он исчезнет из списка и экспорта.",
+    "cancelDelete": "Отмена",
+    "confirmDelete": "Удалить ответ",
+    "deleteFailed": "Не удалось удалить ответ. Попробуйте ещё раз.",
     "heading": "Ответы гостей",
     "account": "К моим проектам",
     "filter": "Участие",
