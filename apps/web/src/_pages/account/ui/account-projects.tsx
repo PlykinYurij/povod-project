@@ -7,12 +7,14 @@ import { Alert, Anchor, Button, Group, Stack, Text, Title } from "@shared/ui";
 import {
   projectEditorHref,
   projectPreviewHref,
+  projectResponsesHref,
 } from "@shared/config/project-navigation";
 import styles from "../account.module.css";
 
 export function AccountProjects() {
   const t = useTranslations("Projects");
   const account = useTranslations("Account");
+  const responses = useTranslations("RsvpDashboard");
   const projects = useGetProjects();
 
   return (
@@ -61,6 +63,14 @@ export function AccountProjects() {
                   >
                     {t("preview")}
                   </Anchor>
+                  {project.firstPublishedAt !== null && (
+                    <Anchor
+                      component={Link}
+                      href={projectResponsesHref(project.id)}
+                    >
+                      {responses("heading")}
+                    </Anchor>
+                  )}
                 </Group>
               </li>
             ))}

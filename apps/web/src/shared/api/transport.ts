@@ -12,6 +12,8 @@ import { isPrivatePhotoImagePath, isPrivatePhotoPath } from "./photo-path";
 import { validPhotoResponse } from "./photo-validation";
 import { guestPublicationKind } from "./guest-publication-path";
 import { trustedApiOrigin } from "./api-origin";
+import { isRsvpDashboardPath } from "./rsvp-dashboard-path";
+import { isRsvpDashboard } from "./rsvp-dashboard-validation";
 import {
   isGuestPublication,
   isPublicationReceipt,
@@ -112,6 +114,7 @@ export async function apiFetch<T>(
   const guest = guestPublicationKind(path);
   const publicRequest = path === "/api/v1/service-requests";
   const privateRequest = path === "/api/v1/publication-requests";
+  const rsvpDashboard = isRsvpDashboardPath(path);
   if (
     (!path.startsWith("/api/v1/auth/") &&
       path !== "/health" &&
@@ -125,6 +128,7 @@ export async function apiFetch<T>(
       !photo &&
       !photoImage &&
       !guest &&
+      !rsvpDashboard &&
       !publicRequest &&
       !privateRequest) ||
     path.includes("..") ||
@@ -138,6 +142,8 @@ export async function apiFetch<T>(
     throw new Error("Public service request only supports POST");
   if ((adminAccess || adminRequest) && method !== "GET")
     throw new Error("Admin access is read-only");
+  if (rsvpDashboard && method !== "GET")
+    throw new Error("RSVP dashboard is read-only");
   if (adminRequestStatus && method !== "PATCH")
     throw new Error("Unsupported request status method");
   if (adminPublish && method !== "POST")
@@ -214,6 +220,8 @@ export async function apiFetch<T>(
   }
   const body = await readJson(response);
   if (!response.ok) throw responseError(response, body);
+  if (rsvpDashboard && !isRsvpDashboard(body))
+    throw new ApiRequestError(503, "SERVICE_UNAVAILABLE");
   if (guest === "page" && !isGuestPublication(body))
     throw new ApiRequestError(503, "SERVICE_UNAVAILABLE");
   if (guestSubmit && !isRsvpReceipt(body))

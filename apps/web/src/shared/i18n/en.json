@@ -1,4 +1,26 @@
 {
+  "RsvpDashboard": {
+    "heading": "Guest responses",
+    "account": "Back to projects",
+    "filter": "Attendance",
+    "all": "All responses",
+    "yes": "Attending",
+    "no": "Not attending",
+    "total": "Total responses",
+    "companions": "Companions",
+    "totals": "Project totals",
+    "name": "Name or nickname",
+    "attendance": "Reply",
+    "receivedAt": "Received",
+    "loading": "Loading responses…",
+    "refresh": "Refresh",
+    "unavailable": "Responses for this project are unavailable.",
+    "error": "Could not load responses. Try again.",
+    "empty": "No responses yet.",
+    "noMatches": "No responses match this filter.",
+    "open": "Show guest responses",
+    "close": "Hide guest responses"
+  },
   "AdminPublish": {
     "title": "Publish invitation",
     "description": "Guests will see this version. The 90-day period starts immediately and the project is locked for editing.",
