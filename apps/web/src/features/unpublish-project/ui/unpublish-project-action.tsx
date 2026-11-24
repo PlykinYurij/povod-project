@@ -68,7 +68,7 @@ export function UnpublishProjectAction({
   const submit = form.handleSubmit(({ mode, reason }) => {
     if (busy || uncertain || stale || forbidden) return;
     if (mode !== "PAUSE_PERIOD" && mode !== "KEEP_RUNNING") return;
-    const next = {
+    const next: Attempt = {
       key: crypto.randomUUID(),
       payload: {
         mode,
