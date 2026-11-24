@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Вдвоём · эскиз свадебного приглашения</title>
+  <style>
+    :root { color-scheme: light; --ink: #202247; --blue: #282d79; --cream: #fff8e7; --gold: #f4d473; --line: #c3ab65; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--cream); color: var(--ink); font: 1rem/1.55 system-ui, sans-serif; }
+    :focus-visible { outline: 3px solid #4962d0; outline-offset: 4px; }
+    .controls { background: white; color: var(--ink); padding: .8rem max(1rem, calc((100% - 64rem) / 2)); }
+    fieldset { display: flex; flex-wrap: wrap; gap: .35rem 1rem; border: 0; padding: 0; margin: 0; }
+    legend { font-weight: 700; }
+    label { display: inline-flex; align-items: center; gap: .25rem; min-height: 2.75rem; cursor: pointer; }
+    .hero { background: var(--blue); color: var(--cream); }
+    .frame { width: min(100% - 2rem, 64rem); margin-inline: auto; }
+    .hero-inner { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, .64fr); gap: clamp(1rem, 4vw, 4rem); align-items: center; padding-block: clamp(2rem, 7vw, 6rem); }
+    .label { font-size: .78rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
+    .hero .label { color: var(--gold); }
+    h1, h2, p, dd { overflow-wrap: anywhere; }
+    h1, h2 { font-family: Georgia, serif; line-height: 1.08; font-weight: 400; margin-block: 0 1rem; }
+    h1 { font-size: clamp(2.7rem, 8vw, 6.75rem); letter-spacing: -.045em; }
+    h2 { font-size: clamp(2rem, 4.7vw, 3.6rem); }
+    .join { font-size: .48em; color: var(--gold); }
+    .intro, .note { white-space: pre-line; }
+    .art { aspect-ratio: 1; position: relative; isolation: isolate; animation: appear .45s ease-out both; }
+    .art::before, .art::after { position: absolute; inset: 13% 21% 13% 10%; border: clamp(.12rem, .4vw, .3rem) solid var(--gold); border-radius: 50% 50% 7% 7%; content: ""; transform: rotate(-24deg); }
+    .art::after { inset: 13% 10% 13% 21%; transform: rotate(24deg); }
+    @keyframes appear { from { opacity: 0; transform: translateY(.5rem); } to { opacity: 1; transform: translateY(0); } }
+    .section { padding-block: clamp(2rem, 5vw, 4rem); border-bottom: 1px solid var(--line); }
+    .details { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 1rem 2rem; margin-block-end: 0; }
+    dt { font-weight: 700; }
+    dd { margin: .3rem 0 0; }
+    .photo { display: grid; place-items: center; min-height: 12rem; background: #efe3bf; border: 1px dashed #756337; text-align: center; padding: 1rem; }
+    .button { display: inline-flex; justify-content: center; align-items: center; min-height: 2.75rem; padding: .65rem 1.15rem; background: var(--blue); color: white; font: inherit; font-weight: 700; border: 0; border-radius: .25rem; }
+    .button:disabled { background: #555984; }
+    footer { padding-block: 2rem; }
+    [hidden] { display: none !important; }
+    @media (max-width: 40rem) { .hero-inner, .details { grid-template-columns: minmax(0, 1fr); } .art { width: min(65%, 13rem); margin-inline: auto; } }
+    @media (prefers-reduced-motion: reduce) { .art { animation: none; } }
+    @media print { .controls { display: none; } }
+  </style>
+</head>
+<body>
+  <aside class="controls" aria-label="Панель просмотра макета">
+    <fieldset>
+      <legend>Примеры предпросмотра E5-01</legend>
+      <label><input type="radio" name="sample" value="full" checked> Все блоки</label>
+      <label><input type="radio" name="sample" value="minimal"> Без доп. блоков</label>
+      <label><input type="radio" name="sample" value="long"> Длинные тексты</label>
+      <label><input type="radio" name="sample" value="empty"> Пустой черновик</label>
+      <label><input type="radio" name="sample" value="photoPending"> Обработка фото</label>
+      <label><input type="radio" name="sample" value="photoError"> Ошибка фото</label>
+    </fieldset>
+  </aside>
+  <main>
+    <p class="frame" id="draft-note" role="status" hidden>Добавьте имена, дату и место в редакторе.</p>
+    <header class="hero">
+      <div class="frame hero-inner">
+        <div>
+          <p class="label" data-field="heroLabel">Приглашение на свадьбу</p>
+          <h1><span data-field="firstName">Алёна</span><br><span class="join" data-field="separator">и</span> <span data-field="secondName">Роман</span></h1>
+          <p class="intro" data-field="intro">Хотим провести этот день с вами. Приходите на свадьбу, а вечером оставайтесь танцевать.</p>
+        </div>
+        <div class="art" aria-hidden="true"></div>
+      </div>
+    </header>
+    <div class="frame">
+      <section class="section" aria-labelledby="event">
+        <h2 id="event" data-field="eventHeading">Где и когда</h2>
+        <dl class="details">
+          <div><dt data-field="dateLabel">Встречаемся</dt><dd data-field="dateTime">18 сентября 2027 · 16:00</dd></div>
+          <div><dt data-field="venueLabel">Место</dt><dd><span data-field="venueName">Зал «Маяк»</span><br><span data-field="venueAddress">Вымышленный город, Набережная, 8</span></dd></div>
+        </dl>
+      </section>
+      <section id="photo" class="section" aria-labelledby="photo-heading">
+        <h2 id="photo-heading" data-field="photoHeading">Наше фото</h2>
+        <div id="photo-display" class="photo">
+          <span>Здесь появится выбранное фото</span>
+        </div>
+        <p id="photo-pending" role="status" hidden>Фото обрабатывается. Можно продолжить редактирование.</p>
+        <p id="photo-error" role="status" hidden>Фото недоступно. Проверьте файл в редакторе.</p>
+      </section>
+      <section id="note" class="section" aria-labelledby="note-heading">
+        <h2 id="note-heading" data-field="noteHeading">Пожелания</h2>
+        <p class="note" data-field="noteBody">Если хотите, добавьте к своему образу одну деталь любимого цвета.</p>
+      </section>
+      <section class="section" aria-labelledby="rsvp">
+        <h2 id="rsvp" data-field="rsvpHeading">Увидимся?</h2>
+        <p data-field="rsvpIntro">Пожалуйста, сообщите, сможете ли вы прийти.</p>
+        <button class="button" type="button" disabled data-field="rsvpAction">Ответить на приглашение</button>
+        <p>В предпросмотре ответы не принимаются.</p>
+      </section>
+      <footer><p data-field="signoff">До встречи, Алёна и Роман</p></footer>
+    </div>
+  </main>
+  <script>
+    const fields = Array.from(document.querySelectorAll("[data-field]"));
+    const defaults = new Map(fields.map(field => [field, field.textContent]));
+    const emptySample = {
+      firstName: "Первое имя",
+      secondName: "Второе имя",
+      dateTime: "Дата и время не указаны",
+      venueName: "Место не указано",
+      venueAddress: "",
+    };
+    const longSample = {
+      firstName: "Александра-Мария",
+      secondName: "Константин-Александр",
+      intro: "Встретимся ближе к вечеру, чтобы сначала увидеться на церемонии, а потом поужинать вместе.\nПриходите немного заранее — мы хотим успеть поздороваться со всеми.",
+      venueName: "Галерея на верхнем этаже старого вокзала",
+      venueAddress: "Вымышленный город, Северо-Восточная набережная, строение 12/6, второй вход со стороны пешеходного моста",
+      noteBody: "Возьмите удобную обувь. После ужина мы выйдем на террасу, и там может быть прохладно. Если вам нужна помощь с маршрутом, свяжитесь с нами заранее.",
+    };
+
+    function renderSample(sample) {
+      const values = sample === "long" ? longSample : sample === "empty" ? emptySample : {};
+      for (const field of fields) {
+        field.textContent = values[field.dataset.field] ?? defaults.get(field);
+      }
+      const withoutOptional = sample === "minimal" || sample === "empty";
+      document.getElementById("draft-note").hidden = sample !== "empty";
+      document.getElementById("photo").hidden = withoutOptional;
+      document.getElementById("note").hidden = withoutOptional;
+      document.getElementById("photo-display").hidden = sample === "photoError" || sample === "photoPending";
+      document.getElementById("photo-pending").hidden = sample !== "photoPending";
+      document.getElementById("photo-error").hidden = sample !== "photoError";
+    }
+
+    document.querySelector("fieldset").addEventListener("change", event => {
+      renderSample(event.target.value);
+    });
+  </script>
+</body>
+</html>
