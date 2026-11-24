@@ -106,7 +106,7 @@ export function UnpublishProjectAction({
         color="red"
         variant="outline"
         onClick={() => setOpened(true)}
-        disabled={forbidden || stale}
+        disabled={forbidden}
         w="fit-content"
       >
         {t("title")}

@@ -80,7 +80,7 @@ test("requires an explicit mode and reason, and retries the immutable attempt af
   );
 });
 
-test("refreshes on a definite conflict without resending", async () => {
+test("can reopen after a conflict to refresh without resending", async () => {
   const refresh = show();
   fill();
   send.mockRejectedValueOnce(
@@ -89,6 +89,9 @@ test("refreshes on a definite conflict without resending", async () => {
   confirm();
   await screen.findByText(t.stale);
   expect(screen.queryByRole("button", { name: t.retry })).toBeNull();
+  fireEvent.click(screen.getByRole("button", { name: t.close }));
+  fireEvent.click(await screen.findByRole("button", { name: t.title }));
+  await screen.findByText(t.stale);
   fireEvent.click(screen.getByRole("button", { name: t.refresh }));
   await waitFor(() => expect(refresh).toHaveBeenCalledOnce());
   expect(send).toHaveBeenCalledOnce();

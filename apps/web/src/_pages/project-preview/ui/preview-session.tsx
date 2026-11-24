@@ -42,6 +42,8 @@ function SavedPreview({ projectId }: { projectId: string }) {
   const saved = project.data;
   if (saved.templateVersionId !== "wedding-garden-v1")
     return <Alert role="alert">{t("unsupported")}</Alert>;
+  const canRequestFirstPublication =
+    saved.canEditDraft && saved.firstPublishedAt === null;
 
   return (
     <Stack gap="lg">
@@ -55,7 +57,7 @@ function SavedPreview({ projectId }: { projectId: string }) {
           {t("edit")}
         </Anchor>
       )}
-      {saved.canEditDraft && (
+      {canRequestFirstPublication && (
         <Anchor href="#publication-request">{t("requestJump")}</Anchor>
       )}
       <PrivateGardenPreview
@@ -63,7 +65,7 @@ function SavedPreview({ projectId }: { projectId: string }) {
         content={saved.content}
         rsvp={<p>{t("guestFormPreview")}</p>}
       />
-      {saved.canEditDraft && (
+      {canRequestFirstPublication && (
         <PublicationRequestPanel
           projectId={projectId}
           revision={saved.revision}
