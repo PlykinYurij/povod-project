@@ -33,7 +33,7 @@
     dt { font-weight: 700; }
     dd { margin: .3rem 0 0; }
     .photo { display: grid; place-items: center; min-height: 12rem; background: #efe3bf; border: 1px dashed #756337; text-align: center; padding: 1rem; }
-    .button { display: inline-flex; justify-content: center; align-items: center; min-height: 2.75rem; padding: .65rem 1.15rem; background: var(--blue); color: white; font: inherit; font-weight: 700; border: 0; border-radius: .25rem; }
+    .button { display: inline-block; max-inline-size: 100%; min-height: 2.75rem; padding: .65rem 1.15rem; background: var(--blue); color: white; font: inherit; font-weight: 700; border: 0; border-radius: .25rem; white-space: normal; overflow-wrap: anywhere; }
     .button:disabled { background: #555984; }
     footer { padding-block: 2rem; }
     [hidden] { display: none !important; }
@@ -112,6 +112,7 @@
       venueName: "Галерея на верхнем этаже старого вокзала",
       venueAddress: "Вымышленный город, Северо-Восточная набережная, строение 12/6, второй вход со стороны пешеходного моста",
       noteBody: "Возьмите удобную обувь. После ужина мы выйдем на террасу, и там может быть прохладно. Если вам нужна помощь с маршрутом, свяжитесь с нами заранее.",
+      rsvpAction: "СверхдлиннаяПодписьКнопкиПодтвержденияУчастияНаСвадебномТоржестве",
     };
 
     function renderSample(sample) {
