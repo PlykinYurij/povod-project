@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Повод · Снятие публикации</title>
+  <style>
+    :root { color-scheme: light; --bg: #f6f7fb; --surface: #fff; --ink: #18213a; --muted: #4b5569; --border: #ced4df; --primary: #4b3484; --alert: #8f283c; --wash: #f1ecfc; }
+    @media (prefers-color-scheme: dark) {
+      :root { color-scheme: dark; --bg: #161827; --surface: #20243a; --ink: #f7f4ff; --muted: #c5bdd5; --border: #535975; --primary: #d6c2ff; --alert: #f8a2af; --wash: #302950; }
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font: 1rem/1.5 system-ui, sans-serif; color: var(--ink); background: var(--bg); }
+    a { color: var(--primary); }
+    .shell { max-width: 72rem; margin: auto; padding: 1rem clamp(1rem, 4vw, 3rem) 3rem; }
+    .controls, header, .heading, .actions { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: .75rem; }
+    .controls { padding-block: 1rem; border-bottom: 1px solid var(--border); margin-bottom: 1.75rem; }
+    .controls label { display: grid; gap: .25rem; max-width: 100%; }
+    h1, h2, p { margin: 0; }
+    h1 { font-size: clamp(1.6rem, 4vw, 2.3rem); }
+    h2 { font-size: 1.25rem; }
+    .muted { color: var(--muted); }
+    .panel { background: var(--surface); border: 1px solid var(--border); border-radius: .85rem; padding: clamp(1rem, 4vw, 1.75rem); margin-top: 1rem; }
+    .project { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; gap: .9rem; align-items: center; margin: 1rem 0 0; }
+    .project div { min-width: 0; overflow-wrap: anywhere; }
+    dt { color: var(--muted); font-size: .85rem; }
+    dd { margin: .25rem 0 0; }
+    .badge { background: var(--wash); border-radius: .35rem; padding: .2rem .45rem; display: inline-block; }
+    button, select, textarea { font: inherit; padding: .5rem .75rem; border: 1px solid var(--border); border-radius: .5rem; color: var(--ink); background: var(--surface); min-height: 2.75rem; }
+    button:enabled { cursor: pointer; }
+    button:disabled { opacity: .65; }
+    button.danger { background: var(--alert); border-color: var(--alert); color: var(--surface); font-weight: 700; }
+    :focus-visible { outline: 3px solid var(--primary); outline-offset: 3px; }
+    dialog { color: var(--ink); background: var(--surface); width: min(34rem, calc(100% - 2rem)); max-height: calc(100% - 2rem); padding: clamp(1rem, 4vw, 1.75rem); border: 1px solid var(--border); border-radius: .85rem; }
+    dialog::backdrop { background: #15132988; }
+    dialog form, fieldset { display: grid; gap: .9rem; }
+    fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
+    legend { margin-bottom: .5rem; font-weight: 700; }
+    fieldset label { display: grid; grid-template-columns: auto 1fr; gap: .5rem; align-items: start; border: 1px solid var(--border); padding: .75rem; border-radius: .5rem; }
+    input[type="radio"] { margin: .35rem .15rem 0; accent-color: var(--primary); }
+    .reason { display: grid; gap: .25rem; }
+    textarea { width: 100%; resize: vertical; }
+    .actions { justify-content: flex-end; }
+    .message { margin-top: .75rem; }
+    .error { color: var(--alert); }
+    .center { text-align: center; padding-block: clamp(2rem, 11vw, 6rem); }
+    .center p { margin-top: .5rem; }
+    footer { margin-top: 2rem; color: var(--muted); font-size: .9rem; }
+    [hidden] { display: none !important; }
+    @media (max-width: 47rem) {
+      .project { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .project > :last-child, .project > :first-child { grid-column: 1 / -1; }
+      .project button { width: 100%; }
+    }
+    @media (max-width: 30rem) {
+      .actions button { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+<div class="shell">
+  <header><strong>Повод</strong><span class="muted">Макет E4-01b</span></header>
+  <div class="controls" aria-label="Управление макетом">
+    <label>Экран
+      <select id="screen">
+        <option value="admin">Администратор · опубликовано</option>
+        <option value="removed">Администратор · снято</option>
+        <option value="loading">Администратор · загрузка</option>
+        <option value="loadError">Администратор · ошибка загрузки</option>
+        <option value="empty">Администратор · пусто</option>
+        <option value="owner">Владелец · снято</option>
+        <option value="locked">Владелец · опубликовано</option>
+        <option value="expired">Владелец · срок истёк</option>
+        <option value="guest">Гость · недоступно</option>
+      </select>
+    </label>
+    <label>Ответ на подтверждение
+      <select id="outcome">
+        <option value="success">Успех</option><option value="network">Связь прервана</option>
+        <option value="conflict">Изменение другим администратором</option>
+        <option value="forbidden">Нет доступа</option>
+      </select>
+    </label>
+  </div>
+  <main>
+    <section id="admin">
+      <h1>Проекты</h1>
+      <div class="panel" id="project-panel">
+        <h2>Приглашение</h2>
+        <dl class="project">
+          <div><dt>Проект</dt><dd>Свадьба Анны и Михаила</dd></div>
+          <div><dt>Шаблон</dt><dd>garden</dd></div>
+          <div><dt>Пользователь</dt><dd>Анна</dd></div>
+          <div><dt>Статус</dt><dd><span class="badge" id="publication-status">Опубликовано</span></dd></div>
+          <div><dt>Публикация</dt><dd><button id="open" type="button">Снять с публикации</button><span class="muted" id="removed-action" hidden>Ссылка недоступна гостям</span></dd></div>
+        </dl>
+        <p id="period" class="message muted" hidden></p>
+      </div>
+      <div class="panel" id="list-status" hidden>
+        <p id="list-message" role="status"></p>
+        <button id="reload" type="button" hidden>Повторить загрузку</button>
+      </div>
+      <p id="success" class="message" role="status" tabindex="-1"></p>
+    </section>
+    <section id="visitor" class="panel center" hidden>
+      <h1 id="visitor-title"></h1>
+      <p id="visitor-message" class="muted"></p>
+    </section>
+  </main>
+  <footer>Синтетические данные. <a href="assisted-flow.md">Путь владельца и администратора</a> · <a href="publication-lifecycle.md">Состояния и приёмка</a></footer>
+</div>
+<dialog id="confirmation" aria-labelledby="confirmation-title" aria-describedby="confirmation-details">
+  <form novalidate>
+    <h2 id="confirmation-title">Снять с публикации?</h2>
+    <p id="confirmation-details">Гости потеряют доступ к приглашению и анкете. Сохранённые ответы останутся. Проект снова можно будет редактировать.</p>
+    <fieldset id="modes">
+      <legend>Что сделать с оставшимся сроком?</legend>
+      <label><input type="radio" name="mode" value="PAUSE_PERIOD"><span><strong>Приостановить срок</strong><br><span class="muted">Оставшееся время сохранится до возобновления.</span></span></label>
+      <label><input type="radio" name="mode" value="KEEP_RUNNING"><span><strong>Продолжить отсчёт</strong><br><span class="muted">Срок продолжит идти, пока приглашение скрыто.</span></span></label>
+    </fieldset>
+    <div class="reason">
+      <label for="reason"><strong>Причина снятия</strong></label>
+      <textarea id="reason" rows="2" required aria-describedby="reason-help reason-error"></textarea>
+      <small id="reason-help" class="muted">До 240 символов. Причина попадёт в журнал администратора. Не указывайте персональные данные.</small>
+      <small id="reason-error" class="error" aria-live="polite"></small>
+    </div>
+    <p id="request-status" role="status" hidden></p>
+    <p id="request-error" class="error" role="alert" hidden></p>
+    <div class="actions">
+      <button id="cancel" type="button" autofocus>Отмена</button>
+      <button id="refresh" type="button" hidden>Обновить проект</button>
+      <button id="submit" type="submit" class="danger" disabled>Снять с публикации</button>
+    </div>
+  </form>
+</dialog>
+<script>
+  const get = (id) => document.getElementById(id);
+  const screen = get('screen');
+  const outcome = get('outcome');
+  const confirmation = get('confirmation');
+  const form = confirmation.querySelector('form');
+  const modes = get('modes');
+  const reason = get('reason');
+  const reasonError = get('reason-error');
+  const submit = get('submit');
+  const cancel = get('cancel');
+  const refresh = get('refresh');
+  const failure = get('request-error');
+  const requestStatus = get('request-status');
+  let inFlight = false;
+  let attemptedMode = '';
+  let removedMode = '';
+  const listStates = {
+    loading: 'Загружаем проекты…',
+    loadError: 'Не удалось загрузить проекты.',
+    empty: 'Проектов пока нет.',
+  };
+  const visitorStates = {
+    owner: ['Проект снят с публикации', 'Редактор снова доступен. Повторно разместить приглашение может администратор.'],
+    locked: ['Приглашение опубликовано', 'Пока приглашение опубликовано, все поля доступны только для просмотра.'],
+    expired: ['Срок публикации истёк', 'Приглашение и редактор этого проекта недоступны.'],
+    guest: ['Приглашение недоступно', 'Если у вас есть вопросы, свяжитесь с организатором.'],
+  };
+
+  function render() {
+    const state = screen.value;
+    const visitorState = visitorStates[state];
+    get('admin').hidden = Boolean(visitorState);
+    get('visitor').hidden = !visitorState;
+    if (visitorState) {
+      [get('visitor-title').textContent, get('visitor-message').textContent] = visitorState;
+      return;
+    }
+    const listMessage = listStates[state];
+    get('project-panel').hidden = Boolean(listMessage);
+    get('list-status').hidden = !listMessage;
+    get('list-message').textContent = listMessage ?? '';
+    get('reload').hidden = state !== 'loadError';
+    const removed = state === 'removed';
+    get('publication-status').textContent = removed ? 'Снято с публикации' : 'Опубликовано';
+    get('open').hidden = removed;
+    get('removed-action').hidden = !removed;
+    const period = get('period');
+    period.hidden = !removedMode || !removed;
+    period.textContent = removedMode === 'PAUSE_PERIOD' ? 'Срок приостановлен.' : 'Отсчёт срока продолжается.';
+  }
+
+  screen.addEventListener('change', () => {
+    get('success').textContent = '';
+    render();
+  });
+  get('reload').addEventListener('click', () => {
+    screen.value = 'admin';
+    render();
+    get('open').focus();
+  });
+  get('open').addEventListener('click', () => {
+    form.reset();
+    attemptedMode = '';
+    modes.disabled = false;
+    reason.disabled = false;
+    reason.removeAttribute('aria-invalid');
+    reasonError.textContent = '';
+    cancel.disabled = false;
+    submit.disabled = true;
+    submit.hidden = false;
+    submit.textContent = 'Снять с публикации';
+    failure.hidden = true;
+    refresh.hidden = true;
+    requestStatus.hidden = true;
+    confirmation.showModal();
+  });
+  modes.addEventListener('change', () => { submit.disabled = !form.elements.mode.value; });
+  function validateReason() {
+    const length = reason.value.trim().length;
+    const error = !length ? 'Укажите причину снятия.' : length > 240 ? 'Сократите причину до 240 символов.' : '';
+    reasonError.textContent = error;
+    if (error) reason.setAttribute('aria-invalid', 'true');
+    else reason.removeAttribute('aria-invalid');
+    return !error;
+  }
+  reason.addEventListener('input', () => {
+    if (reason.hasAttribute('aria-invalid')) validateReason();
+  });
+  cancel.addEventListener('click', () => confirmation.close());
+  confirmation.addEventListener('cancel', (event) => {
+    if (inFlight) event.preventDefault();
+  });
+  refresh.addEventListener('click', () => {
+    confirmation.close();
+    screen.value = 'removed';
+    removedMode = '';
+    render();
+    get('success').textContent = 'Состояние проекта обновлено.';
+    get('success').focus();
+  });
+
+  form.addEventListener('submit', (event) => {
+    event.preventDefault();
+    const mode = attemptedMode || form.elements.mode.value;
+    if (!mode || inFlight) return;
+    if (!validateReason()) {
+      reason.focus();
+      return;
+    }
+    attemptedMode = mode;
+    inFlight = true;
+    modes.disabled = true;
+    reason.disabled = true;
+    cancel.disabled = true;
+    submit.disabled = true;
+    failure.hidden = true;
+    requestStatus.textContent = 'Снимаем с публикации…';
+    requestStatus.hidden = false;
+    const simulation = outcome.value;
+    setTimeout(() => {
+      inFlight = false;
+      cancel.disabled = false;
+      requestStatus.hidden = true;
+      if (simulation === 'success') {
+        removedMode = mode;
+        confirmation.close();
+        screen.value = 'removed';
+        render();
+        get('success').textContent = 'Приглашение снято с публикации.';
+        get('success').focus();
+        return;
+      }
+      failure.hidden = false;
+      if (simulation === 'network') {
+        failure.textContent = 'Не удалось подтвердить результат. Повторите запрос с тем же режимом и причиной.';
+        submit.textContent = 'Повторить запрос';
+        submit.disabled = false;
+        submit.focus();
+      } else if (simulation === 'conflict') {
+        failure.textContent = 'Проект изменился. Обновите данные перед новым действием.';
+        submit.hidden = true;
+        refresh.hidden = false;
+        refresh.focus();
+      } else {
+        failure.textContent = 'У вас больше нет доступа к этому действию.';
+        submit.hidden = true;
+        cancel.focus();
+      }
+    }, 650);
+  });
+
+  const params = new URLSearchParams(window.location.search);
+  if ([...screen.options].some((option) => option.value === params.get('screen'))) screen.value = params.get('screen');
+  render();
+  if (params.get('dialog') === '1' && screen.value === 'admin') get('open').click();
+</script>
+</body>
+</html>

@@ -1,6 +1,16 @@
 import { isProjectId } from "@shared/config/project-navigation";
 
 const ROOT = "/api/v1/admin/requests";
+const PROJECTS = "/api/v1/admin/projects/";
+
+export function isAdminProjectUnpublishPath(path: string): boolean {
+  const action = "/unpublish";
+  return (
+    path.startsWith(PROJECTS) &&
+    path.endsWith(action) &&
+    isProjectId(path.slice(PROJECTS.length, -action.length))
+  );
+}
 
 export function assistedProjectMethod(
   path: string,
