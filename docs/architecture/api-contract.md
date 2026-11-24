@@ -129,3 +129,5 @@ OpenAPI 0.21.0 добавляет GET `/api/v1/public/invitations/by-address/{sl
 OpenAPI 0.22.0 возвращает схему `rsvp` вместе с публичным снимком. Браузерный `POST /rsvp` на гостевом хосте пересылает ответ в Nest по версии формы. Production API применяет IP-лимит по проверенному адресу relay. [Контракт E3-01b](../product/e3-01b-guest-rsvp.md).
 
 OpenAPI 0.23.0 добавляет приватное чтение ответов для владельца и оператора проекта без аккаунта. Оба GET-маршрута возвращают общие счётчики и строки с учётом фильтра участия. [Контракт E3-02](../product/e3-02-rsvp-dashboard.md).
+
+В OpenAPI 0.24.0 оба кабинета получили GET `/responses/export` и DELETE `/responses/{responseId}` под своими приватными API-префиксами. Гостевой повтор удалённой записи получает 409 `RSVP_RESPONSE_DELETED`. [Контракт E3-02b](../product/e3-02b-rsvp-export-delete.md).

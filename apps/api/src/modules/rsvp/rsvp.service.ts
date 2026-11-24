@@ -65,6 +65,12 @@ export class RsvpService {
           }
           return { receipt: receipt(previous), replay: true };
         }
+        const removed = await tx.rsvpDeletedKey.findUnique({
+          where: { publicationId_keyHash: { publicationId, keyHash } },
+          select: { responseId: true },
+        });
+        if (removed)
+          throw new ApiError(409, "RSVP_RESPONSE_DELETED", "Ответ уже удалён");
         if (form.formVersionId !== formVersionId) {
           throw new ApiError(
             409,

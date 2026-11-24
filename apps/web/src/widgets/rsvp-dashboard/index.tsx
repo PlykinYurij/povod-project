@@ -7,17 +7,20 @@ import {
   ApiRequestError,
   getListAssistedResponsesQueryOptions,
   getListProjectResponsesQueryOptions,
+  type RsvpDashboardRowDto,
 } from "@shared/api";
 import { Alert, Button, Group, NativeSelect, Stack, Text } from "@shared/ui";
 import { ResponseTable } from "./ui/response-table";
+import { ExportResponses } from "./ui/export-responses";
+import { DeleteResponseConfirmation } from "./ui/delete-response-confirmation";
+import type { ResponseScope } from "./model/response-scope";
 import styles from "./rsvp-dashboard.module.css";
-
-export type ResponseScope = { kind: "owner" | "assisted"; id: string };
 
 export function RsvpDashboard({ scope }: { scope: ResponseScope }) {
   const t = useTranslations("RsvpDashboard");
   const locale = useLocale();
   const [attendance, setAttendance] = useState<"yes" | "no" | "all">("all");
+  const [selected, setSelected] = useState<RsvpDashboardRowDto | null>(null);
   const queryOptions =
     scope.kind === "owner"
       ? getListProjectResponsesQueryOptions
@@ -43,6 +46,7 @@ export function RsvpDashboard({ scope }: { scope: ResponseScope }) {
         <NativeSelect
           label={t("filter")}
           value={attendance}
+          disabled={selected !== null}
           onChange={(event) => {
             const value = event.currentTarget.value;
             setAttendance(value === "yes" || value === "no" ? value : "all");
@@ -69,6 +73,7 @@ export function RsvpDashboard({ scope }: { scope: ResponseScope }) {
       )}
       {responses.isSuccess && counts && (
         <>
+          <ExportResponses scope={scope} />
           <dl className={styles.counts} aria-label={t("totals")}>
             {(["total", "yes", "no", "companions"] as const).map((key) => (
               <div key={key}>
@@ -82,9 +87,23 @@ export function RsvpDashboard({ scope }: { scope: ResponseScope }) {
               {t(counts.total === 0 ? "empty" : "noMatches")}
             </Text>
           ) : (
-            <ResponseTable items={responses.data.items} locale={locale} />
+            <ResponseTable
+              items={responses.data.items}
+              locale={locale}
+              selectForDeletion={setSelected}
+              canSelect={selected === null}
+            />
           )}
         </>
+      )}
+      {selected && (
+        <DeleteResponseConfirmation
+          key={selected.id}
+          scope={scope}
+          row={selected}
+          close={() => setSelected(null)}
+          removed={() => responses.refetch()}
+        />
       )}
     </Stack>
   );
