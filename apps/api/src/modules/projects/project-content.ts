@@ -1,8 +1,9 @@
-import type { Prisma, Project } from "../../database/generated/client";
+import type { Prisma } from "../../database/generated/client";
 import { ApiError } from "../../http/api-error";
+import { canEditProject, publicationLifecycleFields, readPublicationClock } from "../publication/publication-lifecycle";
 import { validateGardenDraft } from "../templates/garden/validate-garden";
 import type { SaveProjectDraftDto } from "./project.dto";
-import { projectResponse } from "./project-mapping";
+import { projectResponse, type ProjectWithPublication } from "./project-mapping";
 import { assertStorableContent } from "./storable-content";
 
 export function jsonContent(content: object): Prisma.InputJsonObject {
@@ -13,14 +14,14 @@ export function jsonContent(content: object): Prisma.InputJsonObject {
 /** Caller holds the relevant project/request locks and has already checked access. */
 export async function saveLockedDraft(
   tx: Prisma.TransactionClient,
-  project: Project,
+  project: ProjectWithPublication,
   input: SaveProjectDraftDto,
 ) {
-  if (project.firstPublishedAt)
+  if (!canEditProject(project, await readPublicationClock(tx)))
     throw new ApiError(
       409,
       "CONTENT_LOCKED",
-      "Опубликованный проект закрыт для редактирования",
+      "Проект закрыт для редактирования",
     );
   if (project.revision !== input.expectedRevision)
     throw new ApiError(409, "REVISION_CONFLICT", "Версия проекта изменилась");
@@ -36,7 +37,6 @@ export async function saveLockedDraft(
       id: project.id,
       ownerId: project.ownerId,
       deletedAt: null,
-      firstPublishedAt: null,
       revision: input.expectedRevision,
     },
     data: {
@@ -48,7 +48,10 @@ export async function saveLockedDraft(
   if (updated.count !== 1)
     throw new ApiError(409, "REVISION_CONFLICT", "Версия проекта изменилась");
   return projectResponse(
-    await tx.project.findUniqueOrThrow({ where: { id: project.id } }),
+    await tx.project.findUniqueOrThrow({
+      where: { id: project.id },
+      include: { publication: { select: publicationLifecycleFields } },
+    }),
   );
 }
 

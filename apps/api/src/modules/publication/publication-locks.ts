@@ -12,16 +12,7 @@ export async function lockPublicationContext(
     select: { project: { select: { id: true, ownerId: true } } },
   });
   const candidate = initial?.project;
-  // An operator can also own a project. Ordering the two user rows prevents
-  // cross-publications from each holding the other's owner row.
-  const users = await tx.$queryRaw<{ id: string; role: string }[]>`
-    SELECT id, role::text AS role FROM users
-    WHERE id = ${actorId}::uuid OR id = ${candidate?.ownerId ?? null}::uuid
-    ORDER BY id FOR NO KEY UPDATE
-  `;
-  if (!users.some((user) => user.id === actorId && user.role === "ADMIN")) {
-    throw new ApiError(403, "ADMIN_REQUIRED", "Требуются права администратора");
-  }
+  await lockPublicationUsers(tx, actorId, candidate?.ownerId ?? null);
 
   if (!initial)
     throw new ApiError(404, "REQUEST_NOT_FOUND", "Заявка не найдена");
@@ -64,7 +55,23 @@ export async function lockPublicationContext(
   return { request, project };
 }
 
-async function lockProject(tx: Prisma.TransactionClient, projectId: string) {
+export async function lockPublicationUsers(
+  tx: Prisma.TransactionClient,
+  actorId: string,
+  ownerId: string | null,
+) {
+  // An operator can also own a project. Ordering both user rows prevents a deadlock.
+  const users = await tx.$queryRaw<{ id: string; role: string }[]>`
+    SELECT id, role::text AS role FROM users
+    WHERE id = ${actorId}::uuid OR id = ${ownerId}::uuid
+    ORDER BY id FOR NO KEY UPDATE
+  `;
+  if (!users.some((user) => user.id === actorId && user.role === "ADMIN")) {
+    throw new ApiError(403, "ADMIN_REQUIRED", "Требуются права администратора");
+  }
+}
+
+export async function lockProject(tx: Prisma.TransactionClient, projectId: string) {
   // RSVP uses the same project lock before it checks the active snapshot.
   await tx.$queryRaw`SELECT id FROM projects WHERE id = ${projectId}::uuid FOR UPDATE`;
 }

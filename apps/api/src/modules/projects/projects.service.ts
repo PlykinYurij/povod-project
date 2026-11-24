@@ -2,6 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { createHash } from "node:crypto";
 import { DatabaseService } from "../../database/database.service";
 import { ApiError } from "../../http/api-error";
+import { publicationLifecycleFields } from "../publication/publication-lifecycle";
 import { GardenTemplateService } from "../templates/garden/garden-template.service";
 import { TemplateCatalogService } from "../templates/template-catalog.service";
 import { CreateProjectDto, SaveProjectDraftDto } from "./project.dto";
@@ -29,6 +30,7 @@ export class ProjectsService {
     const projects = await this.database.getClient().project.findMany({
       where: { ownerId, deletedAt: null },
       orderBy: [{ createdAt: "desc" }, { id: "asc" }],
+      include: { publication: { select: publicationLifecycleFields } },
     });
     return { items: projects.map(projectSummary) };
   }
@@ -50,6 +52,7 @@ export class ProjectsService {
           where: {
             ownerId_creationKeyHash: { ownerId, creationKeyHash: keyHash },
           },
+          include: { publication: { select: publicationLifecycleFields } },
         });
         if (previous) {
           if (previous.deletedAt) throw notFound();
