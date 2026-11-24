@@ -16,6 +16,7 @@ next-env.d.ts
 
 # Local verification copies
 /.verification/
+/.worktrees/
 /artifacts/
 /.artifact-work/
 /apps/api/src/database/generated/
