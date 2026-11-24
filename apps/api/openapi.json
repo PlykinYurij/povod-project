@@ -3971,12 +3971,166 @@
           "publication"
         ]
       }
+    },
+    "/api/v1/admin/projects/{id}/unpublish": {
+      "post": {
+        "operationId": "unpublishAdminProject",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UnpublishProjectDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnpublishReceiptDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "PUBLICATION_STATE_CONFLICT, REVISION_CONFLICT or IDEMPOTENCY_KEY_REUSED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "administration"
+        ]
+      }
     }
   },
   "info": {
     "title": "Повод API",
     "description": "",
-    "version": "0.24.0",
+    "version": "0.25.0",
     "contact": {}
   },
   "tags": [],
@@ -4967,6 +5121,43 @@
           "expiresAt"
         ]
       },
+      "PublicationLifecycleDto": {
+        "type": "object",
+        "properties": {
+          "publicationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "publicationVersion": {
+            "type": "integer"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "remainingMs": {
+            "type": "number",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PUBLISHED",
+              "PAUSED",
+              "UNPUBLISHED",
+              "EXPIRED"
+            ]
+          }
+        },
+        "required": [
+          "publicationId",
+          "publicationVersion",
+          "expiresAt",
+          "remainingMs",
+          "status"
+        ]
+      },
       "AdminRequestDetailDto": {
         "type": "object",
         "properties": {
@@ -5061,6 +5252,15 @@
                 "$ref": "#/components/schemas/PublicationReceiptDto"
               }
             ]
+          },
+          "publicationLifecycle": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PublicationLifecycleDto"
+              }
+            ]
           }
         },
         "required": [
@@ -5080,7 +5280,8 @@
           "submittedRevision",
           "quotedPrice",
           "project",
-          "publication"
+          "publication",
+          "publicationLifecycle"
         ]
       },
       "UpdateAdminRequestStatusDto": {
@@ -5699,6 +5900,74 @@
           "content",
           "cover",
           "rsvp"
+        ]
+      },
+      "UnpublishProjectDto": {
+        "type": "object",
+        "properties": {
+          "expectedProjectRevision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "expectedPublicationVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "PAUSE_PERIOD",
+              "KEEP_RUNNING"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 240
+          }
+        },
+        "required": [
+          "expectedProjectRevision",
+          "expectedPublicationVersion",
+          "mode",
+          "reason"
+        ]
+      },
+      "UnpublishReceiptDto": {
+        "type": "object",
+        "properties": {
+          "publicationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "publicationVersion": {
+            "type": "integer"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "remainingMs": {
+            "type": "number",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PAUSED",
+              "UNPUBLISHED"
+            ]
+          }
+        },
+        "required": [
+          "publicationId",
+          "publicationVersion",
+          "expiresAt",
+          "remainingMs",
+          "status"
         ]
       }
     }

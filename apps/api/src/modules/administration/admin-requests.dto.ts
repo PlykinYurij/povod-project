@@ -7,6 +7,7 @@ import {
 } from "../../database/generated/client";
 import { ProjectDto } from "../projects/project.dto";
 import { PublicationReceiptDto } from "../publication/publish-request.dto";
+import { PublicationLifecycleDto } from "../publication/unpublish-project.dto";
 import { TemplatePriceDto } from "../templates/template-catalog.dto";
 
 export class AdminRequestListQueryDto {
@@ -76,6 +77,9 @@ export class AdminRequestDetailDto extends AdminRequestSummaryDto {
 
   @ApiProperty({ type: PublicationReceiptDto, nullable: true })
   publication!: PublicationReceiptDto | null;
+
+  @ApiProperty({ type: PublicationLifecycleDto, nullable: true })
+  publicationLifecycle!: PublicationLifecycleDto | null;
 }
 
 const targets = ["IN_PROGRESS", "REJECTED"] as const;

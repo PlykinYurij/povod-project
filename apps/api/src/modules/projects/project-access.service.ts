@@ -1,7 +1,8 @@
 import { Injectable } from "@nestjs/common";
 import { DatabaseService } from "../../database/database.service";
-import type { Prisma, Project } from "../../database/generated/client";
+import type { Prisma } from "../../database/generated/client";
 import { ApiError } from "../../http/api-error";
+import { publicationLifecycleFields } from "../publication/publication-lifecycle";
 
 @Injectable()
 export class ProjectAccessService {
@@ -11,9 +12,10 @@ export class ProjectAccessService {
     ownerId: string,
     id: string,
     client: Prisma.TransactionClient = this.database.getClient(),
-  ): Promise<Project> {
+  ) {
     const project = await client.project.findFirst({
       where: { id, ownerId, deletedAt: null },
+      include: { publication: { select: publicationLifecycleFields } },
     });
     if (!project)
       throw new ApiError(404, "PROJECT_NOT_FOUND", "Проект не найден");
@@ -35,7 +37,7 @@ export class ProjectAccessService {
     tx: Prisma.TransactionClient,
     ownerId: string,
     id: string,
-  ): Promise<Project> {
+  ) {
     // Shared by saves and order intake: owner -> project, never the reverse.
     await this.lockOwner(tx, ownerId);
     const rows = await tx.$queryRaw<

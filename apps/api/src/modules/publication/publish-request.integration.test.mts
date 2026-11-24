@@ -202,6 +202,155 @@ async function expectDraft(projectId: string, requestId: string) {
   ).toBe("IN_PROGRESS");
 }
 
+test.each(["PAUSE_PERIOD", "KEEP_RUNNING"] as const)(
+  "removes a publication with %s, unlocks its draft and preserves the published data",
+  async (mode) => {
+    const owner = await user();
+    const { project, request, input, content } = await fixture(owner.id);
+    const initial = await publish(request.id, input);
+    expect(initial.status).toBe(201);
+    const published = (await initial.json()) as PublicationReceiptDto;
+    const previousSnapshot = await db.publicationSnapshot.findUniqueOrThrow({
+      where: { id: published.snapshotId },
+    });
+    const path = `${origin}/api/v1/public/invitations/by-address/${input.slug}`;
+    const submit = () =>
+      fetch(`${path}/rsvp`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Idempotency-Key": randomUUID(),
+        },
+        body: JSON.stringify({
+          formVersionId: published.snapshotId,
+          name: "Гость",
+          attendance: "yes",
+          companions: 0,
+        }),
+      });
+    expect((await submit()).status).toBe(201);
+
+    const reviewerInput = {
+      expectedProjectRevision: 1,
+      expectedPublicationVersion: 1,
+      mode,
+      reason: "Исправление данных по заявке",
+    };
+    const action = (
+      body = reviewerInput,
+      key: string = randomUUID(),
+      headers = admin,
+    ) =>
+      fetch(`${origin}/api/v1/admin/projects/${project!.id}/unpublish`, {
+        method: "POST",
+        headers: {
+          ...headers,
+          Origin: TEST_ORIGIN,
+          "Idempotency-Key": key,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+      });
+    await expectError(await action(reviewerInput, randomUUID(), owner.headers), 403, "ADMIN_REQUIRED");
+    await expectError(
+      await action({ ...reviewerInput, expectedProjectRevision: 2 }),
+      409,
+      "REVISION_CONFLICT",
+    );
+    await expectError(
+      await action({ ...reviewerInput, expectedPublicationVersion: 2 }),
+      409,
+      "PUBLICATION_STATE_CONFLICT",
+    );
+    const key = randomUUID();
+    const result = await action({ ...reviewerInput, reason: `  ${reviewerInput.reason}  ` }, key);
+    expect(result.status).toBe(200);
+    const receipt = await result.json();
+    const paused = mode === "PAUSE_PERIOD";
+    expect(receipt).toEqual({
+      publicationId: published.publicationId,
+      publicationVersion: 2,
+      status: paused ? "PAUSED" : "UNPUBLISHED",
+      expiresAt: paused ? null : published.expiresAt,
+      remainingMs: paused ? expect.any(Number) : null,
+    });
+    const replay = await action(reviewerInput, key.toUpperCase());
+    expect(replay.status).toBe(200);
+    expect(await replay.json()).toEqual(receipt);
+    await expectError(
+      await action({ ...reviewerInput, reason: "Другая причина" }, key),
+      409,
+      "IDEMPOTENCY_KEY_REUSED",
+    );
+    expect((await fetch(path)).status).toBe(404);
+    expect((await submit()).status).toBe(404);
+    expect(await db.publicationSnapshot.findUniqueOrThrow({ where: { id: published.snapshotId } }))
+      .toEqual(previousSnapshot);
+    expect(await db.rsvpResponse.count({ where: { publicationId: published.publicationId } })).toBe(1);
+    expect(await db.publicationUnpublishReceipt.findMany({ where: { publicationId: published.publicationId } }))
+      .toMatchObject([{ mode, reason: reviewerInput.reason, actorId: expect.any(String) }]);
+    const detail = await fetch(`${origin}/api/v1/admin/requests/${request.id}`, { headers: admin });
+    expect(await detail.json()).toMatchObject({ publicationLifecycle: receipt, publication: published });
+    const readProject = async () =>
+      (await fetch(`${origin}/api/v1/projects/${project!.id}`, { headers: owner.headers })).json();
+    expect(await readProject()).toMatchObject({ canEditDraft: true, firstPublishedAt: published.publishedAt });
+    const saveDraft = await fetch(`${origin}/api/v1/projects/${project!.id}/draft`, {
+      method: "PATCH",
+      headers: { ...owner.headers, Origin: TEST_ORIGIN, "Content-Type": "application/json" },
+      body: JSON.stringify({ expectedRevision: 1, title: "Исправленный проект", content }),
+    });
+    expect(saveDraft.status).toBe(200);
+    expect(await saveDraft.json()).toMatchObject({ revision: 2, canEditDraft: true });
+
+    // Move the stored deadline into the past. Only the paused mode preserves access.
+    await db.publication.update({
+      where: { id: published.publicationId },
+      data: { expiresAt: new Date(2_000), pausedAt: paused ? new Date(1_000) : null },
+    });
+    expect(await readProject()).toMatchObject({ canEditDraft: paused });
+    const dashboard = await fetch(`${origin}/api/v1/projects/${project!.id}/responses`, { headers: owner.headers });
+    expect(dashboard.status).toBe(paused ? 200 : 404);
+  },
+);
+
+test("serializes duplicate removal and unlocks the administrator's assisted editor", async () => {
+  const { project, request, input, content } = await fixture(null);
+  expect((await publish(request.id, input)).status).toBe(201);
+  const path = `${origin}/api/v1/admin/projects/${project!.id}/unpublish`;
+  const editorPath = `${origin}/api/v1/admin/requests/${request.id}/project/draft`;
+  const gate = (name: string) =>
+    fetch(editorPath, {
+      method: "PATCH",
+      headers: { ...admin, Origin: TEST_ORIGIN, "Content-Type": "application/json" },
+      body: JSON.stringify({ expectedRevision: 1, title: name, content }),
+    });
+  await expectError(await gate("Помощь с заказом"), 409, "CONTENT_LOCKED");
+  const key = randomUUID();
+  const run = (reason: string) =>
+    fetch(path, {
+      method: "POST",
+      headers: {
+        ...admin,
+        Origin: TEST_ORIGIN,
+        "Content-Type": "application/json",
+        "Idempotency-Key": key,
+      },
+      body: JSON.stringify({
+        expectedProjectRevision: 1,
+        expectedPublicationVersion: 1,
+        mode: "PAUSE_PERIOD",
+        reason,
+      }),
+    });
+  const [first, second] = await Promise.all([run("Обновление"), run("Обновление")]);
+  expect(first.status).toBe(200);
+  expect(second.status).toBe(200);
+  expect(await second.json()).toEqual(await first.json());
+  const saved = await gate("Помощь с заказом");
+  expect(saved.status).toBe(200);
+  expect(await saved.json()).toMatchObject({ revision: 2, canEditDraft: true });
+});
+
 test("serves RSVP dashboard only to the owner and to administrators of assisted projects", async () => {
   const { paths } = createOpenApiDocument(app);
   for (const route of [
