@@ -251,6 +251,11 @@ test.each(["PAUSE_PERIOD", "KEEP_RUNNING"] as const)(
         },
         body: JSON.stringify(body),
       });
+    await expectError(
+      await action(reviewerInput, randomUUID(), {}),
+      401,
+      "AUTH_REQUIRED",
+    );
     await expectError(await action(reviewerInput, randomUUID(), owner.headers), 403, "ADMIN_REQUIRED");
     await expectError(
       await action({ ...reviewerInput, expectedProjectRevision: 2 }),
@@ -294,11 +299,13 @@ test.each(["PAUSE_PERIOD", "KEEP_RUNNING"] as const)(
     const readProject = async () =>
       (await fetch(`${origin}/api/v1/projects/${project!.id}`, { headers: owner.headers })).json();
     expect(await readProject()).toMatchObject({ canEditDraft: true, firstPublishedAt: published.publishedAt });
-    const saveDraft = await fetch(`${origin}/api/v1/projects/${project!.id}/draft`, {
-      method: "PATCH",
-      headers: { ...owner.headers, Origin: TEST_ORIGIN, "Content-Type": "application/json" },
-      body: JSON.stringify({ expectedRevision: 1, title: "Исправленный проект", content }),
-    });
+    const save = (expectedRevision: number) =>
+      fetch(`${origin}/api/v1/projects/${project!.id}/draft`, {
+        method: "PATCH",
+        headers: { ...owner.headers, Origin: TEST_ORIGIN, "Content-Type": "application/json" },
+        body: JSON.stringify({ expectedRevision, title: "Исправленный проект", content }),
+      });
+    const saveDraft = await save(1);
     expect(saveDraft.status).toBe(200);
     expect(await saveDraft.json()).toMatchObject({ revision: 2, canEditDraft: true });
 
@@ -308,6 +315,10 @@ test.each(["PAUSE_PERIOD", "KEEP_RUNNING"] as const)(
       data: { expiresAt: new Date(2_000), pausedAt: paused ? new Date(1_000) : null },
     });
     expect(await readProject()).toMatchObject({ canEditDraft: paused });
+    if (!paused) {
+      await expectError(await save(2), 409, "CONTENT_LOCKED");
+      expect(await readProject()).toMatchObject({ revision: 2 });
+    }
     const dashboard = await fetch(`${origin}/api/v1/projects/${project!.id}/responses`, { headers: owner.headers });
     expect(dashboard.status).toBe(paused ? 200 : 404);
   },
@@ -1050,7 +1061,17 @@ test("counts hidden publications for the owner, serializes the last slot and rel
   await expectDraft(failed.project!.id, failed.request.id);
   await db.publication.update({
     where: { projectId: a.project!.id },
-    data: { expiresAt: new Date(0) },
+    data: { expiresAt: new Date(2_000), pausedAt: new Date(1_000) },
+  });
+  await expectError(
+    await publish(failed.request.id, failed.input),
+    409,
+    "PUBLICATION_LIMIT_REACHED",
+  );
+  await expectDraft(failed.project!.id, failed.request.id);
+  await db.publication.update({
+    where: { projectId: a.project!.id },
+    data: { pausedAt: null },
   });
   expect((await publish(failed.request.id, failed.input)).status).toBe(201);
 });
