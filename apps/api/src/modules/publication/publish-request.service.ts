@@ -15,6 +15,7 @@ import {
   templateValidators,
 } from "../templates/template-content";
 import { lockPublicationContext } from "./publication-locks";
+import { readPublicationClock, unexpiredPublication } from "./publication-lifecycle";
 import { publicationUrl } from "./publication-address";
 import {
   toPublicationReceipt,
@@ -68,10 +69,7 @@ export class PublishRequestService {
         }
         const draft = await validateReviewedDraft(tx, request, project, input);
         const url = publicationUrl(input.slug);
-        const [clock] = await tx.$queryRaw<
-          { now: Date }[]
-        >`SELECT clock_timestamp() AS now`;
-        const now = clock.now;
+        const now = await readPublicationClock(tx);
         if (project.ownerId !== null)
           await assertOwnerSlot(tx, project.ownerId, now);
         const expiresAt = new Date(now.getTime() + PUBLICATION_DURATION_MS);
@@ -183,7 +181,7 @@ async function assertOwnerSlot(
 ) {
   // A hidden publication with remaining time still occupies a slot.
   const used = await tx.publication.count({
-    where: { expiresAt: { gt: now }, project: { ownerId, deletedAt: null } },
+    where: { ...unexpiredPublication(now), project: { ownerId, deletedAt: null } },
   });
   if (used >= ACTIVE_PUBLICATION_LIMIT) {
     throw new ApiError(

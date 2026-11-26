@@ -7,6 +7,8 @@ import {
   receiptFields,
   toPublicationReceipt,
 } from "../publication/publish-request.dto";
+import { publicationLifecycleFields } from "../publication/publication-lifecycle";
+import { mapPublicationLifecycle } from "../publication/unpublish-project.dto";
 import { readRequestPrice } from "../requests/request-price";
 import { requireAdminForWrite } from "./admin-write";
 import type {
@@ -86,7 +88,10 @@ export class AdminRequestsService {
         priceSnapshotVersion: true,
         publicationReceipt: { select: receiptFields },
         project: {
-          include: { templateVersion: { select: { templateId: true } } },
+          include: {
+            templateVersion: { select: { templateId: true } },
+            publication: { select: publicationLifecycleFields },
+          },
         },
       },
     });
@@ -103,6 +108,10 @@ export class AdminRequestsService {
       publication:
         row.publicationReceipt && row.project && !row.project.deletedAt
           ? toPublicationReceipt(row.publicationReceipt)
+          : null,
+      publicationLifecycle:
+        row.project?.publication && row.project.deletedAt === null
+          ? mapPublicationLifecycle(row.project.publication, new Date())
           : null,
       project:
         row.project && row.project.deletedAt === null

@@ -1,9 +1,12 @@
 import type { Project } from "../../database/generated/client";
 import { ApiError } from "../../http/api-error";
+import { canEditProject, type PublicationLifecycle } from "../publication/publication-lifecycle";
 import { templateValidators } from "../templates/template-content";
 import { ProjectDto, ProjectSummaryDto } from "./project.dto";
 
-export function projectSummary(project: Project): ProjectSummaryDto {
+export type ProjectWithPublication = Project & { publication?: PublicationLifecycle | null };
+
+export function projectSummary(project: ProjectWithPublication): ProjectSummaryDto {
   return {
     id: project.id,
     templateVersionId: project.templateVersionId,
@@ -12,11 +15,11 @@ export function projectSummary(project: Project): ProjectSummaryDto {
     firstPublishedAt: project.firstPublishedAt?.toISOString() ?? null,
     createdAt: project.createdAt.toISOString(),
     updatedAt: project.updatedAt.toISOString(),
-    canEditDraft: project.firstPublishedAt === null,
+    canEditDraft: canEditProject(project, new Date()),
   };
 }
 
-export function projectResponse(project: Project): ProjectDto {
+export function projectResponse(project: ProjectWithPublication): ProjectDto {
   try {
     const draft = templateValidators(project.templateVersionId).draft({
       templateVersionId: project.templateVersionId,
