@@ -123,7 +123,11 @@ export function RequestDetail({ requestId }: { requestId: string }) {
               )}
             {record.kind === "ASSISTANCE" &&
               !record.hasAccount &&
-              project?.templateVersionId === "wedding-garden-v1" &&
+              project &&
+              ((project.templateVersionId === "wedding-garden-v1" &&
+                "program" in project.content) ||
+                (project.templateVersionId === "wedding-together-v1" &&
+                  "photo" in project.content)) &&
               project.canEditDraft && (
                 <AssistedEditor
                   key={project.id}
@@ -131,7 +135,11 @@ export function RequestDetail({ requestId }: { requestId: string }) {
                   project={project}
                 />
               )}
-            {project?.templateVersionId === "wedding-garden-v1" ? (
+            {project &&
+            ((project.templateVersionId === "wedding-garden-v1" &&
+              "program" in project.content) ||
+              (project.templateVersionId === "wedding-together-v1" &&
+                "photo" in project.content)) ? (
               <>
                 <Title order={3}>{t("preview")}</Title>
                 <Text>{t("revision", { current: project.revision })}</Text>

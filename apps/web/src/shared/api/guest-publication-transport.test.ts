@@ -9,6 +9,68 @@ afterEach(() => {
 const guestPath = "/api/v1/public/invitations/by-address/quiet-garden";
 const id = "62654033-a24e-48c1-aec0-26122499f18a";
 
+test("Together cover accepts only the snapshot token", async () => {
+  vi.stubEnv("POVOD_INTERNAL_API_ORIGIN", "http://127.0.0.1:4000");
+  const snapshot = {
+    templateVersionId: "wedding-together-v1",
+    snapshotId: id,
+    cover: { width: 640, height: 480 },
+    rsvp: {
+      formVersionId: id,
+      schema: "garden-v1",
+      nameMaxLength: 80,
+      maxCompanions: 2,
+    },
+  };
+  const content = {
+    locale: "ru",
+    names: { first: "Dana", second: "Alex" },
+    event: {
+      date: "2027-09-01",
+      startTime: "18:00",
+      timeZone: "Europe/Samara",
+    },
+    venue: { name: "Hall", address: "10 Main Street" },
+    photo: { alt: "Together", mediaId: id },
+    note: { enabled: false, heading: "", body: "" },
+    copy: {
+      heroLabel: "",
+      separator: "",
+      intro: "",
+      eventHeading: "",
+      dateLabel: "",
+      venueLabel: "",
+      photoHeading: "",
+      rsvpHeading: "",
+      rsvpIntro: "",
+      rsvpAction: "Respond",
+      signoff: "",
+    },
+  };
+  const fetchFake = vi
+    .fn()
+    .mockResolvedValueOnce(Response.json({ ...snapshot, content }))
+    .mockResolvedValueOnce(
+      Response.json({
+        ...snapshot,
+        content: {
+          ...content,
+          photo: {
+            ...content.photo,
+            mediaId: "62654033-a24e-48c1-aec0-26122499f18b",
+          },
+        },
+      }),
+    )
+    .mockResolvedValueOnce(
+      Response.json({ ...snapshot, content: { photo: content.photo } }),
+    );
+  vi.stubGlobal("fetch", fetchFake);
+  await expect(apiFetch(guestPath)).resolves.toMatchObject({ snapshotId: id });
+  await expect(apiFetch(guestPath)).rejects.toMatchObject({ status: 503 });
+  await expect(apiFetch(guestPath)).rejects.toMatchObject({ status: 503 });
+});
+
 test("guest reads use the configured upstream, strip credentials and reject redirects", async () => {
   vi.stubEnv("POVOD_INTERNAL_API_ORIGIN", "http://127.0.0.1:4000");
   const fetchFake = vi.fn().mockResolvedValue(

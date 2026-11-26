@@ -8,7 +8,7 @@ import {
 } from "@entities/identity";
 import { Alert, Text } from "@shared/ui";
 import { ApiRequestError, useGetProject } from "@shared/api";
-import { GardenEditor } from "@features/edit-garden-draft";
+import { GardenEditor, TogetherEditor } from "@features/edit-garden-draft";
 
 export function EditorSession({ projectId }: { projectId: string }) {
   const t = useTranslations("Account");
@@ -50,7 +50,20 @@ function EditorContent({ projectId }: { projectId: string }) {
     return <SessionFailure retry={() => void project.refetch()} />;
   }
   if (!project.data.canEditDraft) return <Alert>{t("locked")}</Alert>;
-  if (project.data.templateVersionId !== "wedding-garden-v1")
+  if (
+    project.data.templateVersionId === "wedding-together-v1" &&
+    "photo" in project.data.content
+  )
+    return (
+      <TogetherEditor
+        project={project.data}
+        photoSource={{ kind: "owner", id: projectId }}
+      />
+    );
+  if (
+    project.data.templateVersionId !== "wedding-garden-v1" ||
+    !("program" in project.data.content)
+  )
     return <Alert>{t("unsupported")}</Alert>;
   return (
     <GardenEditor

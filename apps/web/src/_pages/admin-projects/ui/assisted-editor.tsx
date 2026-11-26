@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { useQueryClient } from "@tanstack/react-query";
-import { GardenEditor } from "@features/edit-garden-draft";
+import { GardenEditor, TogetherEditor } from "@features/edit-garden-draft";
 import {
   ApiRequestError,
   getAdminRequest,
@@ -25,6 +25,10 @@ export function AssistedEditor({
   const t = useTranslations("AdminRequests");
   const [editing, setEditing] = useState(false);
   const cache = useQueryClient();
+  const Editor =
+    project.templateVersionId === "wedding-together-v1"
+      ? TogetherEditor
+      : GardenEditor;
   if (!editing)
     return (
       <Button variant="light" w="fit-content" onClick={() => setEditing(true)}>
@@ -34,7 +38,7 @@ export function AssistedEditor({
   return (
     <Stack>
       <Title order={3}>{t("editDraft")}</Title>
-      <GardenEditor
+      <Editor
         project={project}
         photoSource={{ kind: "assisted", id: requestId }}
         access={{

@@ -40,7 +40,16 @@ function SavedPreview({ projectId }: { projectId: string }) {
   if (!project.data)
     return <SessionFailure retry={() => void project.refetch()} />;
   const saved = project.data;
-  if (saved.templateVersionId !== "wedding-garden-v1")
+  if (
+    !(
+      saved.templateVersionId === "wedding-garden-v1" &&
+      "program" in saved.content
+    ) &&
+    !(
+      saved.templateVersionId === "wedding-together-v1" &&
+      "photo" in saved.content
+    )
+  )
     return <Alert role="alert">{t("unsupported")}</Alert>;
   const canRequestFirstPublication =
     saved.canEditDraft && saved.firstPublishedAt === null;

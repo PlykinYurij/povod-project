@@ -3,7 +3,6 @@
 import { useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useQueryClient } from "@tanstack/react-query";
-import { useFormContext, useWatch } from "react-hook-form";
 import {
   photoQueryKey,
   uploadPhoto,
@@ -23,7 +22,6 @@ import {
   Text,
   Title,
 } from "@shared/ui";
-import type { GardenEditorValues } from "../model/editor-values";
 import styles from "./garden-editor.module.css";
 
 function uploadError(error: unknown) {
@@ -38,14 +36,16 @@ function uploadError(error: unknown) {
 export function DraftPhotoField({
   source,
   rejected,
+  selected,
+  select,
 }: {
   source: PhotoSource;
   rejected: boolean;
+  selected: string | null;
+  select: (id: string | null) => void;
 }) {
   const t = useTranslations("DraftPhotos");
   const client = useQueryClient();
-  const { control, setValue } = useFormContext<GardenEditorValues>();
-  const selected = useWatch({ control, name: "content.heroMediaId" });
   const photos = useDraftPhotos(source);
   const action = useFormAction();
   const [file, setFile] = useState<File | null>(null);
@@ -138,11 +138,7 @@ export function DraftPhotoField({
         label={t("selection")}
         value={selected ?? ""}
         error={rejected ? t("unavailable") : undefined}
-        onChange={(event) =>
-          setValue("content.heroMediaId", event.currentTarget.value || null, {
-            shouldDirty: true,
-          })
-        }
+        onChange={(event) => select(event.currentTarget.value || null)}
         data={[
           { value: "", label: t("noPhoto") },
           ...(selected && !selectedPhoto

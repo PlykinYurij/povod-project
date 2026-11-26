@@ -32,6 +32,7 @@ test.each([null, "2026-11-01T10:00:00.000Z"])(
     vi.mocked(useGetProject).mockReturnValue({
       data: {
         templateVersionId: "wedding-garden-v1",
+        content: { program: null },
         canEditDraft: true,
         firstPublishedAt,
         revision: 2,
