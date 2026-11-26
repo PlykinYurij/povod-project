@@ -4130,7 +4130,7 @@
   "info": {
     "title": "Повод API",
     "description": "",
-    "version": "0.25.0",
+    "version": "0.27.0",
     "contact": {}
   },
   "tags": [],
@@ -4920,6 +4920,202 @@
           "templateVersionId"
         ]
       },
+      "TogetherNamesDto": {
+        "type": "object",
+        "properties": {
+          "first": {
+            "type": "string",
+            "maxLength": 20
+          },
+          "second": {
+            "type": "string",
+            "maxLength": 20
+          }
+        },
+        "required": [
+          "first",
+          "second"
+        ]
+      },
+      "TogetherEventDto": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "maxLength": 10
+          },
+          "startTime": {
+            "type": "string",
+            "maxLength": 5
+          },
+          "timeZone": {
+            "type": "string",
+            "description": "Named IANA time zone, or empty in a draft"
+          }
+        },
+        "required": [
+          "date",
+          "startTime",
+          "timeZone"
+        ]
+      },
+      "TogetherVenueDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "address": {
+            "type": "string",
+            "maxLength": 150
+          }
+        },
+        "required": [
+          "name",
+          "address"
+        ]
+      },
+      "TogetherPhotoDto": {
+        "type": "object",
+        "properties": {
+          "mediaId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "alt": {
+            "type": "string",
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "mediaId",
+          "alt"
+        ]
+      },
+      "TogetherNoteDto": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "heading": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "body": {
+            "type": "string",
+            "maxLength": 1000
+          }
+        },
+        "required": [
+          "enabled",
+          "heading",
+          "body"
+        ]
+      },
+      "TogetherCopyDto": {
+        "type": "object",
+        "properties": {
+          "heroLabel": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "separator": {
+            "type": "string",
+            "maxLength": 16
+          },
+          "intro": {
+            "type": "string",
+            "maxLength": 4000
+          },
+          "eventHeading": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "dateLabel": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "venueLabel": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "photoHeading": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "rsvpHeading": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "rsvpIntro": {
+            "type": "string",
+            "maxLength": 4000
+          },
+          "rsvpAction": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "signoff": {
+            "type": "string",
+            "maxLength": 1000
+          }
+        },
+        "required": [
+          "heroLabel",
+          "separator",
+          "intro",
+          "eventHeading",
+          "dateLabel",
+          "venueLabel",
+          "photoHeading",
+          "rsvpHeading",
+          "rsvpIntro",
+          "rsvpAction",
+          "signoff"
+        ]
+      },
+      "TogetherContentDto": {
+        "type": "object",
+        "properties": {
+          "locale": {
+            "type": "string",
+            "enum": [
+              "ru",
+              "en"
+            ]
+          },
+          "names": {
+            "$ref": "#/components/schemas/TogetherNamesDto"
+          },
+          "event": {
+            "$ref": "#/components/schemas/TogetherEventDto"
+          },
+          "venue": {
+            "$ref": "#/components/schemas/TogetherVenueDto"
+          },
+          "photo": {
+            "$ref": "#/components/schemas/TogetherPhotoDto"
+          },
+          "note": {
+            "$ref": "#/components/schemas/TogetherNoteDto"
+          },
+          "copy": {
+            "$ref": "#/components/schemas/TogetherCopyDto"
+          }
+        },
+        "required": [
+          "locale",
+          "names",
+          "event",
+          "venue",
+          "photo",
+          "note",
+          "copy"
+        ]
+      },
       "ProjectDto": {
         "type": "object",
         "properties": {
@@ -4957,7 +5153,14 @@
             "description": "Draft capability only, not permission to publish"
           },
           "content": {
-            "$ref": "#/components/schemas/GardenContentDto"
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/GardenContentDto"
+              },
+              {
+                "$ref": "#/components/schemas/TogetherContentDto"
+              }
+            ]
           }
         },
         "required": [
@@ -4980,7 +5183,14 @@
             "maxLength": 24
           },
           "content": {
-            "$ref": "#/components/schemas/GardenContentDto"
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/GardenContentDto"
+              },
+              {
+                "$ref": "#/components/schemas/TogetherContentDto"
+              }
+            ]
           },
           "expectedRevision": {
             "type": "number",
@@ -5871,7 +6081,8 @@
           "templateVersionId": {
             "type": "string",
             "enum": [
-              "wedding-garden-v1"
+              "wedding-garden-v1",
+              "wedding-together-v1"
             ]
           },
           "snapshotId": {
@@ -5879,7 +6090,14 @@
             "format": "uuid"
           },
           "content": {
-            "$ref": "#/components/schemas/GardenContentDto"
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/GardenContentDto"
+              },
+              {
+                "$ref": "#/components/schemas/TogetherContentDto"
+              }
+            ]
           },
           "cover": {
             "nullable": true,
