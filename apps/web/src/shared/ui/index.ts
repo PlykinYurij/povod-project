@@ -10,6 +10,7 @@ export {
   FileInput,
   Group,
   Loader,
+  Modal,
   NativeSelect,
   Stack,
   Table,
