@@ -75,3 +75,37 @@ export async function lockProject(tx: Prisma.TransactionClient, projectId: strin
   // RSVP uses the same project lock before it checks the active snapshot.
   await tx.$queryRaw`SELECT id FROM projects WHERE id = ${projectId}::uuid FOR UPDATE`;
 }
+
+export async function lockAdminPublication(tx: Prisma.TransactionClient, actorId: string, projectId: string) {
+  const initial = await tx.project.findUnique({
+    where: { id: projectId },
+    select: { ownerId: true },
+  });
+  await lockPublicationUsers(tx, actorId, initial?.ownerId ?? null);
+  if (!initial) throw projectNotFound();
+  await lockProject(tx, projectId);
+  const project = await tx.project.findUnique({
+    where: { id: projectId },
+    include: { publication: true },
+  });
+  if (!project || project.deletedAt) throw projectNotFound();
+  if (project.ownerId !== initial.ownerId)
+    throw new ApiError(
+      409,
+      "PUBLICATION_STATE_CONFLICT",
+      "Владелец проекта изменился",
+    );
+  const publication = project.publication;
+  if (!publication)
+    throw new ApiError(
+      409,
+      "PUBLICATION_STATE_CONFLICT",
+      "У проекта нет публикации",
+    );
+
+  return { project, publication };
+}
+
+function projectNotFound() {
+  return new ApiError(404, "PROJECT_NOT_FOUND", "?????? ?? ??????");
+}

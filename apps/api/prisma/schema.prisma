@@ -79,6 +79,7 @@ model Publication {
   pausedAt DateTime? @map("paused_at") @db.Timestamptz(3)
   snapshots PublicationSnapshot[]
   unpublishReceipts PublicationUnpublishReceipt[]
+  resumeReceipts PublicationResumeReceipt[]
   rsvpRateLimits RsvpRateLimit[]
   deletedRsvpKeys RsvpDeletedKey[]
 
@@ -100,6 +101,20 @@ model PublicationUnpublishReceipt {
 
   @@id([publicationId, keyHash])
   @@map("publication_unpublish_receipts")
+}
+
+model PublicationResumeReceipt {
+  publicationId String @map("publication_id") @db.Uuid
+  publication Publication @relation(fields: [publicationId], references: [id], onDelete: Cascade)
+  keyHash String @map("key_hash") @db.Char(64)
+  payloadHash String @map("payload_hash") @db.Char(64)
+  actorId String @map("actor_id") @db.Uuid
+  publicationVersion Int @map("publication_version")
+  expiresAt DateTime @map("expires_at") @db.Timestamptz(3)
+  createdAt DateTime @map("created_at") @db.Timestamptz(3)
+
+  @@id([publicationId, keyHash])
+  @@map("publication_resume_receipts")
 }
 
 enum RsvpFormSchema {
