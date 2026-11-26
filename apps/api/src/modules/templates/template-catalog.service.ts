@@ -7,7 +7,7 @@ import type {
   TemplateCatalogQueryDto,
   TemplatePriceDto,
 } from "./template-catalog.dto";
-import { gardenMetadata, registeredTemplate } from "./template-definitions";
+import { templateMetadata, registeredTemplate } from "./template-definitions";
 import { templatePrice } from "./template-price";
 
 @Injectable()
@@ -52,7 +52,7 @@ export class TemplateCatalogService {
           locale === "ru" ? version.template.titleRu : version.template.titleEn,
         schemaVersion: version.schemaVersion,
         price: templatePrice(version.template),
-        ...gardenMetadata(locale),
+        ...templateMetadata(version.id, locale),
       })),
     };
   }

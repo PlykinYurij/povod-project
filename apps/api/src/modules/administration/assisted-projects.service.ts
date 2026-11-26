@@ -1,3 +1,4 @@
+import { createTemplateDraft } from "../templates/template-content";
 import { Injectable } from "@nestjs/common";
 import { DatabaseService } from "../../database/database.service";
 import { ApiError } from "../../http/api-error";
@@ -103,7 +104,8 @@ export class AssistedProjectsService {
         tx,
         input.templateVersionId,
       );
-      const draft = this.templates.createDraft(
+      const draft = createTemplateDraft(
+        this.templates,
         input.templateVersionId,
         input.title,
       );

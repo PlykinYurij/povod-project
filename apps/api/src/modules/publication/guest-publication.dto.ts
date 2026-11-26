@@ -1,5 +1,10 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { GardenContentDto } from "../templates/garden/garden-content.dto";
+import { ApiExtraModels, ApiProperty } from "@nestjs/swagger";
+import {
+  TEMPLATE_VERSION_IDS,
+  templateContentModels,
+  templateContentSchema,
+  type TemplateContent,
+} from "../templates/template-content";
 import { PublicRsvpFormDto } from "../rsvp/rsvp.dto";
 
 export class GuestCoverDto {
@@ -7,11 +12,12 @@ export class GuestCoverDto {
   @ApiProperty({ type: "integer" }) height!: number;
 }
 
+@ApiExtraModels(...templateContentModels)
 export class GuestPublicationDto {
-  @ApiProperty({ enum: ["wedding-garden-v1"] })
-  templateVersionId!: "wedding-garden-v1";
+  @ApiProperty({ enum: TEMPLATE_VERSION_IDS })
+  templateVersionId!: (typeof TEMPLATE_VERSION_IDS)[number];
   @ApiProperty({ format: "uuid" }) snapshotId!: string;
-  @ApiProperty({ type: GardenContentDto }) content!: GardenContentDto;
+  @ApiProperty(templateContentSchema) content!: TemplateContent;
   @ApiProperty({ type: GuestCoverDto, nullable: true })
   cover!: GuestCoverDto | null;
   @ApiProperty({ type: PublicRsvpFormDto })

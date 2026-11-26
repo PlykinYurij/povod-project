@@ -1,6 +1,9 @@
 import type { Prisma, Project } from "../../database/generated/client";
 import { ApiError } from "../../http/api-error";
-import { validateGardenDraft } from "../templates/garden/validate-garden";
+import {
+  templatePhoto,
+  templateValidators,
+} from "../templates/template-content";
 import type { SaveProjectDraftDto } from "./project.dto";
 import { projectResponse } from "./project-mapping";
 import { assertStorableContent } from "./storable-content";
@@ -24,13 +27,13 @@ export async function saveLockedDraft(
     );
   if (project.revision !== input.expectedRevision)
     throw new ApiError(409, "REVISION_CONFLICT", "Версия проекта изменилась");
-  const draft = validateGardenDraft({
+  const draft = templateValidators(project.templateVersionId).draft({
     templateVersionId: project.templateVersionId,
     title: input.title,
     content: input.content,
   });
   assertStorableContent(draft);
-  await assertReadyHeroPhoto(tx, project.id, draft.content.heroMediaId);
+  await assertReadyHeroPhoto(tx, project.id, templatePhoto(draft.content));
   const updated = await tx.project.updateMany({
     where: {
       id: project.id,
@@ -55,20 +58,20 @@ export async function saveLockedDraft(
 export async function assertReadyHeroPhoto(
   tx: Prisma.TransactionClient,
   projectId: string,
-  photoId: string | null,
+  photo: ReturnType<typeof templatePhoto>,
 ): Promise<void> {
-  if (photoId === null) return;
-  const photo = await tx.projectPhoto.findFirst({
+  if (photo.id === null) return;
+  const ready = await tx.projectPhoto.findFirst({
     where: {
-      id: photoId,
+      id: photo.id,
       projectId,
       status: "READY",
       renditionToken: { not: null },
     },
     select: { id: true },
   });
-  if (!photo)
+  if (!ready)
     throw new ApiError(422, "VALIDATION_FAILED", "Готовое фото не найдено", [
-      { path: "content.heroMediaId", code: "MEDIA_NOT_FOUND" },
+      { path: photo.path, code: "MEDIA_NOT_FOUND" },
     ]);
 }

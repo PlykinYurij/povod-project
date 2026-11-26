@@ -1,6 +1,6 @@
 import type { Project } from "../../database/generated/client";
 import { ApiError } from "../../http/api-error";
-import { validateGardenDraft } from "../templates/garden/validate-garden";
+import { templateValidators } from "../templates/template-content";
 import { ProjectDto, ProjectSummaryDto } from "./project.dto";
 
 export function projectSummary(project: Project): ProjectSummaryDto {
@@ -18,7 +18,7 @@ export function projectSummary(project: Project): ProjectSummaryDto {
 
 export function projectResponse(project: Project): ProjectDto {
   try {
-    const draft = validateGardenDraft({
+    const draft = templateValidators(project.templateVersionId).draft({
       templateVersionId: project.templateVersionId,
       title: project.title,
       content: project.content,
