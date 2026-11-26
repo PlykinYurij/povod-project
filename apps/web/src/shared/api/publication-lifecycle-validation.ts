@@ -1,6 +1,14 @@
 import { isProjectId } from "@shared/config/project-navigation";
 
 export function isUnpublishReceipt(value: unknown): boolean {
+  return isLifecycleReceipt(value, false);
+}
+
+export function isResumeReceipt(value: unknown): boolean {
+  return isLifecycleReceipt(value, true);
+}
+
+function isLifecycleReceipt(value: unknown, resumed: boolean): boolean {
   if (typeof value !== "object" || value === null) return false;
   const receipt = value as Record<string, unknown>;
   if (
@@ -11,7 +19,7 @@ export function isUnpublishReceipt(value: unknown): boolean {
     receipt.publicationVersion < 1
   )
     return false;
-  if (receipt.status === "PAUSED")
+  if (!resumed && receipt.status === "PAUSED")
     return (
       receipt.expiresAt === null &&
       typeof receipt.remainingMs === "number" &&
@@ -19,7 +27,7 @@ export function isUnpublishReceipt(value: unknown): boolean {
       receipt.remainingMs > 0
     );
   return (
-    receipt.status === "UNPUBLISHED" &&
+    receipt.status === (resumed ? "PUBLISHED" : "UNPUBLISHED") &&
     receipt.remainingMs === null &&
     typeof receipt.expiresAt === "string" &&
     Number.isFinite(Date.parse(receipt.expiresAt))

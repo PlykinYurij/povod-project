@@ -321,6 +321,61 @@ test.each(["PAUSE_PERIOD", "KEEP_RUNNING"] as const)(
     }
     const dashboard = await fetch(`${origin}/api/v1/projects/${project!.id}/responses`, { headers: owner.headers });
     expect(dashboard.status).toBe(paused ? 200 : 404);
+
+    const resumeInput = { expectedProjectRevision: 2, expectedPublicationVersion: 2 };
+    const resumeKey = randomUUID();
+    const resume = (body = resumeInput, key = resumeKey, headers = admin) =>
+      fetch(`${origin}/api/v1/admin/projects/${project!.id}/resume`, {
+        method: "POST",
+        headers: {
+          ...headers,
+          Origin: TEST_ORIGIN,
+          "Idempotency-Key": key,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+      });
+    await expectError(await resume(resumeInput, resumeKey, owner.headers), 403, "ADMIN_REQUIRED");
+    await expectError(await resume({ ...resumeInput, expectedProjectRevision: 1 }), 409, "REVISION_CONFLICT");
+    if (!paused) {
+      await expectError(await resume(), 409, "PUBLICATION_STATE_CONFLICT");
+      await db.publication.update({
+        where: { id: published.publicationId },
+        data: { expiresAt: new Date(published.expiresAt) },
+      });
+    } else {
+      // Preserve a full minute so guest fetches remain stable on a slow worker.
+      await db.publication.update({
+        where: { id: published.publicationId },
+        data: { expiresAt: new Date(61_000) },
+      });
+    }
+    const duplicate = await Promise.all([resume(), resume()]);
+    expect(duplicate.map((response) => response.status)).toEqual([200, 200]);
+    const resumed = await duplicate[0].json();
+    expect(await duplicate[1].json()).toEqual(resumed);
+    expect(resumed).toEqual({
+      publicationId: published.publicationId,
+      publicationVersion: 3,
+      status: "PUBLISHED",
+      expiresAt: paused ? expect.any(String) : published.expiresAt,
+      remainingMs: null,
+    });
+    const recorded = await db.publicationResumeReceipt.findFirstOrThrow({
+      where: { publicationId: published.publicationId },
+    });
+    if (paused) expect(recorded.expiresAt.getTime() - recorded.createdAt.getTime()).toBe(60_000);
+    expect((await fetch(path)).status).toBe(200);
+    expect(await db.publicationSnapshot.count({ where: { publicationId: published.publicationId } })).toBe(2);
+    expect(await db.publicationSnapshot.findUniqueOrThrow({ where: { id: published.snapshotId } }))
+      .toEqual({ ...previousSnapshot, supersededAt: recorded.createdAt });
+    expect(await db.rsvpResponse.count({ where: { publicationId: published.publicationId } })).toBe(1);
+    expect(await readProject()).toMatchObject({ canEditDraft: false });
+    expect((await action({ ...reviewerInput, expectedProjectRevision: 2, expectedPublicationVersion: 3 })).status).toBe(200);
+    const oldReplay = await resume();
+    expect(oldReplay.status).toBe(200);
+    expect(await oldReplay.json()).toEqual(resumed);
+    expect((await fetch(path)).status).toBe(404);
   },
 );
 

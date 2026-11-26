@@ -4,7 +4,14 @@ const ROOT = "/api/v1/admin/requests";
 const PROJECTS = "/api/v1/admin/projects/";
 
 export function isAdminProjectUnpublishPath(path: string): boolean {
-  const action = "/unpublish";
+  return isAdminProjectActionPath(path, "/unpublish");
+}
+
+export function isAdminProjectResumePath(path: string): boolean {
+  return isAdminProjectActionPath(path, "/resume");
+}
+
+function isAdminProjectActionPath(path: string, action: string): boolean {
   return (
     path.startsWith(PROJECTS) &&
     path.endsWith(action) &&

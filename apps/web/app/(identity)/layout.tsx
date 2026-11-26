@@ -22,6 +22,7 @@ export default async function IdentityLayout({
     Requests,
     AdminRequests,
     AdminPublish,
+    AdminResume,
     AdminUnpublish,
     RsvpDashboard,
   } = await getMessages();
@@ -42,6 +43,7 @@ export default async function IdentityLayout({
           Requests,
           AdminRequests,
           AdminPublish,
+          AdminResume,
           AdminUnpublish,
           RsvpDashboard,
         }}
