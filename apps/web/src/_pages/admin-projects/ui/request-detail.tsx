@@ -161,8 +161,8 @@ export function RequestDetail({ requestId }: { requestId: string }) {
                     project={project}
                     lifecycle={record.publicationLifecycle}
                     receipt={record.publication}
-                    refresh={async () => {
-                      await request.refetch();
+                    refresh={async (throwOnError = false) => {
+                      await request.refetch({ throwOnError });
                       void cache.invalidateQueries({
                         queryKey: getListAdminRequestsQueryKey(),
                       });

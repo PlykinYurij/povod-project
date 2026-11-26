@@ -37,6 +37,8 @@ import type {
   RegistrationIdDto,
   RegistrationPendingDto,
   RequestPasswordResetDto,
+  ResumeProjectDto,
+  ResumeReceiptDto,
   RsvpDashboardDto,
   RsvpReceiptDto,
   SaveProjectDraftDto,
@@ -1036,5 +1038,27 @@ export const unpublishAdminProject = async (id: string,
     method: 'POST',
     headers: getHeaders({ 'Content-Type': 'application/json' }, options?.headers),
     body: JSON.stringify(unpublishProjectDto)
+  }
+);}
+
+
+
+export const getResumeAdminProjectUrl = (id: string,) => {
+
+
+
+
+  return `/api/v1/admin/projects/${id}/resume`
+}
+
+export const resumeAdminProject = async (id: string,
+    resumeProjectDto: ResumeProjectDto, options?: Parameters<typeof apiFetch>[1]): Promise<ResumeReceiptDto> => {
+
+  return apiFetch<ResumeReceiptDto>(getResumeAdminProjectUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: getHeaders({ 'Content-Type': 'application/json' }, options?.headers),
+    body: JSON.stringify(resumeProjectDto)
   }
 );}

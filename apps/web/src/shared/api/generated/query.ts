@@ -57,6 +57,8 @@ import type {
   RegistrationIdDto,
   RegistrationPendingDto,
   RequestPasswordResetDto,
+  ResumeProjectDto,
+  ResumeReceiptDto,
   RsvpDashboardDto,
   RsvpReceiptDto,
   SaveProjectDraftDto,
@@ -3652,4 +3654,73 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
         TContext
       > => {
       return useMutation(getUnpublishAdminProjectMutationOptions(options), queryClient);
+    }
+
+export const getResumeAdminProjectUrl = (id: string,) => {
+
+
+
+
+  return `/api/v1/admin/projects/${id}/resume`
+}
+
+export const resumeAdminProject = async (id: string,
+    resumeProjectDto: ResumeProjectDto, options?: Parameters<typeof apiFetch>[1]): Promise<ResumeReceiptDto> => {
+
+  return apiFetch<ResumeReceiptDto>(getResumeAdminProjectUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: getHeaders({ 'Content-Type': 'application/json' }, options?.headers),
+    body: JSON.stringify(resumeProjectDto)
+  }
+);}
+
+
+
+
+
+export const getResumeAdminProjectMutationKey = () => ['resumeAdminProject'] as const;
+
+export const getResumeAdminProjectMutationOptions = <TError = ErrorType<ApiErrorDto>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof resumeAdminProject>>, TError,ResumeAdminProjectMutationVariables, TContext>, request?: SecondParameter<typeof apiFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof resumeAdminProject>>, TError,ResumeAdminProjectMutationVariables, TContext> => {
+
+const mutationKey = getResumeAdminProjectMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof resumeAdminProject>>, ResumeAdminProjectMutationVariables> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  resumeAdminProject(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ResumeAdminProjectMutationResult = NonNullable<Awaited<ReturnType<typeof resumeAdminProject>>>
+    export type ResumeAdminProjectMutationBody = ResumeProjectDto
+    export type ResumeAdminProjectMutationError = ErrorType<ApiErrorDto>
+    export type ResumeAdminProjectMutationVariables = {id: string;data: ResumeProjectDto}
+
+    export const useResumeAdminProject = <TError = ErrorType<ApiErrorDto>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof resumeAdminProject>>, TError,ResumeAdminProjectMutationVariables, TContext>, request?: SecondParameter<typeof apiFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof resumeAdminProject>>,
+        TError,
+        ResumeAdminProjectMutationVariables,
+        TContext
+      > => {
+      return useMutation(getResumeAdminProjectMutationOptions(options), queryClient);
     }

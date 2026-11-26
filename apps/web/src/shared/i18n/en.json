@@ -30,6 +30,20 @@
     "open": "Show guest responses",
     "close": "Hide guest responses"
   },
+  "AdminResume": {
+    "title": "Resume publication",
+    "description": "Confirm you reviewed revision {revision}. The invitation will reopen at the same address. Guest responses are kept and no new period starts.",
+    "working": "Updating publication…",
+    "confirm": "Confirm and resume",
+    "close": "Close",
+    "refresh": "Refresh status",
+    "retry": "Retry the same request",
+    "refreshFailed": "Could not refresh the status. Try refreshing again.",
+    "forbidden": "Publication access is unavailable.",
+    "stale": "The project or publication has changed. Refresh and review the current version.",
+    "uncertain": "The result could not be confirmed. Retry the same request.",
+    "failed": "Could not resume publication."
+  },
   "AdminUnpublish": {
     "title": "Unpublish invitation",
     "description": "The invitation and its RSVP form will become unavailable to guests. Existing replies stay saved, and the draft becomes editable.",
