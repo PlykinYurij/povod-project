@@ -2,6 +2,7 @@
 
 import { useFormatter, useTranslations } from "next-intl";
 import { PublishedLink } from "@features/publish-request";
+import { ResumeProjectAction } from "@features/resume-project";
 import { UnpublishProjectAction } from "@features/unpublish-project";
 import type {
   AdminRequestDetailDto,
@@ -18,7 +19,7 @@ export function RequestPublication({
   project: { id: string; revision: number };
   lifecycle: PublicationLifecycleDto;
   receipt: AdminRequestDetailDto["publication"];
-  refresh: () => Promise<unknown>;
+  refresh: (throwOnError?: boolean) => Promise<unknown>;
 }) {
   const t = useTranslations("AdminUnpublish");
   const format = useFormatter();
@@ -57,6 +58,15 @@ export function RequestPublication({
             refresh={refresh}
           />
         </>
+      )}
+      {(lifecycle.status === "PAUSED" || lifecycle.status === "UNPUBLISHED") && (
+        <ResumeProjectAction
+          key={`${project.id}:${project.revision}:${lifecycle.publicationVersion}`}
+          projectId={project.id}
+          projectRevision={project.revision}
+          publicationVersion={lifecycle.publicationVersion}
+          refresh={() => refresh(true)}
+        />
       )}
     </Stack>
   );
