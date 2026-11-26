@@ -28,6 +28,10 @@ const {
 }: typeof import("../templates/garden/garden-template.service.js") = require("../../../dist/modules/templates/garden/garden-template.service.js");
 
 const DOMAIN = "invitations.example.test";
+const { PublicationExpiryService }: typeof import("./publication-expiry.service.js") =
+  require("../../../dist/modules/publication/publication-expiry.service.js");
+const { DatabaseService }: typeof import("../../database/database.service.js") =
+  require("../../../dist/database/database.service.js");
 const DAY = 24 * 60 * 60_000;
 const requestIds: string[] = [];
 const projectIds: string[] = [];
@@ -186,6 +190,44 @@ async function expectError(response: Response, status: number, code: string) {
   expect(payload.error.code).toBe(code);
   return payload.error;
 }
+
+test("expiry tombstones only expired running projects and skips locked projects", async () => {
+  const owner = await user();
+  const expired = await fixture(owner.id);
+  const paused = await fixture(null);
+  const active = await fixture(null);
+  const due = (await (await publish(expired.request.id, expired.input)).json()) as PublicationReceiptDto;
+  const frozen = (await (await publish(paused.request.id, paused.input)).json()) as PublicationReceiptDto;
+  expect((await publish(active.request.id, active.input)).status).toBe(201);
+  await db.publication.update({
+    where: { id: due.publicationId },
+    data: { expiresAt: new Date(0) },
+  });
+  await db.publication.update({
+    where: { id: frozen.publicationId },
+    data: { expiresAt: new Date(1_000), pausedAt: new Date(0), visible: false },
+  });
+
+  const database = new DatabaseService();
+  vi.spyOn(database, "getClient").mockReturnValue(db);
+  const expiry = new PublicationExpiryService(database);
+  await db.$transaction(async (tx) => {
+    await tx.$queryRaw`SELECT id FROM projects WHERE id = ${expired.project!.id}::uuid FOR UPDATE`;
+    await expiry.runOnce();
+    expect((await tx.project.findUniqueOrThrow({ where: { id: expired.project!.id } })).deletedAt).toBeNull();
+  });
+
+  await expiry.runOnce();
+  const deleted = await db.project.findUniqueOrThrow({ where: { id: expired.project!.id } });
+  expect(deleted.deletedAt).not.toBeNull();
+  expect(await db.publicationSnapshot.findUnique({ where: { id: due.snapshotId } })).not.toBeNull();
+  await expectError(await fetch(`${origin}/api/v1/projects/${deleted.id}`, { headers: owner.headers }), 404, "PROJECT_NOT_FOUND");
+  await expiry.runOnce();
+  expect((await db.project.findUniqueOrThrow({ where: { id: deleted.id } })).deletedAt).toEqual(deleted.deletedAt);
+  for (const surviving of [paused, active]) {
+    expect((await db.project.findUniqueOrThrow({ where: { id: surviving.project!.id } })).deletedAt).toBeNull();
+  }
+});
 
 async function expectDraft(projectId: string, requestId: string) {
   expect(await db.publication.findUnique({ where: { projectId } })).toBeNull();
