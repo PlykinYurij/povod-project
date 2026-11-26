@@ -10,9 +10,12 @@ import { PublishRequestService } from "./publish-request.service";
 import { UnpublishProjectController } from "./unpublish-project.controller";
 import { UnpublishProjectService } from "./unpublish-project.service";
 
+import { ResumeProjectController } from "./resume-project.controller";
+import { ResumeProjectService } from "./resume-project.service";
+
 @Module({
   imports: [DatabaseModule, AdministrationModule, IdentityModule, MediaModule],
-  controllers: [PublishRequestController, GuestPublicationController, UnpublishProjectController],
-  providers: [PublishRequestService, GuestPublicationService, UnpublishProjectService],
+  controllers: [PublishRequestController, GuestPublicationController, UnpublishProjectController, ResumeProjectController],
+  providers: [PublishRequestService, GuestPublicationService, UnpublishProjectService, ResumeProjectService],
 })
 export class PublicationModule {}

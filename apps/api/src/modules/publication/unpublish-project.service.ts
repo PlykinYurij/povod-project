@@ -6,14 +6,11 @@ import {
   publicationStatus,
   readPublicationClock,
 } from "./publication-lifecycle";
-import { lockProject, lockPublicationUsers } from "./publication-locks";
+import { lockAdminPublication } from "./publication-locks";
 import {
   mapUnpublishReceipt,
   type UnpublishProjectDto,
 } from "./unpublish-project.dto";
-
-const projectNotFound = () =>
-  new ApiError(404, "PROJECT_NOT_FOUND", "Проект не найден");
 
 @Injectable()
 export class UnpublishProjectService {
@@ -37,31 +34,7 @@ export class UnpublishProjectService {
       input.reason,
     ]);
     return this.database.getClient().$transaction(async (tx) => {
-      const initial = await tx.project.findUnique({
-        where: { id: projectId },
-        select: { ownerId: true },
-      });
-      await lockPublicationUsers(tx, actorId, initial?.ownerId ?? null);
-      if (!initial) throw projectNotFound();
-      await lockProject(tx, projectId);
-      const project = await tx.project.findUnique({
-        where: { id: projectId },
-        include: { publication: true },
-      });
-      if (!project || project.deletedAt) throw projectNotFound();
-      if (project.ownerId !== initial.ownerId)
-        throw new ApiError(
-          409,
-          "PUBLICATION_STATE_CONFLICT",
-          "Владелец проекта изменился",
-        );
-      const publication = project.publication;
-      if (!publication)
-        throw new ApiError(
-          409,
-          "PUBLICATION_STATE_CONFLICT",
-          "У проекта нет публикации",
-        );
+      const { project, publication } = await lockAdminPublication(tx, actorId, projectId);
 
       const previous = await tx.publicationUnpublishReceipt.findUnique({
         where: {
