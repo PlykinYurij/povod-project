@@ -73,7 +73,7 @@ export class ResumeProjectService {
         where: { publicationId: publication.id, supersededAt: null },
       });
       if (!snapshot)
-        throw new ApiError(409, "PUBLICATION_STATE_CONFLICT", "??? ???????? ??????");
+        throw new ApiError(409, "PUBLICATION_STATE_CONFLICT", "Снимок публикации не найден");
 
       const draft = validateGardenComplete({
         templateVersionId: project.templateVersionId,
@@ -84,7 +84,7 @@ export class ResumeProjectService {
 
       const now = await readPublicationClock(tx);
       if (publicationStatus(publication, now) === "EXPIRED")
-        throw new ApiError(409, "PUBLICATION_STATE_CONFLICT", "???? ?????????? ?????");
+        throw new ApiError(409, "PUBLICATION_STATE_CONFLICT", "Срок публикации истёк");
       const expiresAt = publication.pausedAt
         ? new Date(now.getTime() + publication.expiresAt.getTime() - publication.pausedAt.getTime())
         : publication.expiresAt;

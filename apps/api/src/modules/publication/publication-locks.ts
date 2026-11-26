@@ -107,5 +107,5 @@ export async function lockAdminPublication(tx: Prisma.TransactionClient, actorId
 }
 
 function projectNotFound() {
-  return new ApiError(404, "PROJECT_NOT_FOUND", "?????? ?? ??????");
+  return new ApiError(404, "PROJECT_NOT_FOUND", "Проект не найден");
 }
