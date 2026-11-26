@@ -123,6 +123,7 @@ afterAll(async () => {
     await db.projectPhoto.deleteMany({
       where: { projectId: { in: projects } },
     });
+    await db.publication.deleteMany({ where: { projectId: { in: projects } } });
     await db.project.deleteMany({ where: { id: { in: projects } } });
     await db.user.deleteMany({ where: { id: { in: users } } });
     await db.$disconnect();
@@ -287,8 +288,7 @@ test("rejects oversized files and oversized images before writing storage", asyn
   );
 }, 30_000);
 
-test("operator can upload only through an assisted request", async () => {
-  const [admin, ordinary] = await Promise.all([account("ADMIN"), account()]);
+async function assistedProject(cookie: string) {
   const id = randomUUID();
   requests.push(id);
   const digest = id.replaceAll("-", "").repeat(2);
@@ -306,7 +306,12 @@ test("operator can upload only through an assisted request", async () => {
     },
   });
   const base = `/api/v1/admin/requests/${id}/project`;
-  const draft = await project(admin.cookie, base, true);
+  return { base, draft: await project(cookie, base, true) };
+}
+
+test("operator can upload only through an assisted request", async () => {
+  const [admin, ordinary] = await Promise.all([account("ADMIN"), account()]);
+  const { base, draft } = await assistedProject(admin.cookie);
   expect((await upload(base + "/photos", ordinary.cookie)).status).toBe(403);
   expect(
     (await upload(`/api/v1/projects/${draft.id}/photos`, admin.cookie)).status,
@@ -316,6 +321,70 @@ test("operator can upload only through an assisted request", async () => {
     1,
   );
 });
+
+test.each(["owner", "assisted"] as const)(
+  "reopens %s photo uploads after removal until the running deadline expires",
+  async (scope) => {
+    const admin = await account("ADMIN");
+    const actor = scope === "owner" ? await account() : admin;
+    const { base, draft } = scope === "owner"
+      ? await project(actor.cookie).then((draft) => ({
+          base: `/api/v1/projects/${draft.id}`,
+          draft,
+        }))
+      : await assistedProject(actor.cookie);
+    const now = new Date();
+    await db.project.update({
+      where: { id: draft.id },
+      data: {
+        firstPublishedAt: now,
+        publication: {
+          create: {
+            slug: `photo-${randomUUID()}`,
+            visible: true,
+            expiresAt: new Date(now.getTime() + 60 * 60_000),
+          },
+        },
+      },
+    });
+
+    const path = `${base}/photos`;
+    const expectLocked = async () => {
+      const response = await upload(path, actor.cookie);
+      expect(response.status).toBe(409);
+      expect(await response.json()).toMatchObject({
+        error: { code: "CONTENT_LOCKED" },
+      });
+    };
+    await expectLocked();
+    expect(await db.projectPhoto.count({ where: { projectId: draft.id } })).toBe(0);
+
+    const removed = await fetch(`${url}/api/v1/admin/projects/${draft.id}/unpublish`, {
+      method: "POST",
+      headers: {
+        ...(await csrfHeaders(url, admin.cookie)),
+        Origin: TEST_ORIGIN,
+        "Content-Type": "application/json",
+        "Idempotency-Key": randomUUID(),
+      },
+      body: JSON.stringify({
+        expectedProjectRevision: draft.revision,
+        expectedPublicationVersion: 1,
+        mode: "KEEP_RUNNING",
+        reason: "Согласована замена фотографии",
+      }),
+    });
+    expect(removed.status).toBe(200);
+    expect((await upload(path, actor.cookie)).status).toBe(200);
+
+    await db.publication.update({
+      where: { projectId: draft.id },
+      data: { expiresAt: new Date(0) },
+    });
+    await expectLocked();
+    expect(await db.projectPhoto.count({ where: { projectId: draft.id } })).toBe(1);
+  },
+);
 
 test("Swagger describes multipart upload and cookie authentication", () => {
   const swagger = createOpenApiDocument(app);
