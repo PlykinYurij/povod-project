@@ -1,4 +1,5 @@
 import { Injectable } from "@nestjs/common";
+import { canEditProject, readPublicationClock } from "../publication/publication-lifecycle";
 import { DatabaseService } from "../../database/database.service";
 import type { ProjectPhoto } from "../../database/generated/client";
 import { ApiError } from "../../http/api-error";
@@ -115,7 +116,7 @@ export class ProjectPhotosService {
           );
         return previous;
       }
-      if (project.firstPublishedAt)
+      if (!canEditProject(project, await readPublicationClock(tx)))
         throw new ApiError(
           409,
           "CONTENT_LOCKED",

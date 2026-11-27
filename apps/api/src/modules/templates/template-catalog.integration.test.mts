@@ -32,8 +32,13 @@ test("anonymous catalog returns only public metadata from the configured catalog
   expect(response.status).toBe(200);
   expect(response.headers.get("cache-control")).toBe("no-store");
   expect(response.headers.get("set-cookie")).toBeNull();
-  expect(body.items).toHaveLength(1);
-  expect(Object.keys(body.items[0]).sort()).toEqual([
+  expect(body.items.map(({ templateVersionId }) => templateVersionId).sort()).toEqual([
+    "birthday-anniversary-v1",
+    "birthday-confetti-v1",
+    "wedding-garden-v1",
+    "wedding-together-v1",
+  ]);
+  for (const item of body.items) expect(Object.keys(item).sort()).toEqual([
     "blocks",
     "categoryId",
     "demoPath",
@@ -46,12 +51,12 @@ test("anonymous catalog returns only public metadata from the configured catalog
     "themes",
     "title",
   ]);
-  expect(body.items[0].templateVersionId).toBe("wedding-garden-v1");
-  expect(body.items[0].themes.map((theme) => theme.id)).toEqual([
+  const garden = body.items.find((item) => item.templateVersionId === "wedding-garden-v1")!;
+  expect(garden.themes.map((theme) => theme.id)).toEqual([
     "sage",
     "sand",
   ]);
-  expect(body.items[0].blocks.map((block) => block.id)).toEqual([
+  expect(garden.blocks.map((block) => block.id)).toEqual([
     "names",
     "event",
     "venue",
@@ -60,8 +65,25 @@ test("anonymous catalog returns only public metadata from the configured catalog
     "rsvp",
   ]);
   expect(
-    body.items[0].blocks.find((block) => block.id === "rsvp")?.required,
+    garden.blocks.find((block) => block.id === "rsvp")?.required,
   ).toBe(true);
+  const confetti = body.items.find((item) => item.templateVersionId === "birthday-confetti-v1");
+  expect(confetti).toMatchObject({
+    categoryId: "birthday",
+    eventType: "birthday",
+    demoPath: "/templates/confetti",
+    blocks: expect.arrayContaining([{ id: "celebrant-name", required: true }]),
+  });
+  const anniversary = body.items.find(
+    ({ templateVersionId }) => templateVersionId === "birthday-anniversary-v1",
+  );
+  expect(anniversary).toMatchObject({
+    categoryId: "birthday",
+    eventType: "birthday",
+    demoPath: "/templates/anniversary",
+    previewImagePath: "/templates/anniversary/cover.svg",
+    price: null,
+  });
   for (const field of [
     "ownerId",
     "passwordHash",
@@ -78,10 +100,12 @@ test("locale changes catalog labels without changing template version or block o
   const en = (await (
     await fetch(`${origin}/api/v1/templates?locale=en`)
   ).json()) as TemplateCatalogDto;
-  expect(en.items[0].title).toBe("Quiet Garden");
-  expect(ru.items[0].title).toBe("Тихий сад");
-  expect(en.items[0].templateVersionId).toBe(ru.items[0].templateVersionId);
-  expect(en.items[0].blocks).toEqual(ru.items[0].blocks);
+  expect(en.items.find((item) => item.templateId === "quiet-garden")?.title).toBe("Quiet Garden");
+  expect(ru.items.find((item) => item.templateId === "quiet-garden")?.title).toBe("Тихий сад");
+  for (const item of en.items) {
+    const localized = ru.items.find((candidate) => candidate.templateVersionId === item.templateVersionId);
+    expect(localized?.blocks).toEqual(item.blocks);
+  }
 });
 test.each(["locale=de", "locale=ru&locale=en", "ownerId=somebody", "limit=4"])(
   "invalid query is rejected: %s",

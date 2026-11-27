@@ -19,7 +19,8 @@ import { RequestStatusActions } from "./request-status-actions";
 import { AssistedCreate } from "./assisted-create";
 import { AssistedEditor } from "./assisted-editor";
 import { AssistedResponses } from "./assisted-responses";
-import { PublishedLink, PublishRequestForm } from "@features/publish-request";
+import { PublishRequestForm } from "@features/publish-request";
+import { RequestPublication } from "./request-publication";
 
 export function RequestDetail({ requestId }: { requestId: string }) {
   const t = useTranslations("AdminRequests");
@@ -62,6 +63,7 @@ export function RequestDetail({ requestId }: { requestId: string }) {
           : current,
     );
     void cache.invalidateQueries({ queryKey: getListAdminRequestsQueryKey() });
+    void request.refetch();
   }
 
   return (
@@ -121,7 +123,16 @@ export function RequestDetail({ requestId }: { requestId: string }) {
               )}
             {record.kind === "ASSISTANCE" &&
               !record.hasAccount &&
-              project?.templateVersionId === "wedding-garden-v1" &&
+              project &&
+              ((project.templateVersionId === "wedding-garden-v1" &&
+                "program" in project.content) ||
+                (project.templateVersionId === "wedding-together-v1" &&
+                  "photo" in project.content &&
+                  "names" in project.content) ||
+                (project.templateVersionId === "birthday-confetti-v1" &&
+                  "celebrantName" in project.content) ||
+                (project.templateVersionId === "birthday-anniversary-v1" &&
+                  "celebrant" in project.content)) &&
               project.canEditDraft && (
                 <AssistedEditor
                   key={project.id}
@@ -129,7 +140,16 @@ export function RequestDetail({ requestId }: { requestId: string }) {
                   project={project}
                 />
               )}
-            {project?.templateVersionId === "wedding-garden-v1" ? (
+            {project &&
+            ((project.templateVersionId === "wedding-garden-v1" &&
+              "program" in project.content) ||
+              (project.templateVersionId === "wedding-together-v1" &&
+                "photo" in project.content &&
+                "names" in project.content) ||
+              (project.templateVersionId === "birthday-confetti-v1" &&
+                "celebrantName" in project.content) ||
+              (project.templateVersionId === "birthday-anniversary-v1" &&
+                "celebrant" in project.content)) ? (
               <>
                 <Title order={3}>{t("preview")}</Title>
                 <Text>{t("revision", { current: project.revision })}</Text>
@@ -146,10 +166,21 @@ export function RequestDetail({ requestId }: { requestId: string }) {
                   rsvp={<p>{t("noGuestForm")}</p>}
                   idPrefix="admin-preview"
                 />
-                {record.publication && (
-                  <PublishedLink receipt={record.publication} />
+                {record.publicationLifecycle && (
+                  <RequestPublication
+                    project={project}
+                    lifecycle={record.publicationLifecycle}
+                    receipt={record.publication}
+                    refresh={async (throwOnError = false) => {
+                      await request.refetch({ throwOnError });
+                      void cache.invalidateQueries({
+                        queryKey: getListAdminRequestsQueryKey(),
+                      });
+                    }}
+                  />
                 )}
-                {record.publication &&
+                {record.publicationLifecycle &&
+                  record.publicationLifecycle.status !== "EXPIRED" &&
                   record.kind === "ASSISTANCE" &&
                   !record.hasAccount && (
                     <AssistedResponses key={requestId} requestId={requestId} />

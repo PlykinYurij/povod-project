@@ -6,6 +6,8 @@ import {
   isAdminRequestPath,
   isAdminRequestPublishPath,
   isAdminRequestStatusPath,
+  isAdminProjectUnpublishPath,
+  isAdminProjectResumePath,
   assistedProjectMethod,
 } from "./admin-request-path";
 import { isPrivatePhotoImagePath, isPrivatePhotoPath } from "./photo-path";
@@ -14,6 +16,10 @@ import { guestPublicationKind } from "./guest-publication-path";
 import { trustedApiOrigin } from "./api-origin";
 import { rsvpDashboardOperation } from "./rsvp-dashboard-path";
 import { isRsvpDashboard } from "./rsvp-dashboard-validation";
+import {
+  isResumeReceipt,
+  isUnpublishReceipt,
+} from "./publication-lifecycle-validation";
 import {
   isGuestPublication,
   isPublicationReceipt,
@@ -108,6 +114,8 @@ export async function apiFetch<T>(
   const adminRequest = isAdminRequestPath(path);
   const adminRequestStatus = isAdminRequestStatusPath(path);
   const adminPublish = isAdminRequestPublishPath(path);
+  const adminUnpublish = isAdminProjectUnpublishPath(path);
+  const adminResume = isAdminProjectResumePath(path);
   const assistedMethod = assistedProjectMethod(path);
   const photo = isPrivatePhotoPath(path);
   const photoImage = isPrivatePhotoImagePath(path);
@@ -124,6 +132,8 @@ export async function apiFetch<T>(
       !adminRequest &&
       !adminRequestStatus &&
       !adminPublish &&
+      !adminUnpublish &&
+      !adminResume &&
       !assistedMethod &&
       !photo &&
       !photoImage &&
@@ -151,6 +161,10 @@ export async function apiFetch<T>(
     throw new Error("Unsupported request status method");
   if (adminPublish && method !== "POST")
     throw new Error("Publish only supports POST");
+  if (adminUnpublish && method !== "POST")
+    throw new Error("Unpublish only supports POST");
+  if (adminResume && method !== "POST")
+    throw new Error("Resume only supports POST");
   const guestSubmit =
     guest === "rsvp" && method === "POST" && typeof window !== "undefined";
   if (guest && method !== "GET" && !guestSubmit)
@@ -243,6 +257,10 @@ export async function apiFetch<T>(
   if (guestSubmit && !isRsvpReceipt(body))
     throw new ApiRequestError(503, "SERVICE_UNAVAILABLE");
   if (adminPublish && !isPublicationReceipt(body))
+    throw new ApiRequestError(503, "SERVICE_UNAVAILABLE");
+  if (adminUnpublish && !isUnpublishReceipt(body))
+    throw new ApiRequestError(503, "SERVICE_UNAVAILABLE");
+  if (adminResume && !isResumeReceipt(body))
     throw new ApiRequestError(503, "SERVICE_UNAVAILABLE");
   if (photo && !validPhotoResponse(body, method === "GET"))
     throw new ApiRequestError(503, "SERVICE_UNAVAILABLE");

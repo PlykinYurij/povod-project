@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, type DefaultValues, type FieldValues } from "react-hook-form";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   ApiRequestError,
@@ -32,8 +32,26 @@ export function useDraftEditor(
   project: ProjectDto,
   access?: DraftEditorAccess,
 ) {
-  const form = useForm<GardenEditorValues>({
-    defaultValues: toEditorValues(project),
+  return useVersionedDraftEditor<GardenEditorValues>(
+    project,
+    {
+      read: toEditorValues,
+      write: toSaveRequest,
+    },
+    access,
+  );
+}
+
+export function useVersionedDraftEditor<Values extends FieldValues>(
+  project: ProjectDto,
+  mapping: {
+    read: (project: ProjectDto) => Values & DefaultValues<Values>;
+    write: (values: Values, revision: number) => SaveProjectDraftDto;
+  },
+  access?: DraftEditorAccess,
+) {
+  const form = useForm<Values>({
+    defaultValues: mapping.read(project),
   });
   const action = useFormAction();
   const cache = useQueryClient();
@@ -46,7 +64,7 @@ export function useDraftEditor(
 
   function applyServerProject(current: ProjectDto, source: "saved" | "loaded") {
     revision.current = current.revision;
-    form.reset(toEditorValues(current));
+    form.reset(mapping.read(current));
     if (access) {
       access.onProject(current);
     } else {
@@ -62,7 +80,7 @@ export function useDraftEditor(
       async () => {
         setStatus("initial");
         try {
-          const request = toSaveRequest(values, revision.current);
+          const request = mapping.write(values, revision.current);
           const options = { signal: AbortSignal.timeout(15_000) };
           return await (access
             ? access.save(request, options)

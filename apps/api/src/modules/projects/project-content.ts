@@ -1,8 +1,16 @@
-import type { Prisma, Project } from "../../database/generated/client";
+import type { Prisma } from "../../database/generated/client";
 import { ApiError } from "../../http/api-error";
-import { validateGardenDraft } from "../templates/garden/validate-garden";
+import {
+  canEditProject,
+  publicationLifecycleFields,
+  readPublicationClock,
+} from "../publication/publication-lifecycle";
+import {
+  templatePhoto,
+  templateValidators,
+} from "../templates/template-content";
 import type { SaveProjectDraftDto } from "./project.dto";
-import { projectResponse } from "./project-mapping";
+import { projectResponse, type ProjectWithPublication } from "./project-mapping";
 import { assertStorableContent } from "./storable-content";
 
 export function jsonContent(content: object): Prisma.InputJsonObject {
@@ -13,30 +21,29 @@ export function jsonContent(content: object): Prisma.InputJsonObject {
 /** Caller holds the relevant project/request locks and has already checked access. */
 export async function saveLockedDraft(
   tx: Prisma.TransactionClient,
-  project: Project,
+  project: ProjectWithPublication,
   input: SaveProjectDraftDto,
 ) {
-  if (project.firstPublishedAt)
+  if (!canEditProject(project, await readPublicationClock(tx)))
     throw new ApiError(
       409,
       "CONTENT_LOCKED",
-      "Опубликованный проект закрыт для редактирования",
+      "Проект закрыт для редактирования",
     );
   if (project.revision !== input.expectedRevision)
     throw new ApiError(409, "REVISION_CONFLICT", "Версия проекта изменилась");
-  const draft = validateGardenDraft({
+  const draft = templateValidators(project.templateVersionId).draft({
     templateVersionId: project.templateVersionId,
     title: input.title,
     content: input.content,
   });
   assertStorableContent(draft);
-  await assertReadyHeroPhoto(tx, project.id, draft.content.heroMediaId);
+  await assertReadyHeroPhoto(tx, project.id, templatePhoto(draft.content));
   const updated = await tx.project.updateMany({
     where: {
       id: project.id,
       ownerId: project.ownerId,
       deletedAt: null,
-      firstPublishedAt: null,
       revision: input.expectedRevision,
     },
     data: {
@@ -48,27 +55,30 @@ export async function saveLockedDraft(
   if (updated.count !== 1)
     throw new ApiError(409, "REVISION_CONFLICT", "Версия проекта изменилась");
   return projectResponse(
-    await tx.project.findUniqueOrThrow({ where: { id: project.id } }),
+    await tx.project.findUniqueOrThrow({
+      where: { id: project.id },
+      include: { publication: { select: publicationLifecycleFields } },
+    }),
   );
 }
 
 export async function assertReadyHeroPhoto(
   tx: Prisma.TransactionClient,
   projectId: string,
-  photoId: string | null,
+  photo: ReturnType<typeof templatePhoto>,
 ): Promise<void> {
-  if (photoId === null) return;
-  const photo = await tx.projectPhoto.findFirst({
+  if (photo.id === null) return;
+  const ready = await tx.projectPhoto.findFirst({
     where: {
-      id: photoId,
+      id: photo.id,
       projectId,
       status: "READY",
       renditionToken: { not: null },
     },
     select: { id: true },
   });
-  if (!photo)
+  if (!ready)
     throw new ApiError(422, "VALIDATION_FAILED", "Готовое фото не найдено", [
-      { path: "content.heroMediaId", code: "MEDIA_NOT_FOUND" },
+      { path: photo.path, code: "MEDIA_NOT_FOUND" },
     ]);
 }

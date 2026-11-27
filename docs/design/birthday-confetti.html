@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Конфетти · макет «Повода»</title>
+  <style>
+    :root { color-scheme: light; font: 100%/1.55 system-ui,sans-serif; background:#fff8ec; color:#221d33; }
+    *, *::before, *::after { box-sizing:border-box; }
+    [hidden] { display:none !important; }
+    body { margin:0; }
+    :focus-visible { outline:3px solid #221d33; outline-offset:4px; }
+    .controls, article { width:min(70rem,100% - 2rem); margin-inline:auto; }
+    .controls { padding-block:1rem; }
+    .controls select { max-width:100%; padding:.5rem; font:inherit; }
+    article { display:grid; gap:1rem; padding-block-end:2rem; }
+    article :is(h1,h2,p,dd,dt,button) { overflow-wrap:anywhere; margin:0; }
+    article p + p { margin-block-start:.5rem; }
+    article > * { min-width:0; }
+    .hero { background:#d6c6ff; border:2px solid; padding:clamp(1rem,5vw,4rem); display:grid; align-items:center; gap:1.5rem; border-radius:2rem .5rem 2rem .5rem; }
+    .hero h1 { font-size:clamp(2rem,8vw,5.5rem); line-height:1.05; margin-block:.2em; }
+    .eyebrow { font-weight:750; }
+    .stamp { display:grid; place-items:center; min-height:6rem; color:#7050a6; }
+    .burst { width:min(70%,10rem); aspect-ratio:1; position:relative; border-radius:41% 59% 33% 67%; background:#ffbbcf; border:2px solid #221d33; transform:rotate(-12deg); }
+    .burst::before,.burst::after { content:""; position:absolute; inset:initial; width:24%; aspect-ratio:1; border:2px solid #221d33; }
+    .burst::before { top:0; left:-6%; background:#fff08a; transform:rotate(26deg); }
+    .burst::after { bottom:4%; right:-12%; background:#96ead9; border-radius:50%; }
+    .tile { border:2px solid; border-radius:.75rem; padding:clamp(.8rem,4vw,2rem); background:#fff; display:grid; gap:.6rem; align-content:start; }
+    .tile h2 { line-height:1.2; }
+    .details { display:grid; gap:1rem; }
+    .details > * { min-width:0; }
+    .details .tile:first-child { background:#fff08a; }
+    .details .tile + .tile { background:#96ead9; }
+    dl { margin:0; }
+    dt { font-weight:700; }
+    dd + dt { margin-block-start:.7rem; }
+    .photo { background:repeating-linear-gradient(-45deg,#e9def9 0 14px,#f5ebfd 14px 28px); min-height:8rem; }
+    .rsvp { background:#ffbbcf; }
+    .rsvp button { font:inherit; text-align:start; background:#221d33; color:#fff; border:0; padding:.6rem 1rem; border-radius:.5rem; max-width:100%; justify-self:start; }
+    footer { padding:.4rem; }
+    @media(min-width:48rem) { .hero { grid-template-columns:minmax(0,3fr) minmax(0,1fr); } .details { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+  </style>
+</head>
+<body>
+  <div class="controls">
+    <label for="state">Состояние макета</label>
+    <select id="state">
+      <option value="complete">Все блоки</option><option value="empty">Пустой черновик</option>
+      <option value="minimal">Без дополнительных блоков</option><option value="long">Длинные тексты</option>
+      <option value="loading">Обработка фото</option><option value="error">Ошибка фото</option>
+    </select>
+  </div>
+  <main>
+    <article aria-labelledby="birthday-title">
+      <header class="hero">
+        <div>
+          <p class="eyebrow" data-field="invitationLabel">День рождения</p>
+          <h1 id="birthday-title" data-field="celebrantName">Лера</h1>
+          <p data-field="intro">Собираемся с друзьями, чтобы задуть свечи и танцевать до вечера.</p>
+          <p id="draft-status" role="status" hidden>Добавьте имя, дату и место, чтобы закончить приглашение.</p>
+        </div>
+        <div class="stamp" aria-hidden="true"><div class="burst"></div></div>
+      </header>
+      <div class="details">
+        <section class="tile" aria-labelledby="when">
+          <h2 id="when" data-field="whenHeading">Когда</h2>
+          <dl><dt data-field="dateLabel">Дата</dt><dd data-field="date">12 июня 2027</dd>
+            <dt data-field="timeLabel">Начало</dt><dd data-field="time">16:00</dd></dl>
+        </section>
+        <section class="tile" aria-labelledby="where">
+          <h2 id="where" data-field="whereHeading">Где</h2>
+          <p data-field="venue">Студия «Зигзаг»</p><p data-field="address">Набережная, 12, зал 3</p>
+        </section>
+      </div>
+      <section id="photo" class="tile" aria-labelledby="photo-title">
+        <h2 id="photo-title" data-field="photoHeading">Фото именинника</h2>
+        <div class="photo" id="photo-example" aria-hidden="true"></div>
+        <p id="photo-loading" role="status" hidden>Фото обрабатывается.</p>
+        <p id="photo-error" role="status" hidden>Фото не загрузилось.</p>
+      </section>
+      <section id="note" class="tile" aria-labelledby="note-title">
+        <h2 id="note-title" data-field="noteHeading">К слову</h2>
+        <p data-field="noteBody">Захватите сменную обувь для танцевального зала.</p>
+      </section>
+      <section class="tile rsvp" aria-labelledby="reply">
+        <h2 id="reply" data-field="rsvpHeading">Придёте?</h2>
+        <p data-field="rsvpIntro">Отметьтесь, чтобы я могла запланировать угощение.</p>
+        <button type="button" disabled data-field="rsvpAction">Подтвердить участие</button>
+        <p>Предпросмотр. Отправка ответа отключена.</p>
+      </section>
+      <footer><p data-field="signoff">До встречи, Лера!</p></footer>
+    </article>
+  </main>
+  <script>
+    const fields = Array.from(document.querySelectorAll("[data-field]"));
+    const base = new Map(fields.map((field) => [field, field.textContent]));
+    const fixtures = {
+      empty: {celebrantName:"Имя пока не указано", intro:"", date:"Дата не указана", time:"Время не указано", venue:"Место не указано", address:"", signoff:""},
+      long: {
+        celebrantName:"Александра-Маргарита",
+        venue:"Культурное и танцевальное пространство «Северный лофт»",
+        address:"Вымышленный город, Северо-Восточная набережная, строение 12/6, вход со стороны моста",
+        noteBody:"Вечером будет прохладно. Возьмите лёгкую куртку и удобную обувь для длинной танцевальной программы.",
+        rsvpAction:"СверхдлиннаяПодписьКнопкиПодтвержденияУчастияНаДнеРождения",
+      },
+    };
+    function renderState(state) {
+      const text = fixtures[state] ?? {};
+      for (const field of fields) field.textContent = text[field.dataset.field] ?? base.get(field);
+      const hasOptional = state !== "minimal" && state !== "empty";
+      document.getElementById("draft-status").hidden = state !== "empty";
+      document.getElementById("photo").hidden = !hasOptional;
+      document.getElementById("note").hidden = !hasOptional;
+      document.getElementById("photo-example").hidden = state === "loading" || state === "error";
+      document.getElementById("photo-loading").hidden = state !== "loading";
+      document.getElementById("photo-error").hidden = state !== "error";
+      const signoff = document.querySelector("[data-field=signoff]");
+      signoff.closest("footer").hidden = !signoff.textContent.trim();
+    }
+    document.getElementById("state").addEventListener("change", (event) => renderState(event.target.value));
+  </script>
+</body>
+</html>

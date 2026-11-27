@@ -59,7 +59,8 @@ export class TemplateSummaryDto {
   price!: TemplatePriceDto | null;
   @ApiProperty({ example: "wedding-garden-v1" }) templateVersionId!: string;
   @ApiProperty({ example: "Тихий сад" }) title!: string;
-  @ApiProperty({ enum: ["wedding"], example: "wedding" }) eventType!: "wedding";
+  @ApiProperty({ enum: ["wedding", "birthday"], example: "wedding" })
+  eventType!: "wedding" | "birthday";
   @ApiProperty({
     type: Number,
     example: 1,

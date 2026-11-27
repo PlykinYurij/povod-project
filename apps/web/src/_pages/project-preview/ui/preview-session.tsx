@@ -40,8 +40,26 @@ function SavedPreview({ projectId }: { projectId: string }) {
   if (!project.data)
     return <SessionFailure retry={() => void project.refetch()} />;
   const saved = project.data;
-  if (saved.templateVersionId !== "wedding-garden-v1")
+  if (
+    !(
+      saved.templateVersionId === "wedding-garden-v1" &&
+      "program" in saved.content
+    ) &&
+    !(
+      saved.templateVersionId === "wedding-together-v1" &&
+      "photo" in saved.content &&
+      "names" in saved.content
+    ) &&
+    !(
+      (saved.templateVersionId === "birthday-confetti-v1" &&
+        "celebrantName" in saved.content) ||
+      (saved.templateVersionId === "birthday-anniversary-v1" &&
+        "celebrant" in saved.content)
+    )
+  )
     return <Alert role="alert">{t("unsupported")}</Alert>;
+  const canRequestFirstPublication =
+    saved.canEditDraft && saved.firstPublishedAt === null;
 
   return (
     <Stack gap="lg">
@@ -55,7 +73,7 @@ function SavedPreview({ projectId }: { projectId: string }) {
           {t("edit")}
         </Anchor>
       )}
-      {saved.canEditDraft && (
+      {canRequestFirstPublication && (
         <Anchor href="#publication-request">{t("requestJump")}</Anchor>
       )}
       <PrivateGardenPreview
@@ -63,7 +81,7 @@ function SavedPreview({ projectId }: { projectId: string }) {
         content={saved.content}
         rsvp={<p>{t("guestFormPreview")}</p>}
       />
-      {saved.canEditDraft && (
+      {canRequestFirstPublication && (
         <PublicationRequestPanel
           projectId={projectId}
           revision={saved.revision}

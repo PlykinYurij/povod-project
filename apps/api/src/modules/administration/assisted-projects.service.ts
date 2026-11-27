@@ -1,3 +1,4 @@
+import { createTemplateDraft } from "../templates/template-content";
 import { Injectable } from "@nestjs/common";
 import { DatabaseService } from "../../database/database.service";
 import { ApiError } from "../../http/api-error";
@@ -5,6 +6,8 @@ import type { Prisma } from "../../database/generated/client";
 import { jsonContent, saveLockedDraft } from "../projects/project-content";
 import type { SaveProjectDraftDto } from "../projects/project.dto";
 import { projectResponse } from "../projects/project-mapping";
+import { publicationLifecycleFields } from "../publication/publication-lifecycle";
+import { lockProject } from "../publication/publication-locks";
 import { assertStorableContent } from "../projects/storable-content";
 import { requestPayloadHash } from "../requests/request-digests";
 import { requestPriceData } from "../requests/request-price";
@@ -36,7 +39,7 @@ export class AssistedProjectsService {
   ) {
     const request = await tx.serviceRequest.findUnique({
       where: { id },
-      include: { project: true },
+      include: { project: { include: { publication: { select: publicationLifecycleFields } } } },
     });
     if (!request)
       throw new ApiError(404, "REQUEST_NOT_FOUND", "Заявка не найдена");
@@ -65,7 +68,9 @@ export class AssistedProjectsService {
 
   async lockLinked(tx: Prisma.TransactionClient, actorId: string, id: string) {
     await requireAdminForWrite(tx, actorId);
-    return this.requireLinked((await this.lockAssistance(tx, id)).project);
+    const candidate = this.requireLinked((await this.lockAssistance(tx, id)).project);
+    await lockProject(tx, candidate.id);
+    return this.requireLinked((await this.assistance(id, tx)).project);
   }
 
   async create(actorId: string, id: string, input: CreateAssistedProjectDto) {
@@ -103,7 +108,8 @@ export class AssistedProjectsService {
         tx,
         input.templateVersionId,
       );
-      const draft = this.templates.createDraft(
+      const draft = createTemplateDraft(
+        this.templates,
         input.templateVersionId,
         input.title,
       );

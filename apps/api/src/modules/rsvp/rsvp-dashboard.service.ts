@@ -2,6 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { DatabaseService } from "../../database/database.service";
 import type { Prisma, RsvpAttendance } from "../../database/generated/client";
 import { ApiError } from "../../http/api-error";
+import { readPublicationClock, unexpiredPublication } from "../publication/publication-lifecycle";
 import type { RsvpDashboardDto } from "./rsvp-dashboard.dto";
 
 export type RsvpScope =
@@ -53,11 +54,9 @@ export async function readDashboardPublication(
   tx: Prisma.TransactionClient,
   scope: RsvpScope,
 ) {
-  const [clock] = await tx.$queryRaw<
-    { now: Date }[]
-  >`SELECT clock_timestamp() AS now`;
+  const now = await readPublicationClock(tx);
   const publication = await tx.publication.findFirst({
-    where: { expiresAt: { gt: clock.now }, project: projectScope(scope) },
+    where: { ...unexpiredPublication(now), project: projectScope(scope) },
     select: { id: true, projectId: true },
   });
   if (!publication)

@@ -3971,12 +3971,320 @@
           "publication"
         ]
       }
+    },
+    "/api/v1/admin/projects/{id}/unpublish": {
+      "post": {
+        "operationId": "unpublishAdminProject",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UnpublishProjectDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnpublishReceiptDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "PUBLICATION_STATE_CONFLICT, REVISION_CONFLICT or IDEMPOTENCY_KEY_REUSED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "administration"
+        ]
+      }
+    },
+    "/api/v1/admin/projects/{id}/resume": {
+      "post": {
+        "operationId": "resumeAdminProject",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResumeProjectDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResumeReceiptDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "PUBLICATION_STATE_CONFLICT, REVISION_CONFLICT or IDEMPOTENCY_KEY_REUSED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "administration"
+        ]
+      }
     }
   },
   "info": {
     "title": "Повод API",
     "description": "",
-    "version": "0.24.0",
+    "version": "0.29.0",
     "contact": {}
   },
   "tags": [],
@@ -4617,7 +4925,8 @@
           "eventType": {
             "type": "string",
             "enum": [
-              "wedding"
+              "wedding",
+              "birthday"
             ],
             "example": "wedding"
           },
@@ -4766,6 +5075,557 @@
           "templateVersionId"
         ]
       },
+      "TogetherNamesDto": {
+        "type": "object",
+        "properties": {
+          "first": {
+            "type": "string",
+            "maxLength": 20
+          },
+          "second": {
+            "type": "string",
+            "maxLength": 20
+          }
+        },
+        "required": [
+          "first",
+          "second"
+        ]
+      },
+      "TogetherEventDto": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "maxLength": 10
+          },
+          "startTime": {
+            "type": "string",
+            "maxLength": 5
+          },
+          "timeZone": {
+            "type": "string",
+            "description": "Named IANA time zone, or empty in a draft"
+          }
+        },
+        "required": [
+          "date",
+          "startTime",
+          "timeZone"
+        ]
+      },
+      "TogetherVenueDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "address": {
+            "type": "string",
+            "maxLength": 150
+          }
+        },
+        "required": [
+          "name",
+          "address"
+        ]
+      },
+      "TogetherPhotoDto": {
+        "type": "object",
+        "properties": {
+          "mediaId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "alt": {
+            "type": "string",
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "mediaId",
+          "alt"
+        ]
+      },
+      "TogetherNoteDto": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "heading": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "body": {
+            "type": "string",
+            "maxLength": 1000
+          }
+        },
+        "required": [
+          "enabled",
+          "heading",
+          "body"
+        ]
+      },
+      "TogetherCopyDto": {
+        "type": "object",
+        "properties": {
+          "heroLabel": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "separator": {
+            "type": "string",
+            "maxLength": 16
+          },
+          "intro": {
+            "type": "string",
+            "maxLength": 4000
+          },
+          "eventHeading": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "dateLabel": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "venueLabel": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "photoHeading": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "rsvpHeading": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "rsvpIntro": {
+            "type": "string",
+            "maxLength": 4000
+          },
+          "rsvpAction": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "signoff": {
+            "type": "string",
+            "maxLength": 1000
+          }
+        },
+        "required": [
+          "heroLabel",
+          "separator",
+          "intro",
+          "eventHeading",
+          "dateLabel",
+          "venueLabel",
+          "photoHeading",
+          "rsvpHeading",
+          "rsvpIntro",
+          "rsvpAction",
+          "signoff"
+        ]
+      },
+      "TogetherContentDto": {
+        "type": "object",
+        "properties": {
+          "locale": {
+            "type": "string",
+            "enum": [
+              "ru",
+              "en"
+            ]
+          },
+          "names": {
+            "$ref": "#/components/schemas/TogetherNamesDto"
+          },
+          "event": {
+            "$ref": "#/components/schemas/TogetherEventDto"
+          },
+          "venue": {
+            "$ref": "#/components/schemas/TogetherVenueDto"
+          },
+          "photo": {
+            "$ref": "#/components/schemas/TogetherPhotoDto"
+          },
+          "note": {
+            "$ref": "#/components/schemas/TogetherNoteDto"
+          },
+          "copy": {
+            "$ref": "#/components/schemas/TogetherCopyDto"
+          }
+        },
+        "required": [
+          "locale",
+          "names",
+          "event",
+          "venue",
+          "photo",
+          "note",
+          "copy"
+        ]
+      },
+      "ConfettiEventDto": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "maxLength": 10
+          },
+          "startTime": {
+            "type": "string",
+            "maxLength": 5
+          },
+          "timeZone": {
+            "type": "string",
+            "description": "Named IANA time zone, or empty in a draft"
+          }
+        },
+        "required": [
+          "date",
+          "startTime",
+          "timeZone"
+        ]
+      },
+      "ConfettiVenueDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "address": {
+            "type": "string",
+            "maxLength": 150
+          }
+        },
+        "required": [
+          "name",
+          "address"
+        ]
+      },
+      "ConfettiPhotoDto": {
+        "type": "object",
+        "properties": {
+          "mediaId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "alt": {
+            "type": "string",
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "mediaId",
+          "alt"
+        ]
+      },
+      "ConfettiNoteDto": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "heading": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "body": {
+            "type": "string",
+            "maxLength": 1000
+          }
+        },
+        "required": [
+          "enabled",
+          "heading",
+          "body"
+        ]
+      },
+      "ConfettiCopyDto": {
+        "type": "object",
+        "properties": {
+          "invitationLabel": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "intro": {
+            "type": "string",
+            "maxLength": 4000
+          },
+          "whenHeading": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "whereHeading": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "dateLabel": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "timeLabel": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "photoHeading": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "rsvpHeading": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "rsvpIntro": {
+            "type": "string",
+            "maxLength": 4000
+          },
+          "rsvpAction": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "signoff": {
+            "type": "string",
+            "maxLength": 1000
+          }
+        },
+        "required": [
+          "invitationLabel",
+          "intro",
+          "whenHeading",
+          "whereHeading",
+          "dateLabel",
+          "timeLabel",
+          "photoHeading",
+          "rsvpHeading",
+          "rsvpIntro",
+          "rsvpAction",
+          "signoff"
+        ]
+      },
+      "ConfettiContentDto": {
+        "type": "object",
+        "properties": {
+          "locale": {
+            "type": "string",
+            "enum": [
+              "ru",
+              "en"
+            ]
+          },
+          "celebrantName": {
+            "type": "string",
+            "maxLength": 20
+          },
+          "event": {
+            "$ref": "#/components/schemas/ConfettiEventDto"
+          },
+          "venue": {
+            "$ref": "#/components/schemas/ConfettiVenueDto"
+          },
+          "photo": {
+            "$ref": "#/components/schemas/ConfettiPhotoDto"
+          },
+          "note": {
+            "$ref": "#/components/schemas/ConfettiNoteDto"
+          },
+          "copy": {
+            "$ref": "#/components/schemas/ConfettiCopyDto"
+          }
+        },
+        "required": [
+          "locale",
+          "celebrantName",
+          "event",
+          "venue",
+          "photo",
+          "note",
+          "copy"
+        ]
+      },
+      "AnniversaryEventDto": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "maxLength": 10
+          },
+          "startTime": {
+            "type": "string",
+            "maxLength": 5
+          },
+          "timeZone": {
+            "type": "string",
+            "description": "Named IANA time zone, or empty in a draft"
+          }
+        },
+        "required": [
+          "date",
+          "startTime",
+          "timeZone"
+        ]
+      },
+      "AnniversaryVenueDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "address": {
+            "type": "string",
+            "maxLength": 150
+          }
+        },
+        "required": [
+          "name",
+          "address"
+        ]
+      },
+      "AnniversaryPhotoDto": {
+        "type": "object",
+        "properties": {
+          "mediaId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "alt": {
+            "type": "string",
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "mediaId",
+          "alt"
+        ]
+      },
+      "AnniversaryNoteDto": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "text": {
+            "type": "string",
+            "maxLength": 1000
+          }
+        },
+        "required": [
+          "enabled",
+          "text"
+        ]
+      },
+      "AnniversaryCopyDto": {
+        "type": "object",
+        "properties": {
+          "eyebrow": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "letter": {
+            "type": "string",
+            "maxLength": 4000
+          },
+          "dateLabel": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "placeHeading": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "photoHeading": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "caption": {
+            "type": "string",
+            "maxLength": 240
+          },
+          "noteHeading": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "rsvpHeading": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "rsvpIntro": {
+            "type": "string",
+            "maxLength": 4000
+          },
+          "rsvpAction": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "signoff": {
+            "type": "string",
+            "maxLength": 1000
+          }
+        },
+        "required": [
+          "eyebrow",
+          "letter",
+          "dateLabel",
+          "placeHeading",
+          "photoHeading",
+          "caption",
+          "noteHeading",
+          "rsvpHeading",
+          "rsvpIntro",
+          "rsvpAction",
+          "signoff"
+        ]
+      },
+      "AnniversaryContentDto": {
+        "type": "object",
+        "properties": {
+          "locale": {
+            "type": "string",
+            "enum": [
+              "ru",
+              "en"
+            ]
+          },
+          "celebrant": {
+            "type": "string",
+            "maxLength": 20
+          },
+          "event": {
+            "$ref": "#/components/schemas/AnniversaryEventDto"
+          },
+          "venue": {
+            "$ref": "#/components/schemas/AnniversaryVenueDto"
+          },
+          "photo": {
+            "$ref": "#/components/schemas/AnniversaryPhotoDto"
+          },
+          "note": {
+            "$ref": "#/components/schemas/AnniversaryNoteDto"
+          },
+          "copy": {
+            "$ref": "#/components/schemas/AnniversaryCopyDto"
+          }
+        },
+        "required": [
+          "locale",
+          "celebrant",
+          "event",
+          "venue",
+          "photo",
+          "note",
+          "copy"
+        ]
+      },
       "ProjectDto": {
         "type": "object",
         "properties": {
@@ -4803,7 +5663,20 @@
             "description": "Draft capability only, not permission to publish"
           },
           "content": {
-            "$ref": "#/components/schemas/GardenContentDto"
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/GardenContentDto"
+              },
+              {
+                "$ref": "#/components/schemas/TogetherContentDto"
+              },
+              {
+                "$ref": "#/components/schemas/ConfettiContentDto"
+              },
+              {
+                "$ref": "#/components/schemas/AnniversaryContentDto"
+              }
+            ]
           }
         },
         "required": [
@@ -4826,7 +5699,20 @@
             "maxLength": 24
           },
           "content": {
-            "$ref": "#/components/schemas/GardenContentDto"
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/GardenContentDto"
+              },
+              {
+                "$ref": "#/components/schemas/TogetherContentDto"
+              },
+              {
+                "$ref": "#/components/schemas/ConfettiContentDto"
+              },
+              {
+                "$ref": "#/components/schemas/AnniversaryContentDto"
+              }
+            ]
           },
           "expectedRevision": {
             "type": "number",
@@ -4967,6 +5853,43 @@
           "expiresAt"
         ]
       },
+      "PublicationLifecycleDto": {
+        "type": "object",
+        "properties": {
+          "publicationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "publicationVersion": {
+            "type": "integer"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "remainingMs": {
+            "type": "number",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PUBLISHED",
+              "PAUSED",
+              "UNPUBLISHED",
+              "EXPIRED"
+            ]
+          }
+        },
+        "required": [
+          "publicationId",
+          "publicationVersion",
+          "expiresAt",
+          "remainingMs",
+          "status"
+        ]
+      },
       "AdminRequestDetailDto": {
         "type": "object",
         "properties": {
@@ -5061,6 +5984,15 @@
                 "$ref": "#/components/schemas/PublicationReceiptDto"
               }
             ]
+          },
+          "publicationLifecycle": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PublicationLifecycleDto"
+              }
+            ]
           }
         },
         "required": [
@@ -5080,7 +6012,8 @@
           "submittedRevision",
           "quotedPrice",
           "project",
-          "publication"
+          "publication",
+          "publicationLifecycle"
         ]
       },
       "UpdateAdminRequestStatusDto": {
@@ -5670,7 +6603,10 @@
           "templateVersionId": {
             "type": "string",
             "enum": [
-              "wedding-garden-v1"
+              "wedding-garden-v1",
+              "wedding-together-v1",
+              "birthday-confetti-v1",
+              "birthday-anniversary-v1"
             ]
           },
           "snapshotId": {
@@ -5678,7 +6614,20 @@
             "format": "uuid"
           },
           "content": {
-            "$ref": "#/components/schemas/GardenContentDto"
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/GardenContentDto"
+              },
+              {
+                "$ref": "#/components/schemas/TogetherContentDto"
+              },
+              {
+                "$ref": "#/components/schemas/ConfettiContentDto"
+              },
+              {
+                "$ref": "#/components/schemas/AnniversaryContentDto"
+              }
+            ]
           },
           "cover": {
             "nullable": true,
@@ -5699,6 +6648,126 @@
           "content",
           "cover",
           "rsvp"
+        ]
+      },
+      "UnpublishProjectDto": {
+        "type": "object",
+        "properties": {
+          "expectedProjectRevision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "expectedPublicationVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "PAUSE_PERIOD",
+              "KEEP_RUNNING"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 240
+          }
+        },
+        "required": [
+          "expectedProjectRevision",
+          "expectedPublicationVersion",
+          "mode",
+          "reason"
+        ]
+      },
+      "UnpublishReceiptDto": {
+        "type": "object",
+        "properties": {
+          "publicationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "publicationVersion": {
+            "type": "integer"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "remainingMs": {
+            "type": "number",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PAUSED",
+              "UNPUBLISHED"
+            ]
+          }
+        },
+        "required": [
+          "publicationId",
+          "publicationVersion",
+          "expiresAt",
+          "remainingMs",
+          "status"
+        ]
+      },
+      "ResumeProjectDto": {
+        "type": "object",
+        "properties": {
+          "expectedProjectRevision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "expectedPublicationVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          }
+        },
+        "required": [
+          "expectedProjectRevision",
+          "expectedPublicationVersion"
+        ]
+      },
+      "ResumeReceiptDto": {
+        "type": "object",
+        "properties": {
+          "publicationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "publicationVersion": {
+            "type": "number"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PUBLISHED"
+            ]
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "remainingMs": {
+            "type": "number",
+            "nullable": true
+          }
+        },
+        "required": [
+          "publicationId",
+          "publicationVersion",
+          "status",
+          "expiresAt",
+          "remainingMs"
         ]
       }
     }

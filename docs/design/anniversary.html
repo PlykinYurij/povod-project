@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Письмо о юбилее · макет</title>
+  <style>
+    :root { color-scheme: light; --paper: #f5ecdf; --ink: #362724; --wine: #672d39; --rule: #b5a394; }
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+    body { margin: 0; background: #e8ded3; color: var(--ink); font: 1rem/1.55 system-ui, sans-serif; }
+    .controls { width: min(68rem, calc(100% - 2rem)); margin: 1rem auto; padding: .75rem 1rem; }
+    .options { display: flex; flex-wrap: wrap; gap: .4rem 1rem; }
+    a, button { color: var(--wine); }
+    :focus-visible { outline: 3px solid #76343b; outline-offset: 4px; }
+    main { width: min(68rem, calc(100% - 2rem)); margin: 1rem auto 2rem; background: var(--paper); }
+    article { padding: clamp(1.25rem, 6vw, 5rem); overflow-wrap: anywhere; }
+    .cover { border-top: .5rem solid var(--wine); padding-block: 2rem; border-bottom: 1px solid var(--rule); display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 1rem 3rem; align-items: end; }
+    .mast { color: var(--wine); font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+    h1,h2,.date { font-family: Georgia, Cambria, serif; font-weight: 400; line-height: 1.06; }
+    h1 { font-size: clamp(2.5rem, 8vw, 6.25rem); margin: .4rem 0 1rem; letter-spacing: -.045em; }
+    h2 { font-size: clamp(1.45rem, 4vw, 2.6rem); margin-top: 0; }
+    p { margin: 0 0 .85rem; }
+    .date { color: var(--wine); font-size: clamp(1.4rem, 4vw, 3rem); }
+    .intro { max-width: 38rem; font: 1.22rem/1.55 Georgia, serif; }
+    .band { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 5fr); gap: 1rem 3rem; padding-block: 2rem; border-bottom: 1px solid var(--rule); }
+    .band > * { min-width: 0; }
+    .photo-frame { margin: 0; }
+    .mat { min-height: 10rem; display: grid; place-items: center; text-align: center; padding: 1rem; background: repeating-linear-gradient(125deg,#d9c5b8,#d9c5b8 2px,#e8d8cb 2px,#e8d8cb 6px); }
+    figcaption { padding-block: .5rem; }
+    .note { white-space: pre-wrap; }
+    .rsvp { margin-top: 2rem; padding: clamp(1rem, 4vw, 2rem); background: #ead9d5; }
+    button { background: #fff8ef; padding: .7rem 1rem; border: 1px solid var(--wine); font: inherit; max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
+    button:disabled { opacity: 1; }
+    footer { padding-top: 1rem; }
+    @media (max-width: 42rem) {
+      .cover, .band { grid-template-columns: minmax(0, 1fr); gap: .75rem; }
+    }
+    @media print { .controls { display: none; } main { width: 100%; } }
+  </style>
+</head>
+<body>
+  <fieldset class="controls">
+    <legend>Состояние макета</legend>
+    <div class="options">
+      <label><input type="radio" name="sample" value="full" checked> Все блоки</label>
+      <label><input type="radio" name="sample" value="minimal"> Без фото и заметки</label>
+      <label><input type="radio" name="sample" value="empty"> Пустой черновик</label>
+      <label><input type="radio" name="sample" value="long"> Длинные тексты</label>
+      <label><input type="radio" name="sample" value="loading"> Фото обрабатывается</label>
+      <label><input type="radio" name="sample" value="error"> Фото недоступно</label>
+    </div>
+  </fieldset>
+  <main>
+    <article>
+      <header class="cover">
+        <div>
+          <p class="mast" data-copy="eyebrow">Письмо о юбилее</p>
+          <h1 data-copy="celebrant">Валерия Морозова</h1>
+          <p class="intro" data-copy="letter">В этот раз хочется отметить день рождения за одним длинным столом, рядом с теми, кого я люблю.</p>
+        </div>
+        <div>
+          <p data-copy="dateLabel">Встречаемся</p>
+          <p class="date" id="date"></p>
+        </div>
+      </header>
+      <section aria-labelledby="place-heading" class="band">
+        <h2 id="place-heading" data-copy="placeHeading">Место и время</h2>
+        <div>
+          <p data-copy="venueName">Галерея «Третий этаж»</p>
+          <p data-copy="address">Липовая набережная, 12</p>
+          <p id="time">17:30 · Europe/Samara</p>
+        </div>
+      </section>
+      <section id="photo" class="band" aria-labelledby="photo-heading">
+        <h2 id="photo-heading" data-copy="photoHeading">Из семейного альбома</h2>
+        <figure class="photo-frame">
+          <div class="mat" id="photo-ready" role="img" aria-label="Заглушка авторской фотографии">Фото автора</div>
+          <p id="photo-loading" role="status" hidden>Фото обрабатывается.</p>
+          <p id="photo-error" role="status" hidden>Фото недоступно.</p>
+          <figcaption data-copy="caption">Вечер, который хочется помнить.</figcaption>
+        </figure>
+      </section>
+      <section id="note" class="band" aria-labelledby="note-heading">
+        <h2 id="note-heading" data-copy="noteHeading">Небольшая просьба</h2>
+        <p class="note" data-copy="note">Если хотите, принесите одну фотографию с нашей встречи. Соберём из них новую страницу альбома.</p>
+      </section>
+      <section class="rsvp" aria-labelledby="rsvp-heading">
+        <h2 id="rsvp-heading" data-copy="rsvpHeading">Получится прийти?</h2>
+        <p data-copy="rsvpIntro">Дайте знать, чтобы я подготовила для вас место.</p>
+        <button type="button" disabled data-copy="rsvpAction">Сообщить о своём участии</button>
+        <p><small>В предпросмотре ответы не отправляются.</small></p>
+      </section>
+      <footer><p data-copy="signoff">До встречи, Валерия</p></footer>
+    </article>
+  </main>
+  <script>
+    const fields = [...document.querySelectorAll("[data-copy]")];
+    const defaults = new Map(fields.map((field) => [field, field.textContent]));
+    const emptyFields = { celebrant: "Имя ещё не указано", venueName: "Место ещё не указано", address: "" };
+    const longFields = {
+      celebrant: "Александра-Серафима",
+      letter: "Будет длинный, неторопливый вечер с разговорами, фотографиями и воспоминаниями. Встречаемся немного заранее, чтобы успеть увидеть выставку до начала ужина.",
+      address: "Липовая набережная, дом 12, корпус 3, вход со двора рядом с книжным магазином",
+      rsvpAction: "ПодтверждениеУчастияВПраздничномВечереПоСлучаюЮбилейногоДняРождения",
+    };
+    const date = new Date("2027-10-09T00:00:00Z");
+    const formattedDate = new Intl.DateTimeFormat("ru", { dateStyle: "long", timeZone: "UTC" }).format(date);
+    function render(sample) {
+      const values = sample === "empty" ? emptyFields : sample === "long" ? longFields : {};
+      for (const field of fields) field.textContent = values[field.dataset.copy] ?? defaults.get(field);
+      const setHidden = (id, hidden) => { document.getElementById(id).hidden = hidden; };
+      const optionalHidden = sample === "empty" || sample === "minimal";
+      setHidden("photo", optionalHidden);
+      setHidden("note", optionalHidden);
+      setHidden("photo-ready", sample === "loading" || sample === "error");
+      setHidden("photo-loading", sample !== "loading");
+      setHidden("photo-error", sample !== "error");
+      document.getElementById("date").textContent = sample === "empty" ? "Дата ещё не указана" : formattedDate;
+      document.getElementById("time").textContent = sample === "empty" ? "Время ещё не указано" : "17:30 · Europe/Samara";
+    }
+    document.querySelector(".controls").addEventListener("change", (event) => render(event.target.value));
+    render("full");
+  </script>
+</body>
+</html>

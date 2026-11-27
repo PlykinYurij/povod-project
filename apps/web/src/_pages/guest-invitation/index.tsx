@@ -1,7 +1,12 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { cache } from "react";
-import { GardenInvitation } from "@entities/invitation";
+import {
+  ConfettiInvitation,
+  AnniversaryInvitation,
+  GardenInvitation,
+  TogetherInvitation,
+} from "@entities/invitation";
 import { GuestRsvp } from "@features/guest-rsvp";
 import { ApiRequestError, getGuestPublication } from "@shared/api/server";
 import { getGardenTranslations } from "@shared/i18n/garden";
@@ -20,18 +25,30 @@ export async function guestInvitationMetadata(
   hostname: string,
 ): Promise<Metadata> {
   const { cover, content, snapshotId } = await readInvitation(slug);
-  const title = [
-    content.names.first,
-    content.copy.namesConnector,
-    content.names.second,
-  ]
-    .map((part) => part.trim())
-    .filter(Boolean)
-    .join(" ");
+  const title =
+    "celebrant" in content
+      ? content.celebrant.trim()
+      : "celebrantName" in content
+        ? content.celebrantName.trim()
+        : [
+            content.names.first,
+            "photo" in content
+              ? content.copy.separator
+              : content.copy.namesConnector,
+            content.names.second,
+          ]
+            .map((part) => part.trim())
+            .filter(Boolean)
+            .join(" ");
   const summary =
-    content.copy.introduction.trim() ||
-    content.copy.detailsTitle.trim() ||
-    title;
+    ("celebrant" in content
+      ? content.copy.letter.trim() || content.copy.eyebrow.trim()
+      : "celebrantName" in content
+        ? content.copy.intro.trim() || content.copy.invitationLabel.trim()
+        : "photo" in content
+          ? content.copy.intro.trim() || content.copy.eventHeading.trim()
+          : content.copy.introduction.trim() ||
+            content.copy.detailsTitle.trim()) || title;
   const description = Array.from(summary.replace(/\s+/gu, " "))
     .slice(0, 160)
     .join("");
@@ -53,6 +70,72 @@ export async function guestInvitationMetadata(
 export async function GuestInvitationPage({ slug }: { slug: string }) {
   const invitation = await readInvitation(slug);
   const { cover, content, rsvp, snapshotId } = invitation;
+  if ("celebrant" in content)
+    return (
+      <main>
+        <AnniversaryInvitation
+          content={content}
+          media={
+            cover
+              ? { status: "ready", src: `/cover/${snapshotId}`, ...cover }
+              : undefined
+          }
+          renderRsvp={({ label, className }) => (
+            <GuestRsvp
+              slug={slug}
+              schema={rsvp}
+              locale={content.locale}
+              submitLabel={label}
+              submitClassName={className}
+            />
+          )}
+        />
+      </main>
+    );
+  if ("celebrantName" in content)
+    return (
+      <main>
+        <ConfettiInvitation
+          content={content}
+          media={
+            cover
+              ? { status: "ready", src: `/cover/${snapshotId}`, ...cover }
+              : undefined
+          }
+          renderRsvp={({ label, className }) => (
+            <GuestRsvp
+              slug={slug}
+              schema={rsvp}
+              locale={content.locale}
+              submitLabel={label}
+              submitClassName={className}
+            />
+          )}
+        />
+      </main>
+    );
+  if ("photo" in content)
+    return (
+      <main>
+        <TogetherInvitation
+          content={content}
+          media={
+            cover
+              ? { status: "ready", src: `/cover/${snapshotId}`, ...cover }
+              : undefined
+          }
+          renderRsvp={({ label, className }) => (
+            <GuestRsvp
+              slug={slug}
+              schema={rsvp}
+              locale={content.locale}
+              submitLabel={label}
+              submitClassName={className}
+            />
+          )}
+        />
+      </main>
+    );
   const t = getGardenTranslations(content.locale);
   return (
     <main>
