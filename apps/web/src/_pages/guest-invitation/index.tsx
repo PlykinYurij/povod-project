@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { cache } from "react";
 import {
   ConfettiInvitation,
+  AnniversaryInvitation,
   GardenInvitation,
   TogetherInvitation,
 } from "@entities/invitation";
@@ -25,25 +26,29 @@ export async function guestInvitationMetadata(
 ): Promise<Metadata> {
   const { cover, content, snapshotId } = await readInvitation(slug);
   const title =
-    "celebrantName" in content
-      ? content.celebrantName.trim()
-      : [
-          content.names.first,
-          "photo" in content
-            ? content.copy.separator
-            : content.copy.namesConnector,
-          content.names.second,
-        ]
-          .map((part) => part.trim())
-          .filter(Boolean)
-          .join(" ");
+    "celebrant" in content
+      ? content.celebrant.trim()
+      : "celebrantName" in content
+        ? content.celebrantName.trim()
+        : [
+            content.names.first,
+            "photo" in content
+              ? content.copy.separator
+              : content.copy.namesConnector,
+            content.names.second,
+          ]
+            .map((part) => part.trim())
+            .filter(Boolean)
+            .join(" ");
   const summary =
-    ("celebrantName" in content
-      ? content.copy.intro.trim() || content.copy.invitationLabel.trim()
-      : "photo" in content
-        ? content.copy.intro.trim() || content.copy.eventHeading.trim()
-        : content.copy.introduction.trim() ||
-          content.copy.detailsTitle.trim()) || title;
+    ("celebrant" in content
+      ? content.copy.letter.trim() || content.copy.eyebrow.trim()
+      : "celebrantName" in content
+        ? content.copy.intro.trim() || content.copy.invitationLabel.trim()
+        : "photo" in content
+          ? content.copy.intro.trim() || content.copy.eventHeading.trim()
+          : content.copy.introduction.trim() ||
+            content.copy.detailsTitle.trim()) || title;
   const description = Array.from(summary.replace(/\s+/gu, " "))
     .slice(0, 160)
     .join("");
@@ -65,6 +70,28 @@ export async function guestInvitationMetadata(
 export async function GuestInvitationPage({ slug }: { slug: string }) {
   const invitation = await readInvitation(slug);
   const { cover, content, rsvp, snapshotId } = invitation;
+  if ("celebrant" in content)
+    return (
+      <main>
+        <AnniversaryInvitation
+          content={content}
+          media={
+            cover
+              ? { status: "ready", src: `/cover/${snapshotId}`, ...cover }
+              : undefined
+          }
+          renderRsvp={({ label, className }) => (
+            <GuestRsvp
+              slug={slug}
+              schema={rsvp}
+              locale={content.locale}
+              submitLabel={label}
+              submitClassName={className}
+            />
+          )}
+        />
+      </main>
+    );
   if ("celebrantName" in content)
     return (
       <main>
