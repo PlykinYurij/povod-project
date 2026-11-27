@@ -1,4 +1,14 @@
 import { getSchemaPath } from "@nestjs/swagger";
+import {
+  CONFETTI_TEMPLATE_VERSION_ID,
+  ConfettiContentDto,
+} from "./confetti/confetti-content.dto";
+import { createConfettiDraft } from "./confetti/confetti-template";
+import {
+  validateConfettiComplete,
+  validateConfettiContent,
+  validateConfettiDraft,
+} from "./confetti/validate-confetti";
 import type { GardenTemplateService } from "./garden/garden-template.service";
 import { createTogetherDraft } from "./together/together-template";
 import { ApiError } from "../../http/api-error";
@@ -22,11 +32,17 @@ export const GARDEN_VERSION_ID = "wedding-garden-v1";
 export const TEMPLATE_VERSION_IDS = [
   GARDEN_VERSION_ID,
   TOGETHER_TEMPLATE_VERSION_ID,
+  CONFETTI_TEMPLATE_VERSION_ID,
 ] as const;
 export type TemplateVersionId = (typeof TEMPLATE_VERSION_IDS)[number];
-export type TemplateContent = GardenContentDto | TogetherContentDto;
+export type TemplateContent =
+  GardenContentDto | TogetherContentDto | ConfettiContentDto;
 
-export const templateContentModels = [GardenContentDto, TogetherContentDto];
+export const templateContentModels = [
+  GardenContentDto,
+  TogetherContentDto,
+  ConfettiContentDto,
+];
 export const templateContentSchema = {
   oneOf: templateContentModels.map((model) => ({ $ref: getSchemaPath(model) })),
 };
@@ -36,6 +52,8 @@ export function createTemplateDraft(
   version: string,
   title: string,
 ) {
+  if (version === CONFETTI_TEMPLATE_VERSION_ID)
+    return createConfettiDraft(title);
   return version === TOGETHER_TEMPLATE_VERSION_ID
     ? createTogetherDraft(title)
     : garden.createDraft(version, title);
@@ -54,6 +72,12 @@ export function templateValidators(version: string) {
         draft: validateTogetherDraft,
         complete: validateTogetherComplete,
         content: validateTogetherContent,
+      };
+    case CONFETTI_TEMPLATE_VERSION_ID:
+      return {
+        draft: validateConfettiDraft,
+        complete: validateConfettiComplete,
+        content: validateConfettiContent,
       };
     default:
       throw new ApiError(404, "TEMPLATE_NOT_FOUND", "Шаблон не найден");
