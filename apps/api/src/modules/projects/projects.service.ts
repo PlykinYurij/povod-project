@@ -1,3 +1,4 @@
+import { createTemplateDraft } from "../templates/template-content";
 import { Injectable } from "@nestjs/common";
 import { createHash } from "node:crypto";
 import { DatabaseService } from "../../database/database.service";
@@ -68,7 +69,8 @@ export class ProjectsService {
           tx,
           input.templateVersionId,
         );
-        const draft = this.templates.createDraft(
+        const draft = createTemplateDraft(
+          this.templates,
           input.templateVersionId,
           input.title,
         );

@@ -1,0 +1,23 @@
+.toolbar {
+  --demo-gap: 1rem;
+  max-width: 70rem;
+  margin-inline: auto;
+  padding: var(--demo-gap);
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: var(--demo-gap);
+}
+
+.controls label {
+  display: grid;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.controls select {
+  max-width: 100%;
+}

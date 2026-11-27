@@ -31,6 +31,8 @@ export const copyLimits = {
 } satisfies Record<keyof GardenCopyDto, number>;
 
 export function toEditorValues(project: ProjectDto): GardenEditorValues {
+  if (!("program" in project.content))
+    throw new Error("Unexpected invitation schema for the Garden editor");
   const { program, ...content } = project.content;
   return {
     title: project.title,

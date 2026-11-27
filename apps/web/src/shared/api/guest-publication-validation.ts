@@ -49,10 +49,43 @@ function validDimension(value: unknown): boolean {
   );
 }
 
+function hasText(value: unknown, fields: readonly string[]): boolean {
+  return (
+    record(value) && fields.every((field) => typeof value[field] === "string")
+  );
+}
+
+function isTogetherContent(content: Record<string, unknown>): boolean {
+  return (
+    (content.locale === "ru" || content.locale === "en") &&
+    hasText(content.names, ["first", "second"]) &&
+    hasText(content.event, ["date", "startTime", "timeZone"]) &&
+    hasText(content.venue, ["name", "address"]) &&
+    hasText(content.photo, ["alt"]) &&
+    record(content.note) &&
+    typeof content.note.enabled === "boolean" &&
+    hasText(content.note, ["heading", "body"]) &&
+    hasText(content.copy, [
+      "heroLabel",
+      "separator",
+      "intro",
+      "eventHeading",
+      "dateLabel",
+      "venueLabel",
+      "photoHeading",
+      "rsvpHeading",
+      "rsvpIntro",
+      "rsvpAction",
+      "signoff",
+    ])
+  );
+}
+
 export function isGuestPublication(value: unknown): boolean {
   if (
     !record(value) ||
-    value.templateVersionId !== "wedding-garden-v1" ||
+    (value.templateVersionId !== "wedding-garden-v1" &&
+      value.templateVersionId !== "wedding-together-v1") ||
     typeof value.snapshotId !== "string" ||
     !isProjectId(value.snapshotId) ||
     !record(value.content)
@@ -66,12 +99,23 @@ export function isGuestPublication(value: unknown): boolean {
     value.rsvp.maxCompanions !== 2
   )
     return false;
-  if (value.cover === null) return value.content.heroMediaId === null;
+  const content = value.content;
+  const together = value.templateVersionId === "wedding-together-v1";
+  if (
+    together
+      ? !isTogetherContent(content) || "heroMediaId" in content
+      : "photo" in content
+  )
+    return false;
+  const photoId = record(content.photo)
+    ? content.photo.mediaId
+    : content.heroMediaId;
+  if (value.cover === null) return photoId === null;
   return (
     record(value.cover) &&
     validDimension(value.cover.width) &&
     validDimension(value.cover.height) &&
-    value.content.heroMediaId === value.snapshotId
+    photoId === value.snapshotId
   );
 }
 
