@@ -1,5 +1,15 @@
 import { getSchemaPath } from "@nestjs/swagger";
 import {
+  ANNIVERSARY_TEMPLATE_VERSION_ID,
+  AnniversaryContentDto,
+} from "./anniversary/anniversary-content.dto";
+import { createAnniversaryDraft } from "./anniversary/anniversary-template";
+import {
+  validateAnniversaryComplete,
+  validateAnniversaryContent,
+  validateAnniversaryDraft,
+} from "./anniversary/validate-anniversary";
+import {
   CONFETTI_TEMPLATE_VERSION_ID,
   ConfettiContentDto,
 } from "./confetti/confetti-content.dto";
@@ -33,15 +43,17 @@ export const TEMPLATE_VERSION_IDS = [
   GARDEN_VERSION_ID,
   TOGETHER_TEMPLATE_VERSION_ID,
   CONFETTI_TEMPLATE_VERSION_ID,
+  ANNIVERSARY_TEMPLATE_VERSION_ID,
 ] as const;
 export type TemplateVersionId = (typeof TEMPLATE_VERSION_IDS)[number];
 export type TemplateContent =
-  GardenContentDto | TogetherContentDto | ConfettiContentDto;
+  GardenContentDto | TogetherContentDto | ConfettiContentDto | AnniversaryContentDto;
 
 export const templateContentModels = [
   GardenContentDto,
   TogetherContentDto,
   ConfettiContentDto,
+  AnniversaryContentDto,
 ];
 export const templateContentSchema = {
   oneOf: templateContentModels.map((model) => ({ $ref: getSchemaPath(model) })),
@@ -52,6 +64,8 @@ export function createTemplateDraft(
   version: string,
   title: string,
 ) {
+  if (version === ANNIVERSARY_TEMPLATE_VERSION_ID)
+    return createAnniversaryDraft(title);
   if (version === CONFETTI_TEMPLATE_VERSION_ID)
     return createConfettiDraft(title);
   return version === TOGETHER_TEMPLATE_VERSION_ID
@@ -61,6 +75,12 @@ export function createTemplateDraft(
 
 export function templateValidators(version: string) {
   switch (version) {
+    case ANNIVERSARY_TEMPLATE_VERSION_ID:
+      return {
+        draft: validateAnniversaryDraft,
+        complete: validateAnniversaryComplete,
+        content: validateAnniversaryContent,
+      };
     case GARDEN_VERSION_ID:
       return {
         draft: validateGardenDraft,

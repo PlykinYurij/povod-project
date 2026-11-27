@@ -1,6 +1,7 @@
 import type { TemplateVersion } from "../../database/generated/client";
 import type { TemplateSummaryDto } from "./template-catalog.dto";
 import { CONFETTI_TEMPLATE_VERSION_ID } from "./confetti/confetti-content.dto";
+import { ANNIVERSARY_TEMPLATE_VERSION_ID } from "./anniversary/anniversary-content.dto";
 
 const palettes = {
   ru: [
@@ -31,7 +32,10 @@ export function registeredTemplate(
         version.rendererKey === "together-v1") ||
       (version.id === CONFETTI_TEMPLATE_VERSION_ID &&
         version.templateId === "confetti" &&
-        version.rendererKey === "confetti-v1"))
+        version.rendererKey === "confetti-v1") ||
+      (version.id === ANNIVERSARY_TEMPLATE_VERSION_ID &&
+        version.templateId === "anniversary" &&
+        version.rendererKey === "anniversary-v1"))
   );
 }
 
@@ -42,7 +46,8 @@ export function templateMetadata(
   TemplateSummaryDto,
   "eventType" | "themes" | "blocks" | "demoPath" | "previewImagePath"
 > {
-  if (version === CONFETTI_TEMPLATE_VERSION_ID) {
+  if (version === CONFETTI_TEMPLATE_VERSION_ID || version === ANNIVERSARY_TEMPLATE_VERSION_ID) {
+    const template = version === ANNIVERSARY_TEMPLATE_VERSION_ID ? "anniversary" : "confetti";
     return {
       eventType: "birthday",
       themes: [],
@@ -55,8 +60,8 @@ export function templateMetadata(
         { id: "rsvp", required: true },
         { id: "signoff", required: false },
       ],
-      demoPath: "/templates/confetti",
-      previewImagePath: "/templates/confetti/cover.svg",
+      demoPath: `/templates/${template}`,
+      previewImagePath: `/templates/${template}/cover.svg`,
     };
   }
   const together = version === "wedding-together-v1";
