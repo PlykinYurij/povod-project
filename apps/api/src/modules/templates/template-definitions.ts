@@ -47,7 +47,7 @@ export function templateMetadata(
       eventType: "birthday",
       themes: [],
       blocks: [
-        { id: "celebrantName", required: true },
+        { id: "celebrant-name", required: true },
         { id: "event", required: true },
         { id: "venue", required: true },
         { id: "photo", required: false },

@@ -22,7 +22,9 @@ test("renders localized editable copy and keeps the demo RSVP disabled", () => {
 
 test("hides empty optional sections and supplies accessible fallback labels", () => {
   const content = confettiDemoContent("en", "minimal");
-  content.copy.rsvpHeading = "";
+  content.celebrantName = "  ";
+  content.copy.whenHeading = "  ";
+  content.copy.rsvpHeading = "  ";
   render(
     <ConfettiInvitation
       content={content}
@@ -32,6 +34,8 @@ test("hides empty optional sections and supplies accessible fallback labels", ()
   expect(screen.queryByRole("img")).toBeNull();
   expect(screen.queryByText("See you soon, Alice!")).toBeNull();
   expect(screen.queryByText("One small request")).toBeNull();
+  expect(screen.getByRole("heading", { name: "Celebrant’s name" })).toBeTruthy();
+  expect(screen.queryAllByRole("heading", { name: "" })).toHaveLength(0);
   expect(screen.getByRole("region", { name: "RSVP" })).toBeTruthy();
   expect(
     screen

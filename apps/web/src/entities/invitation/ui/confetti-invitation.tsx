@@ -72,6 +72,12 @@ export function ConfettiInvitation({
 }) {
   const { celebrantName, copy, event, venue, note, photo, locale } = content;
   const t = messages[locale];
+  const whenHeading = copy.whenHeading.trim();
+  const whereHeading = copy.whereHeading.trim();
+  const photoHeading = copy.photoHeading.trim();
+  const noteHeading = note.heading.trim();
+  const rsvpHeading = copy.rsvpHeading.trim();
+  const rsvpAction = copy.rsvpAction.trim() || t.rsvp;
   return (
     <article className={styles.invitation} lang={locale}>
       <header className={styles.hero}>
@@ -79,7 +85,7 @@ export function ConfettiInvitation({
           {copy.invitationLabel && (
             <p className={styles.label}>{copy.invitationLabel}</p>
           )}
-          <h1>{celebrantName || t.name}</h1>
+          <h1>{celebrantName.trim() || t.name}</h1>
           {copy.intro && <p>{copy.intro}</p>}
         </div>
         <div className={styles.stamp} aria-hidden="true">
@@ -89,9 +95,9 @@ export function ConfettiInvitation({
       <div className={styles.details}>
         <section
           className={styles.tile}
-          aria-label={copy.whenHeading || t.when}
+          aria-label={whenHeading || t.when}
         >
-          {copy.whenHeading && <h2>{copy.whenHeading}</h2>}
+          {whenHeading && <h2>{whenHeading}</h2>}
           {event.date && (
             <p>
               {copy.dateLabel && <strong>{copy.dateLabel} </strong>}
@@ -110,9 +116,9 @@ export function ConfettiInvitation({
         </section>
         <section
           className={styles.tile}
-          aria-label={copy.whereHeading || t.where}
+          aria-label={whereHeading || t.where}
         >
-          {copy.whereHeading && <h2>{copy.whereHeading}</h2>}
+          {whereHeading && <h2>{whereHeading}</h2>}
           {venue.name && <p>{venue.name}</p>}
           {venue.address && <p>{venue.address}</p>}
         </section>
@@ -120,9 +126,9 @@ export function ConfettiInvitation({
       {media && (
         <section
           className={styles.tile}
-          aria-label={copy.photoHeading || t.photo}
+          aria-label={photoHeading || t.photo}
         >
-          {copy.photoHeading && <h2>{copy.photoHeading}</h2>}
+          {photoHeading && <h2>{photoHeading}</h2>}
           {media.status === "ready" ? (
             <ConfettiPhoto
               key={media.src}
@@ -138,19 +144,19 @@ export function ConfettiInvitation({
         </section>
       )}
       {note.enabled && note.body.trim() && (
-        <section className={styles.tile} aria-label={note.heading || t.note}>
-          {note.heading && <h2>{note.heading}</h2>}
+        <section className={styles.tile} aria-label={noteHeading || t.note}>
+          {noteHeading && <h2>{noteHeading}</h2>}
           <p>{note.body}</p>
         </section>
       )}
-      <section className={styles.rsvp} aria-label={copy.rsvpHeading || t.rsvp}>
-        {copy.rsvpHeading && <h2>{copy.rsvpHeading}</h2>}
+      <section className={styles.rsvp} aria-label={rsvpHeading || t.rsvp}>
+        {rsvpHeading && <h2>{rsvpHeading}</h2>}
         {copy.rsvpIntro && <p>{copy.rsvpIntro}</p>}
         {renderRsvp ? (
-          renderRsvp({ label: copy.rsvpAction, className: styles.action })
+          renderRsvp({ label: rsvpAction, className: styles.action })
         ) : (
           <button disabled type="button" className={styles.action}>
-            {copy.rsvpAction || t.rsvp}
+            {rsvpAction}
           </button>
         )}
       </section>

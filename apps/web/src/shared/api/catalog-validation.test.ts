@@ -6,6 +6,26 @@ test("empty and complete catalogs satisfy the generated response shape", () => {
   expect(isTemplateCatalog({ items: [], categories: [] })).toBe(true);
   expect(isTemplateCatalog(templateCatalogFixture())).toBe(true);
 });
+
+test("birthday invitations remain visible alongside wedding invitations", () => {
+  const catalog = templateCatalogFixture();
+  catalog.categories.push({ id: "birthday", title: "День рождения" });
+  catalog.items.push({
+    ...catalog.items[0],
+    templateId: "confetti",
+    templateVersionId: "birthday-confetti-v1",
+    categoryId: "birthday",
+    eventType: "birthday",
+    demoPath: "/templates/confetti",
+    previewImagePath: "/templates/confetti/cover.svg",
+    blocks: [{ id: "celebrant-name", required: true }],
+  });
+  expect(isTemplateCatalog(catalog)).toBe(true);
+  expect(isTemplateCatalog({
+    ...catalog,
+    items: [{ ...catalog.items[1], eventType: "unsupported" }],
+  })).toBe(false);
+});
 test.each([null, {}, { items: [null] }, { items: "wrong" }])(
   "malformed catalogs cannot reach the UI",
   (value) => {
