@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { DatabaseService } from "../../database/database.service";
 import { assertReadyHeroPhoto, jsonContent } from "../projects/project-content";
-import { validateGardenComplete } from "../templates/garden/validate-garden";
+import { templatePhoto, templateValidators } from "../templates/template-content";
 import { ApiError } from "../../http/api-error";
 import { requestPayloadHash } from "../requests/request-digests";
 import {
@@ -75,12 +75,12 @@ export class ResumeProjectService {
       if (!snapshot)
         throw new ApiError(409, "PUBLICATION_STATE_CONFLICT", "Снимок публикации не найден");
 
-      const draft = validateGardenComplete({
+      const draft = templateValidators(project.templateVersionId).complete({
         templateVersionId: project.templateVersionId,
         title: project.title,
         content: project.content,
       });
-      await assertReadyHeroPhoto(tx, project.id, draft.content.heroMediaId);
+      await assertReadyHeroPhoto(tx, project.id, templatePhoto(draft.content));
 
       const now = await readPublicationClock(tx);
       if (publicationStatus(publication, now) === "EXPIRED")

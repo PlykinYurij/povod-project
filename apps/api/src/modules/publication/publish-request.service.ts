@@ -10,7 +10,10 @@ import { ApiError } from "../../http/api-error";
 import { assertReadyHeroPhoto, jsonContent } from "../projects/project-content";
 import { requestPayloadHash } from "../requests/request-digests";
 import { readRequestPrice } from "../requests/request-price";
-import { validateGardenComplete } from "../templates/garden/validate-garden";
+import {
+  templatePhoto,
+  templateValidators,
+} from "../templates/template-content";
 import { lockPublicationContext } from "./publication-locks";
 import { readPublicationClock, unexpiredPublication } from "./publication-lifecycle";
 import { publicationUrl } from "./publication-address";
@@ -162,12 +165,12 @@ async function validateReviewedDraft(
       "Откройте актуальную стоимость заявки",
     );
   }
-  const draft = validateGardenComplete({
+  const draft = templateValidators(project.templateVersionId).complete({
     templateVersionId: project.templateVersionId,
     title: project.title,
     content: project.content,
   });
-  await assertReadyHeroPhoto(tx, project.id, draft.content.heroMediaId);
+  await assertReadyHeroPhoto(tx, project.id, templatePhoto(draft.content));
   return draft;
 }
 

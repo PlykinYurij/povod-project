@@ -1,9 +1,11 @@
-import { ApiProperty, PickType } from "@nestjs/swagger";
-import { IsInt, IsString, IsUUID, Max, Min } from "class-validator";
+import { ApiExtraModels, ApiProperty, PickType } from "@nestjs/swagger";
+import { IsInt, IsObject, IsString, IsUUID, Max, Min } from "class-validator";
+import { GardenDraftDto } from "../templates/garden/garden-content.dto";
 import {
-  GardenContentDto,
-  GardenDraftDto,
-} from "../templates/garden/garden-content.dto";
+  templateContentModels,
+  templateContentSchema,
+  type TemplateContent,
+} from "../templates/template-content";
 
 export class CreateProjectDto extends PickType(GardenDraftDto, [
   "title",
@@ -13,10 +15,14 @@ export class CreateProjectDto extends PickType(GardenDraftDto, [
   templateVersionId!: string;
 }
 
+@ApiExtraModels(...templateContentModels)
 export class SaveProjectDraftDto extends PickType(GardenDraftDto, [
   "title",
-  "content",
 ] as const) {
+  @ApiProperty(templateContentSchema)
+  @IsObject()
+  content!: unknown;
+
   @ApiProperty({ type: Number, minimum: 1, maximum: 2147483646, example: 1 })
   @IsInt()
   @Min(1)
@@ -45,8 +51,9 @@ export class ProjectSummaryDto {
   canEditDraft!: boolean;
 }
 
+@ApiExtraModels(...templateContentModels)
 export class ProjectDto extends ProjectSummaryDto {
-  @ApiProperty({ type: GardenContentDto }) content!: GardenContentDto;
+  @ApiProperty(templateContentSchema) content!: TemplateContent;
 }
 
 export class ProjectListDto {

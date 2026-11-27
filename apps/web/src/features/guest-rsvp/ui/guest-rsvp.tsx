@@ -21,10 +21,14 @@ export function GuestRsvp({
   slug,
   schema,
   locale,
+  submitLabel,
+  submitClassName,
 }: {
   slug: string;
   schema: PublicRsvpFormDto;
   locale: Locale;
+  submitLabel?: string;
+  submitClassName?: string;
 }) {
   const t = getGardenTranslations(locale);
   const form = useForm<RsvpValues>({
@@ -147,8 +151,12 @@ export function GuestRsvp({
           {t("rsvpRetry")}
         </button>
       ) : (
-        <button type="submit" disabled={busy || remaining > 0}>
-          {t(busy ? "rsvpSubmitting" : "rsvpSubmit")}
+        <button
+          type="submit"
+          className={submitClassName}
+          disabled={busy || remaining > 0}
+        >
+          {busy ? t("rsvpSubmitting") : (submitLabel ?? t("rsvpSubmit"))}
         </button>
       )}
     </form>

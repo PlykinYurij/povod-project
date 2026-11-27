@@ -2,7 +2,12 @@
 
 import type { ReactNode } from "react";
 import { useTranslations } from "next-intl";
-import { GardenInvitation, type GardenContent } from "@entities/invitation";
+import {
+  GardenInvitation,
+  TogetherInvitation,
+  type GardenContent,
+} from "@entities/invitation";
+import type { TogetherContentDto } from "@shared/api";
 import {
   useDraftPhotos,
   usePhotoUrl,
@@ -17,16 +22,19 @@ export function PrivateGardenPreview({
   idPrefix,
 }: {
   source: PhotoSource;
-  content: GardenContent;
+  content: GardenContent | TogetherContentDto;
   rsvp?: ReactNode;
   idPrefix?: string;
 }) {
   const t = useTranslations("DraftPhotos");
-  const photos = useDraftPhotos(source, content.heroMediaId !== null);
-  const photo = photos.data?.items.find(
-    ({ id, status }) => id === content.heroMediaId && status === "READY",
+  const photoId =
+    "photo" in content ? content.photo.mediaId : content.heroMediaId;
+  const photos = useDraftPhotos(source, photoId !== null);
+  const photo = photos.data?.items.find(({ id }) => id === photoId);
+  const image = usePhotoUrl(
+    source,
+    photo?.status === "READY" ? photo.id : undefined,
   );
-  const image = usePhotoUrl(source, photo?.id);
   return (
     <Stack>
       {(photos.isError || image.failed) && (
@@ -42,23 +50,51 @@ export function PrivateGardenPreview({
           </Button>
         </Alert>
       )}
-      <GardenInvitation
-        content={content}
-        rsvp={rsvp}
-        idPrefix={idPrefix}
-        media={
-          photo && image.src
-            ? {
-                id: photo.id,
-                src: image.src,
-                objectUrl: true,
-                alt: t("coverAlt"),
-                width: photo.width,
-                height: photo.height,
-              }
-            : undefined
-        }
-      />
+      {"photo" in content ? (
+        <TogetherInvitation
+          content={content}
+          renderRsvp={rsvp ? () => rsvp : undefined}
+          media={
+            photo && image.src
+              ? {
+                  status: "ready",
+                  src: image.src,
+                  width: photo.width,
+                  height: photo.height,
+                  objectUrl: true,
+                }
+              : photoId
+                ? {
+                    status:
+                      photos.isError ||
+                      image.failed ||
+                      photo?.status === "FAILED" ||
+                      (!photo && photos.isSuccess)
+                        ? "unavailable"
+                        : "pending",
+                  }
+                : undefined
+          }
+        />
+      ) : (
+        <GardenInvitation
+          content={content}
+          rsvp={rsvp}
+          idPrefix={idPrefix}
+          media={
+            photo && image.src
+              ? {
+                  id: photo.id,
+                  src: image.src,
+                  objectUrl: true,
+                  alt: t("coverAlt"),
+                  width: photo.width,
+                  height: photo.height,
+                }
+              : undefined
+          }
+        />
+      )}
     </Stack>
   );
 }
