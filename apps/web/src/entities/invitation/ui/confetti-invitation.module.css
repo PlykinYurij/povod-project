@@ -1,0 +1,148 @@
+.invitation {
+  --confetti-ink: #221d33;
+  --confetti-paper: #fff8ec;
+  --confetti-violet: #d6c6ff;
+  --confetti-pink: #ffbbcf;
+  --confetti-yellow: #fff08a;
+  --confetti-mint: #96ead9;
+  display: grid;
+  gap: clamp(1rem, 3vw, 2rem);
+  width: min(100%, 68rem);
+  margin-inline: auto;
+  padding: clamp(1rem, 4vw, 3rem);
+  background: var(--confetti-paper);
+  color: var(--confetti-ink);
+  font:
+    100%/1.55 system-ui,
+    sans-serif;
+  overflow-wrap: anywhere;
+}
+
+.invitation *,
+.invitation {
+  box-sizing: border-box;
+}
+.invitation :is(h1, h2, p) {
+  margin: 0;
+}
+.invitation p,
+.invitation footer {
+  white-space: pre-wrap;
+}
+.invitation :focus-visible {
+  outline: 3px solid currentColor;
+  outline-offset: 0.25rem;
+}
+.hero,
+.tile,
+.rsvp {
+  border: 2px solid;
+  padding: clamp(1rem, 4vw, 2.5rem);
+}
+.hero {
+  display: grid;
+  align-items: center;
+  gap: 1.5rem;
+  border-radius: 2rem 0.5rem 2rem 0.5rem;
+  background: var(--confetti-violet);
+}
+.hero h1 {
+  font-size: clamp(2.4rem, 8vw, 6rem);
+  line-height: 1;
+  margin-block: 0.5em;
+}
+.label {
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.stamp {
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+}
+.stamp span {
+  width: min(70%, 9rem);
+  aspect-ratio: 1;
+  position: relative;
+  border: 2px solid;
+  border-radius: 41% 59% 33% 67%;
+  background: var(--confetti-pink);
+  transform: rotate(-12deg);
+}
+.stamp span::before,
+.stamp span::after {
+  content: "";
+  position: absolute;
+  width: 24%;
+  aspect-ratio: 1;
+  border: 2px solid;
+}
+.stamp span::before {
+  top: 0;
+  left: -6%;
+  background: var(--confetti-yellow);
+  transform: rotate(26deg);
+}
+.stamp span::after {
+  bottom: 4%;
+  right: -12%;
+  background: var(--confetti-mint);
+  border-radius: 50%;
+}
+.details {
+  display: grid;
+  gap: 1rem;
+}
+.details .tile:first-child {
+  background: var(--confetti-yellow);
+}
+.details .tile + .tile {
+  background: var(--confetti-mint);
+}
+.tile,
+.rsvp {
+  border-radius: 0.75rem;
+  display: grid;
+  align-content: start;
+  gap: 0.75rem;
+  background: #fff;
+  min-width: 0;
+}
+.rsvp {
+  background: var(--confetti-pink);
+}
+.photo {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+}
+.action {
+  max-width: 100%;
+  justify-self: start;
+  overflow-wrap: anywhere;
+  white-space: normal;
+  font: inherit;
+  text-align: start;
+  padding: 0.6rem 1rem;
+  border: 0;
+  border-radius: 0.5rem;
+  color: #fff;
+  background: var(--confetti-ink);
+}
+.action:not(:disabled) {
+  cursor: pointer;
+}
+.invitation footer {
+  text-align: center;
+}
+
+@media (min-width: 45rem) {
+  .hero {
+    grid-template-columns: minmax(0, 3fr) minmax(0, 1fr);
+  }
+  .details {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

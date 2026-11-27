@@ -1,4 +1,7 @@
 import type { TemplateCatalogDto, TemplatePriceDto } from "./generated/models";
+import { TemplateSummaryDtoEventType } from "./generated/models";
+
+const eventTypes = new Set<unknown>(Object.values(TemplateSummaryDtoEventType));
 
 function object(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
@@ -59,7 +62,7 @@ export function isTemplateCatalog(value: unknown): value is TemplateCatalogDto {
       isTemplatePrice(item.price) &&
       typeof item.title === "string" &&
       item.title.trim().length > 0 &&
-      item.eventType === "wedding" &&
+      eventTypes.has(item.eventType) &&
       typeof item.schemaVersion === "number" &&
       Number.isInteger(item.schemaVersion) &&
       item.schemaVersion > 0 &&

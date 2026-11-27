@@ -1,0 +1,13 @@
+{
+  "invitationLabel": "Приглашение на день рождения",
+  "intro": "Хочу отпраздновать этот день вместе с вами!",
+  "whenHeading": "Когда",
+  "whereHeading": "Где",
+  "dateLabel": "Дата",
+  "timeLabel": "Начало",
+  "photoHeading": "Фото",
+  "rsvpHeading": "Увидимся?",
+  "rsvpIntro": "Пожалуйста, сообщите, сможете ли вы прийти.",
+  "rsvpAction": "Ответить на приглашение",
+  "signoff": ""
+}

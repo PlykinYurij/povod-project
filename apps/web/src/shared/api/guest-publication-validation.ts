@@ -81,11 +81,39 @@ function isTogetherContent(content: Record<string, unknown>): boolean {
   );
 }
 
+function isConfettiContent(content: Record<string, unknown>): boolean {
+  return (
+    (content.locale === "ru" || content.locale === "en") &&
+    typeof content.celebrantName === "string" &&
+    !("names" in content) &&
+    hasText(content.event, ["date", "startTime", "timeZone"]) &&
+    hasText(content.venue, ["name", "address"]) &&
+    hasText(content.photo, ["alt"]) &&
+    record(content.note) &&
+    typeof content.note.enabled === "boolean" &&
+    hasText(content.note, ["heading", "body"]) &&
+    hasText(content.copy, [
+      "invitationLabel",
+      "intro",
+      "whenHeading",
+      "whereHeading",
+      "dateLabel",
+      "timeLabel",
+      "photoHeading",
+      "rsvpHeading",
+      "rsvpIntro",
+      "rsvpAction",
+      "signoff",
+    ])
+  );
+}
+
 export function isGuestPublication(value: unknown): boolean {
   if (
     !record(value) ||
     (value.templateVersionId !== "wedding-garden-v1" &&
-      value.templateVersionId !== "wedding-together-v1") ||
+      value.templateVersionId !== "wedding-together-v1" &&
+      value.templateVersionId !== "birthday-confetti-v1") ||
     typeof value.snapshotId !== "string" ||
     !isProjectId(value.snapshotId) ||
     !record(value.content)
@@ -102,9 +130,11 @@ export function isGuestPublication(value: unknown): boolean {
   const content = value.content;
   const together = value.templateVersionId === "wedding-together-v1";
   if (
-    together
-      ? !isTogetherContent(content) || "heroMediaId" in content
-      : "photo" in content
+    value.templateVersionId === "birthday-confetti-v1"
+      ? !isConfettiContent(content) || "heroMediaId" in content
+      : together
+        ? !isTogetherContent(content) || "heroMediaId" in content
+        : "photo" in content
   )
     return false;
   const photoId = record(content.photo)

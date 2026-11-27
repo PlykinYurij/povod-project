@@ -107,65 +107,70 @@ function get(actor: Owner, path: string) {
 }
 type ProjectDto = VersionedProjectDto & { content: GardenContentDto };
 
-test("Together draft uses the stored version to validate edits and isolate owners", async () => {
-  const version = "wedding-together-v1";
-  const original = await db.templateVersion.findUniqueOrThrow({
-    where: { id: version },
-  });
-  await db.templateVersion.update({
-    where: { id: version },
-    data: { availableForNewProjects: true },
-  });
-  try {
-    const [actor, other] = await Promise.all([owner(), owner()]);
-    const key = randomUUID();
-    const request = { templateVersionId: version, title: "Наш день" };
-    const created = await mutate(actor, "", request, "POST", key);
-    expect(created.status).toBe(201);
-    const project = (await created.json()) as VersionedProjectDto;
-    expect(project.templateVersionId).toBe(version);
-    expect(project.content).toMatchObject({ photo: { mediaId: null } });
-    const replay = await mutate(actor, "", request, "POST", key);
-    expect(replay.status).toBe(200);
-    expect(await replay.json()).toEqual(project);
-    const draftPath = `/${project.id}/draft`;
-    const patch = {
-      expectedRevision: project.revision,
-      title: "Другой день",
-      content: project.content,
-    };
-    expect((await mutate(other, draftPath, patch, "PATCH")).status).toBe(404);
-    expect(
-      (
-        await mutate(
-          actor,
-          draftPath,
-          {
-            ...patch,
-            content: new GardenTemplateService().createDraft(
-              "wedding-garden-v1",
-              "",
-            ).content,
-          },
-          "PATCH",
-        )
-      ).status,
-    ).toBe(422);
-    const saved = await mutate(actor, draftPath, patch, "PATCH");
-    expect(saved.status).toBe(200);
-    expect(await saved.json()).toMatchObject({
-      templateVersionId: version,
-      revision: 2,
-      title: patch.title,
-      content: project.content,
+test.each(["wedding-together-v1", "birthday-confetti-v1"])(
+  "%s draft uses the stored version to validate edits and isolate owners",
+  async (version) => {
+    const original = await db.templateVersion.findUniqueOrThrow({
+      where: { id: version },
     });
-  } finally {
     await db.templateVersion.update({
       where: { id: version },
-      data: { availableForNewProjects: original.availableForNewProjects },
+      data: { availableForNewProjects: true },
     });
-  }
-});
+    try {
+      const [actor, other] = await Promise.all([owner(), owner()]);
+      const key = randomUUID();
+      const request = { templateVersionId: version, title: "Наш день" };
+      const created = await mutate(actor, "", request, "POST", key);
+      expect(created.status).toBe(201);
+      const project = (await created.json()) as VersionedProjectDto;
+      expect(project.templateVersionId).toBe(version);
+      expect(project.content).toMatchObject({ photo: { mediaId: null } });
+      if (version === "birthday-confetti-v1") {
+        expect(project.content).toMatchObject({ celebrantName: "" });
+      }
+      const replay = await mutate(actor, "", request, "POST", key);
+      expect(replay.status).toBe(200);
+      expect(await replay.json()).toEqual(project);
+      const draftPath = `/${project.id}/draft`;
+      const patch = {
+        expectedRevision: project.revision,
+        title: "Другой день",
+        content: project.content,
+      };
+      expect((await mutate(other, draftPath, patch, "PATCH")).status).toBe(404);
+      expect(
+        (
+          await mutate(
+            actor,
+            draftPath,
+            {
+              ...patch,
+              content: new GardenTemplateService().createDraft(
+                "wedding-garden-v1",
+                "",
+              ).content,
+            },
+            "PATCH",
+          )
+        ).status,
+      ).toBe(422);
+      const saved = await mutate(actor, draftPath, patch, "PATCH");
+      expect(saved.status).toBe(200);
+      expect(await saved.json()).toMatchObject({
+        templateVersionId: version,
+        revision: 2,
+        title: patch.title,
+        content: project.content,
+      });
+    } finally {
+      await db.templateVersion.update({
+        where: { id: version },
+        data: { availableForNewProjects: original.availableForNewProjects },
+      });
+    }
+  },
+);
 
 function saveInput(project: ProjectDto, title = "Изменено") {
   return {

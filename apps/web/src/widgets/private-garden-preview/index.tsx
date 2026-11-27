@@ -4,10 +4,11 @@ import type { ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import {
   GardenInvitation,
+  ConfettiInvitation,
   TogetherInvitation,
   type GardenContent,
 } from "@entities/invitation";
-import type { TogetherContentDto } from "@shared/api";
+import type { ConfettiContentDto, TogetherContentDto } from "@shared/api";
 import {
   useDraftPhotos,
   usePhotoUrl,
@@ -22,7 +23,7 @@ export function PrivateGardenPreview({
   idPrefix,
 }: {
   source: PhotoSource;
-  content: GardenContent | TogetherContentDto;
+  content: GardenContent | TogetherContentDto | ConfettiContentDto;
   rsvp?: ReactNode;
   idPrefix?: string;
 }) {
@@ -50,7 +51,32 @@ export function PrivateGardenPreview({
           </Button>
         </Alert>
       )}
-      {"photo" in content ? (
+      {"celebrantName" in content ? (
+        <ConfettiInvitation
+          content={content}
+          renderRsvp={rsvp ? () => rsvp : undefined}
+          media={
+            photo && image.src
+              ? {
+                  status: "ready",
+                  src: image.src,
+                  width: photo.width,
+                  height: photo.height,
+                }
+              : photoId
+                ? {
+                    status:
+                      photos.isError ||
+                      image.failed ||
+                      photo?.status === "FAILED" ||
+                      (!photo && photos.isSuccess)
+                        ? "unavailable"
+                        : "pending",
+                  }
+                : undefined
+          }
+        />
+      ) : "photo" in content ? (
         <TogetherInvitation
           content={content}
           renderRsvp={rsvp ? () => rsvp : undefined}
