@@ -1,7 +1,7 @@
 import type { Project } from "../../database/generated/client";
 import { ApiError } from "../../http/api-error";
 import { canEditProject, type PublicationLifecycle } from "../publication/publication-lifecycle";
-import { validateGardenDraft } from "../templates/garden/validate-garden";
+import { templateValidators } from "../templates/template-content";
 import { ProjectDto, ProjectSummaryDto } from "./project.dto";
 
 export type ProjectWithPublication = Project & { publication?: PublicationLifecycle | null };
@@ -21,7 +21,7 @@ export function projectSummary(project: ProjectWithPublication): ProjectSummaryD
 
 export function projectResponse(project: ProjectWithPublication): ProjectDto {
   try {
-    const draft = validateGardenDraft({
+    const draft = templateValidators(project.templateVersionId).draft({
       templateVersionId: project.templateVersionId,
       title: project.title,
       content: project.content,

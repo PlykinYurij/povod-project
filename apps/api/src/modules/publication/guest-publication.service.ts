@@ -3,7 +3,12 @@ import { DatabaseService } from "../../database/database.service";
 import type { RsvpFormSchema } from "../../database/generated/client";
 import { ApiError } from "../../http/api-error";
 import { photoRenditionKey, PhotoStorage } from "../media/photo-storage";
-import { validateGardenContent } from "../templates/garden/validate-garden";
+import {
+  TEMPLATE_VERSION_IDS,
+  templatePhoto,
+  templateValidators,
+  withPublicPhoto,
+} from "../templates/template-content";
 import { describeRsvpForm } from "../rsvp/rsvp-form";
 import {
   activePublicationBySlug,
@@ -22,12 +27,12 @@ export class GuestPublicationService {
     const snapshot = await this.snapshot(slug);
     const cover = await this.findCover(
       snapshot.projectId,
-      snapshot.content.heroMediaId,
+      templatePhoto(snapshot.content).id,
     );
     return {
       templateVersionId: snapshot.templateVersionId,
       snapshotId: snapshot.id,
-      content: { ...snapshot.content, heroMediaId: cover ? snapshot.id : null },
+      content: withPublicPhoto(snapshot.content, cover ? snapshot.id : null),
       cover: cover ? { width: cover.width, height: cover.height } : null,
       rsvp: describeRsvpForm(snapshot.id, snapshot.formSchema),
     };
@@ -38,7 +43,7 @@ export class GuestPublicationService {
     if (snapshot.id !== snapshotId.toLowerCase()) throw invitationUnavailable();
     const cover = await this.findCover(
       snapshot.projectId,
-      snapshot.content.heroMediaId,
+      templatePhoto(snapshot.content).id,
     );
     if (!cover) throw invitationUnavailable();
     return this.storage.readObject(
@@ -62,13 +67,15 @@ export class GuestPublicationService {
     `;
     if (!row) throw invitationUnavailable();
     try {
-      if (row.templateVersionId !== "wedding-garden-v1")
-        throw new Error("Unknown template");
+      const version = TEMPLATE_VERSION_IDS.find(
+        (candidate) => candidate === row.templateVersionId,
+      );
+      if (!version) throw new Error("Unknown template");
       return {
         id: row.id,
         projectId: row.projectId,
-        templateVersionId: row.templateVersionId,
-        content: validateGardenContent(row.content),
+        templateVersionId: version,
+        content: templateValidators(version).content(row.content),
         formSchema: row.formSchema,
       } as const;
     } catch {
