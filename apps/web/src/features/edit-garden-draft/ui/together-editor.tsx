@@ -47,7 +47,7 @@ const fields = [
 function read(project: ProjectDto): Values {
   if (
     project.templateVersionId !== "wedding-together-v1" ||
-    !("photo" in project.content)
+    !("photo" in project.content && "names" in project.content)
   )
     throw new Error("Unexpected invitation schema for the Together editor");
   return { title: project.title, content: project.content };

@@ -234,6 +234,31 @@
     "FAILED": "Processing failed"
   },
   "DraftEditor": {
+    "confetti": {
+      "locale": "Invitation language",
+      "title": "Project title",
+      "date": "Date",
+      "time": "Start time",
+      "timeZone": "Time zone",
+      "venue": "Venue",
+      "address": "Address",
+      "photoAlt": "Photo description",
+      "noteEnabled": "Show note",
+      "noteHeading": "Note heading",
+      "noteBody": "Note text",
+      "intro": "Introduction",
+      "dateLabel": "Date label",
+      "photoHeading": "Photo heading",
+      "rsvpHeading": "RSVP heading",
+      "rsvpIntro": "RSVP introduction",
+      "rsvpAction": "RSVP button",
+      "signoff": "Sign-off",
+      "name": "Celebrant name",
+      "invitationLabel": "Invitation label",
+      "whenHeading": "Date heading",
+      "whereHeading": "Venue heading",
+      "timeLabel": "Time label"
+    },
     "together": {
       "locale": "Invitation language",
       "noteEnabled": "Show note",
