@@ -1,6 +1,17 @@
 import type { ProjectDto } from "@shared/api";
 
 export function isGardenComplete({ content, title }: ProjectDto): boolean {
+  if ("celebrant" in content)
+    return [
+      title,
+      content.celebrant,
+      content.event.date,
+      content.event.startTime,
+      content.event.timeZone,
+      content.venue.name,
+      content.venue.address,
+      content.copy.rsvpAction,
+    ].every((value) => value.trim() !== "");
   if ("celebrantName" in content)
     return [
       title,

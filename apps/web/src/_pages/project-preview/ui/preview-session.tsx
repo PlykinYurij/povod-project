@@ -51,8 +51,10 @@ function SavedPreview({ projectId }: { projectId: string }) {
       "names" in saved.content
     ) &&
     !(
-      saved.templateVersionId === "birthday-confetti-v1" &&
-      "celebrantName" in saved.content
+      (saved.templateVersionId === "birthday-confetti-v1" &&
+        "celebrantName" in saved.content) ||
+      (saved.templateVersionId === "birthday-anniversary-v1" &&
+        "celebrant" in saved.content)
     )
   )
     return <Alert role="alert">{t("unsupported")}</Alert>;

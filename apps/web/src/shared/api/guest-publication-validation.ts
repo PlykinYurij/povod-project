@@ -108,12 +108,40 @@ function isConfettiContent(content: Record<string, unknown>): boolean {
   );
 }
 
+function isAnniversaryContent(content: Record<string, unknown>): boolean {
+  return (
+    (content.locale === "ru" || content.locale === "en") &&
+    typeof content.celebrant === "string" &&
+    !("names" in content) &&
+    hasText(content.event, ["date", "startTime", "timeZone"]) &&
+    hasText(content.venue, ["name", "address"]) &&
+    hasText(content.photo, ["alt"]) &&
+    record(content.note) &&
+    typeof content.note.enabled === "boolean" &&
+    hasText(content.note, ["text"]) &&
+    hasText(content.copy, [
+      "eyebrow",
+      "letter",
+      "noteHeading",
+      "placeHeading",
+      "dateLabel",
+      "caption",
+      "photoHeading",
+      "rsvpHeading",
+      "rsvpIntro",
+      "rsvpAction",
+      "signoff",
+    ])
+  );
+}
+
 export function isGuestPublication(value: unknown): boolean {
   if (
     !record(value) ||
     (value.templateVersionId !== "wedding-garden-v1" &&
       value.templateVersionId !== "wedding-together-v1" &&
-      value.templateVersionId !== "birthday-confetti-v1") ||
+      value.templateVersionId !== "birthday-confetti-v1" &&
+      value.templateVersionId !== "birthday-anniversary-v1") ||
     typeof value.snapshotId !== "string" ||
     !isProjectId(value.snapshotId) ||
     !record(value.content)
@@ -128,13 +156,20 @@ export function isGuestPublication(value: unknown): boolean {
   )
     return false;
   const content = value.content;
+  if (
+    "celebrant" in content &&
+    value.templateVersionId !== "birthday-anniversary-v1"
+  )
+    return false;
   const together = value.templateVersionId === "wedding-together-v1";
   if (
-    value.templateVersionId === "birthday-confetti-v1"
-      ? !isConfettiContent(content) || "heroMediaId" in content
-      : together
-        ? !isTogetherContent(content) || "heroMediaId" in content
-        : "photo" in content
+    value.templateVersionId === "birthday-anniversary-v1"
+      ? !isAnniversaryContent(content) || "heroMediaId" in content
+      : value.templateVersionId === "birthday-confetti-v1"
+        ? !isConfettiContent(content) || "heroMediaId" in content
+        : together
+          ? !isTogetherContent(content) || "heroMediaId" in content
+          : "photo" in content
   )
     return false;
   const photoId = record(content.photo)
