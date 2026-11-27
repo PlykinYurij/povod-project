@@ -130,7 +130,9 @@ export function RequestDetail({ requestId }: { requestId: string }) {
                   "photo" in project.content &&
                   "names" in project.content) ||
                 (project.templateVersionId === "birthday-confetti-v1" &&
-                  "celebrantName" in project.content)) &&
+                  "celebrantName" in project.content) ||
+                (project.templateVersionId === "birthday-anniversary-v1" &&
+                  "celebrant" in project.content)) &&
               project.canEditDraft && (
                 <AssistedEditor
                   key={project.id}
@@ -145,7 +147,9 @@ export function RequestDetail({ requestId }: { requestId: string }) {
                 "photo" in project.content &&
                 "names" in project.content) ||
               (project.templateVersionId === "birthday-confetti-v1" &&
-                "celebrantName" in project.content)) ? (
+                "celebrantName" in project.content) ||
+              (project.templateVersionId === "birthday-anniversary-v1" &&
+                "celebrant" in project.content)) ? (
               <>
                 <Title order={3}>{t("preview")}</Title>
                 <Text>{t("revision", { current: project.revision })}</Text>

@@ -4284,7 +4284,7 @@
   "info": {
     "title": "Повод API",
     "description": "",
-    "version": "0.28.0",
+    "version": "0.29.0",
     "contact": {}
   },
   "tags": [],
@@ -5451,6 +5451,181 @@
           "copy"
         ]
       },
+      "AnniversaryEventDto": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "maxLength": 10
+          },
+          "startTime": {
+            "type": "string",
+            "maxLength": 5
+          },
+          "timeZone": {
+            "type": "string",
+            "description": "Named IANA time zone, or empty in a draft"
+          }
+        },
+        "required": [
+          "date",
+          "startTime",
+          "timeZone"
+        ]
+      },
+      "AnniversaryVenueDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "address": {
+            "type": "string",
+            "maxLength": 150
+          }
+        },
+        "required": [
+          "name",
+          "address"
+        ]
+      },
+      "AnniversaryPhotoDto": {
+        "type": "object",
+        "properties": {
+          "mediaId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "alt": {
+            "type": "string",
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "mediaId",
+          "alt"
+        ]
+      },
+      "AnniversaryNoteDto": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "text": {
+            "type": "string",
+            "maxLength": 1000
+          }
+        },
+        "required": [
+          "enabled",
+          "text"
+        ]
+      },
+      "AnniversaryCopyDto": {
+        "type": "object",
+        "properties": {
+          "eyebrow": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "letter": {
+            "type": "string",
+            "maxLength": 4000
+          },
+          "dateLabel": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "placeHeading": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "photoHeading": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "caption": {
+            "type": "string",
+            "maxLength": 240
+          },
+          "noteHeading": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "rsvpHeading": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "rsvpIntro": {
+            "type": "string",
+            "maxLength": 4000
+          },
+          "rsvpAction": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "signoff": {
+            "type": "string",
+            "maxLength": 1000
+          }
+        },
+        "required": [
+          "eyebrow",
+          "letter",
+          "dateLabel",
+          "placeHeading",
+          "photoHeading",
+          "caption",
+          "noteHeading",
+          "rsvpHeading",
+          "rsvpIntro",
+          "rsvpAction",
+          "signoff"
+        ]
+      },
+      "AnniversaryContentDto": {
+        "type": "object",
+        "properties": {
+          "locale": {
+            "type": "string",
+            "enum": [
+              "ru",
+              "en"
+            ]
+          },
+          "celebrant": {
+            "type": "string",
+            "maxLength": 20
+          },
+          "event": {
+            "$ref": "#/components/schemas/AnniversaryEventDto"
+          },
+          "venue": {
+            "$ref": "#/components/schemas/AnniversaryVenueDto"
+          },
+          "photo": {
+            "$ref": "#/components/schemas/AnniversaryPhotoDto"
+          },
+          "note": {
+            "$ref": "#/components/schemas/AnniversaryNoteDto"
+          },
+          "copy": {
+            "$ref": "#/components/schemas/AnniversaryCopyDto"
+          }
+        },
+        "required": [
+          "locale",
+          "celebrant",
+          "event",
+          "venue",
+          "photo",
+          "note",
+          "copy"
+        ]
+      },
       "ProjectDto": {
         "type": "object",
         "properties": {
@@ -5497,6 +5672,9 @@
               },
               {
                 "$ref": "#/components/schemas/ConfettiContentDto"
+              },
+              {
+                "$ref": "#/components/schemas/AnniversaryContentDto"
               }
             ]
           }
@@ -5530,6 +5708,9 @@
               },
               {
                 "$ref": "#/components/schemas/ConfettiContentDto"
+              },
+              {
+                "$ref": "#/components/schemas/AnniversaryContentDto"
               }
             ]
           },
@@ -6424,7 +6605,8 @@
             "enum": [
               "wedding-garden-v1",
               "wedding-together-v1",
-              "birthday-confetti-v1"
+              "birthday-confetti-v1",
+              "birthday-anniversary-v1"
             ]
           },
           "snapshotId": {
@@ -6441,6 +6623,9 @@
               },
               {
                 "$ref": "#/components/schemas/ConfettiContentDto"
+              },
+              {
+                "$ref": "#/components/schemas/AnniversaryContentDto"
               }
             ]
           },

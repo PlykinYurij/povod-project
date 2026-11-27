@@ -33,6 +33,7 @@ test("anonymous catalog returns only public metadata from the configured catalog
   expect(response.headers.get("cache-control")).toBe("no-store");
   expect(response.headers.get("set-cookie")).toBeNull();
   expect(body.items.map(({ templateVersionId }) => templateVersionId).sort()).toEqual([
+    "birthday-anniversary-v1",
     "birthday-confetti-v1",
     "wedding-garden-v1",
     "wedding-together-v1",
@@ -72,6 +73,16 @@ test("anonymous catalog returns only public metadata from the configured catalog
     eventType: "birthday",
     demoPath: "/templates/confetti",
     blocks: expect.arrayContaining([{ id: "celebrant-name", required: true }]),
+  });
+  const anniversary = body.items.find(
+    ({ templateVersionId }) => templateVersionId === "birthday-anniversary-v1",
+  );
+  expect(anniversary).toMatchObject({
+    categoryId: "birthday",
+    eventType: "birthday",
+    demoPath: "/templates/anniversary",
+    previewImagePath: "/templates/anniversary/cover.svg",
+    price: null,
   });
   for (const field of [
     "ownerId",

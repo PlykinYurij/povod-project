@@ -5,10 +5,15 @@ import { useTranslations } from "next-intl";
 import {
   GardenInvitation,
   ConfettiInvitation,
+  AnniversaryInvitation,
   TogetherInvitation,
   type GardenContent,
 } from "@entities/invitation";
-import type { ConfettiContentDto, TogetherContentDto } from "@shared/api";
+import type {
+  AnniversaryContentDto,
+  ConfettiContentDto,
+  TogetherContentDto,
+} from "@shared/api";
 import {
   useDraftPhotos,
   usePhotoUrl,
@@ -23,7 +28,11 @@ export function PrivateGardenPreview({
   idPrefix,
 }: {
   source: PhotoSource;
-  content: GardenContent | TogetherContentDto | ConfettiContentDto;
+  content:
+    | GardenContent
+    | TogetherContentDto
+    | ConfettiContentDto
+    | AnniversaryContentDto;
   rsvp?: ReactNode;
   idPrefix?: string;
 }) {
@@ -51,7 +60,32 @@ export function PrivateGardenPreview({
           </Button>
         </Alert>
       )}
-      {"celebrantName" in content ? (
+      {"celebrant" in content ? (
+        <AnniversaryInvitation
+          content={content}
+          renderRsvp={rsvp ? () => rsvp : undefined}
+          media={
+            photo && image.src
+              ? {
+                  status: "ready",
+                  src: image.src,
+                  width: photo.width,
+                  height: photo.height,
+                }
+              : photoId
+                ? {
+                    status:
+                      photos.isError ||
+                      image.failed ||
+                      photo?.status === "FAILED" ||
+                      (!photo && photos.isSuccess)
+                        ? "unavailable"
+                        : "pending",
+                  }
+                : undefined
+          }
+        />
+      ) : "celebrantName" in content ? (
         <ConfettiInvitation
           content={content}
           renderRsvp={rsvp ? () => rsvp : undefined}

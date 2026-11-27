@@ -107,7 +107,7 @@ function get(actor: Owner, path: string) {
 }
 type ProjectDto = VersionedProjectDto & { content: GardenContentDto };
 
-test.each(["wedding-together-v1", "birthday-confetti-v1"])(
+test.each(["wedding-together-v1", "birthday-confetti-v1", "birthday-anniversary-v1"])(
   "%s draft uses the stored version to validate edits and isolate owners",
   async (version) => {
     const original = await db.templateVersion.findUniqueOrThrow({
@@ -128,6 +128,13 @@ test.each(["wedding-together-v1", "birthday-confetti-v1"])(
       expect(project.content).toMatchObject({ photo: { mediaId: null } });
       if (version === "birthday-confetti-v1") {
         expect(project.content).toMatchObject({ celebrantName: "" });
+      }
+      if (version === "birthday-anniversary-v1") {
+        expect(project.content).toMatchObject({
+          celebrant: "",
+          copy: { caption: "" },
+          note: { enabled: false, text: "" },
+        });
       }
       const replay = await mutate(actor, "", request, "POST", key);
       expect(replay.status).toBe(200);
