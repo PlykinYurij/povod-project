@@ -4,13 +4,14 @@
  * Повод API
  * OpenAPI spec version: 0.27.0
  */
+import type { ConfettiContentDto } from './confettiContentDto';
 import type { GardenContentDto } from './gardenContentDto';
 import type { TogetherContentDto } from './togetherContentDto';
 
 export interface SaveProjectDraftDto {
   /** @maxLength 24 */
   title: string;
-  content: GardenContentDto | TogetherContentDto;
+  content: GardenContentDto | TogetherContentDto | ConfettiContentDto;
   /**
      * @minimum 1
      * @maximum 2147483646

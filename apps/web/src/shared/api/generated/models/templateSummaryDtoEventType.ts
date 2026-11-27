@@ -10,4 +10,5 @@ export type TemplateSummaryDtoEventType = typeof TemplateSummaryDtoEventType[key
 
 export const TemplateSummaryDtoEventType = {
   wedding: 'wedding',
+  birthday: 'birthday',
 } as const;

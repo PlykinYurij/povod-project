@@ -4,6 +4,7 @@
  * Повод API
  * OpenAPI spec version: 0.27.0
  */
+import type { ConfettiContentDto } from './confettiContentDto';
 import type { GardenContentDto } from './gardenContentDto';
 import type { TogetherContentDto } from './togetherContentDto';
 
@@ -20,5 +21,5 @@ export interface ProjectDto {
   updatedAt: string;
   /** Draft capability only, not permission to publish */
   canEditDraft: boolean;
-  content: GardenContentDto | TogetherContentDto;
+  content: GardenContentDto | TogetherContentDto | ConfettiContentDto;
 }

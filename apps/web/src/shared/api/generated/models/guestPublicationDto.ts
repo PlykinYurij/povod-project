@@ -4,6 +4,7 @@
  * Повод API
  * OpenAPI spec version: 0.27.0
  */
+import type { ConfettiContentDto } from './confettiContentDto';
 import type { GardenContentDto } from './gardenContentDto';
 import type { GuestCoverDto } from './guestCoverDto';
 import type { GuestPublicationDtoTemplateVersionId } from './guestPublicationDtoTemplateVersionId';
@@ -13,7 +14,7 @@ import type { TogetherContentDto } from './togetherContentDto';
 export interface GuestPublicationDto {
   templateVersionId: GuestPublicationDtoTemplateVersionId;
   snapshotId: string;
-  content: GardenContentDto | TogetherContentDto;
+  content: GardenContentDto | TogetherContentDto | ConfettiContentDto;
   /** @nullable */
   cover: GuestCoverDto | null;
   rsvp: PublicRsvpFormDto;

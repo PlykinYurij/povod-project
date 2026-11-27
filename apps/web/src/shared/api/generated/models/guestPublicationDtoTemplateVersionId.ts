@@ -11,4 +11,5 @@ export type GuestPublicationDtoTemplateVersionId = typeof GuestPublicationDtoTem
 export const GuestPublicationDtoTemplateVersionId = {
   'wedding-garden-v1': 'wedding-garden-v1',
   'wedding-together-v1': 'wedding-together-v1',
+  'birthday-confetti-v1': 'birthday-confetti-v1',
 } as const;
