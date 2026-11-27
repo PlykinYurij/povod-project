@@ -3,7 +3,11 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { useQueryClient } from "@tanstack/react-query";
-import { GardenEditor, TogetherEditor } from "@features/edit-garden-draft";
+import {
+  ConfettiEditor,
+  GardenEditor,
+  TogetherEditor,
+} from "@features/edit-garden-draft";
 import {
   ApiRequestError,
   getAdminRequest,
@@ -26,9 +30,11 @@ export function AssistedEditor({
   const [editing, setEditing] = useState(false);
   const cache = useQueryClient();
   const Editor =
-    project.templateVersionId === "wedding-together-v1"
-      ? TogetherEditor
-      : GardenEditor;
+    project.templateVersionId === "birthday-confetti-v1"
+      ? ConfettiEditor
+      : project.templateVersionId === "wedding-together-v1"
+        ? TogetherEditor
+        : GardenEditor;
   if (!editing)
     return (
       <Button variant="light" w="fit-content" onClick={() => setEditing(true)}>
